@@ -1,0 +1,101 @@
+<div class="login-page">
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-brand">
+                <img src="https://img.icons8.com/color/96/000000/network.png" alt="Logo NetConfig Pro" class="header-logo">
+                <h1 class="main-title">
+                    <i class="fas fa-network-wired"></i> NetConfig Pro
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="main-content">
+        <div class="auth-card">
+            <!-- Error message -->
+            @if (error()) {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ error() }}</span>
+            </div>
+            }
+
+            <!-- Success message (from registration redirect) -->
+            @if (successMessage()) {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ successMessage() }}</span>
+            </div>
+            }
+
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <h2 class="auth-title">Connexion à votre compte</h2>
+                <p class="auth-subtitle">Accédez à la plateforme de gestion réseau</p>
+            </div>
+
+            <form (ngSubmit)="onLogin()" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label" for="email">
+                <i class="fas fa-envelope"></i> Adresse email
+              </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="email" id="email" name="email" class="form-control" [(ngModel)]="email" placeholder="votre@email.com" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                <i class="fas fa-lock"></i> Mot de passe
+              </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key"></i>
+                        <input [type]="showPassword() ? 'text' : 'password'" id="password" name="password" class="form-control" [(ngModel)]="password" placeholder="••••••••" required>
+                        <span class="password-toggle" (click)="togglePassword()">
+                  <i [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()" class="fas"></i>
+                </span>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                <input type="checkbox" [(ngModel)]="remember" name="remember">
+                <span class="checkbox-label">Se souvenir de moi</span>
+              </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              @if (loading()) {
+                <i class="fas fa-spinner fa-spin"></i> Connexion en cours...
+              } @else {
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+              }
+            </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Nouveau sur NetConfig Pro ?</p>
+                <a routerLink="/register" class="auth-link">
+                    <i class="fas fa-user-plus"></i> Créer un compte
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; {{ currentYear }} NetConfig Pro - Plateforme de Gestion Réseau</p>
+            <div class="footer-links">
+                <a href="#" class="footer-link">Mentions légales</a>
+                <a href="#" class="footer-link">Politique de confidentialité</a>
+                <a href="#" class="footer-link">Support</a>
+            </div>
+        </div>
+    </footer>
+</div>

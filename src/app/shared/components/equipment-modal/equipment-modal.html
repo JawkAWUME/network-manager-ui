@@ -1,0 +1,426 @@
+@if (type) {
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="modal-header">
+            <h3>
+                <i class="fas" [ngClass]="headerIcon()"></i> {{ isEdit ? 'Modifier' : 'Créer' }} — {{ typeLabel() }}
+            </h3>
+            <button class="modal-close" (click)="close.emit()"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            @if (error()) {
+            <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ error() }}</div>
+            } @if (success()) {
+            <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ success() }}</div>
+            }
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- FORMULAIRE SITE (avec gestion des équipements associés)      -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            @if (type === 'site') {
+            <!-- 1. Informations générales -->
+            <div class="section-block blue">
+                <h4><i class="fas fa-info-circle"></i> Informations générales</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nom <span class="req">*</span></label>
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Siège Social Paris">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Code</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['code']" placeholder="ex. PAR-HQ">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" [(ngModel)]="form['description']" rows="2" placeholder="Description du site..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Localisation -->
+            <div class="section-block green">
+                <h4><i class="fas fa-map-marker-alt"></i> Localisation</h4>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label class="form-label">Adresse</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['address']" placeholder="ex. 123 Avenue des Champs-Élysées">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Code postal</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['postal_code']" placeholder="ex. 75008">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ville</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['city']" placeholder="ex. Paris">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pays</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['country']" placeholder="ex. France">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Contact -->
+            <div class="section-block warning">
+                <h4><i class="fas fa-address-book"></i> Informations de contact</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nom du contact</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['technical_contact']" placeholder="ex. Jean Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" type="email" [(ngModel)]="form['technical_email']" placeholder="ex. contact@site.fr">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +33 1 23 45 67 89">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Gestion des équipements (uniquement en mode édition) -->
+            @if (isEdit) {
+            <div class="section-block purple">
+                <h4><i class="fas fa-network-wired"></i> Équipements du site</h4>
+                <div class="equipment-summary">
+                    <span class="badge">{{ totalAssociated() }} équipement(s) associé(s)</span>
+                    <span class="badge">{{ associatedSwitches().length }} switch(es)</span>
+                    <span class="badge">{{ associatedRouters().length }} routeur(s)</span>
+                    <span class="badge">{{ associatedFirewalls().length }} firewall(s)</span>
+                </div>
+
+                <!-- Onglets pour afficher les équipements associés par type -->
+                <div class="tabs">
+                    <button type="button" [class.active]="detailTab === 'switches'" (click)="detailTab = 'switches'">
+                <i class="fas fa-exchange-alt"></i> Switchs ({{ associatedSwitches().length }})
+              </button>
+                    <button type="button" [class.active]="detailTab === 'routers'" (click)="detailTab = 'routers'">
+                <i class="fas fa-route"></i> Routeurs ({{ associatedRouters().length }})
+              </button>
+                    <button type="button" [class.active]="detailTab === 'firewalls'" (click)="detailTab = 'firewalls'">
+                <i class="fas fa-fire"></i> Firewalls ({{ associatedFirewalls().length }})
+              </button>
+                </div>
+
+                <!-- Liste des switchs associés -->
+                @if (detailTab === 'switches') {
+                <div class="equipment-list">
+                    @for (eq of associatedSwitches(); track eq.id) {
+                    <div class="equipment-card">
+                        <div class="equipment-icon"><i class="fas fa-exchange-alt"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.ip_nms || 'N/A' }}</div>
+                        </div>
+                        <button class="btn-dissociate" (click)="toggleEquipment('switches', eq.id, eq.name)">
+                      <i class="fas fa-unlink"></i> Dissocier
+                    </button>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Aucun switch associé à ce site.</div>
+                    }
+                </div>
+                }
+
+                <!-- Liste des routeurs associés -->
+                @if (detailTab === 'routers') {
+                <div class="equipment-list">
+                    @for (eq of associatedRouters(); track eq.id) {
+                    <div class="equipment-card">
+                        <div class="equipment-icon"><i class="fas fa-route"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.ip_nms || 'N/A' }}</div>
+                        </div>
+                        <button class="btn-dissociate" (click)="toggleEquipment('routers', eq.id, eq.name)">
+                      <i class="fas fa-unlink"></i> Dissocier
+                    </button>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Aucun routeur associé à ce site.</div>
+                    }
+                </div>
+                }
+
+                <!-- Liste des firewalls associés -->
+                @if (detailTab === 'firewalls') {
+                <div class="equipment-list">
+                    @for (eq of associatedFirewalls(); track eq.id) {
+                    <div class="equipment-card">
+                        <div class="equipment-icon"><i class="fas fa-fire"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.ip_nms || 'N/A' }}</div>
+                        </div>
+                        <button class="btn-dissociate" (click)="toggleEquipment('firewalls', eq.id, eq.name)">
+                      <i class="fas fa-unlink"></i> Dissocier
+                    </button>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Aucun firewall associé à ce site.</div>
+                    }
+                </div>
+                }
+
+                <hr class="separator">
+                <h5><i class="fas fa-plus-circle"></i> Ajouter d’autres équipements</h5>
+            </div>
+            }
+
+            <!-- 5. Sélection d'équipements (création ou ajout) -->
+            <div class="section-block">
+                <div class="tabs">
+                    <button type="button" [class.active]="addTab === 'switches'" (click)="addTab = 'switches'">
+              <i class="fas fa-exchange-alt"></i> Switchs disponibles ({{ availableSwitches().length }})
+            </button>
+                    <button type="button" [class.active]="addTab === 'routers'" (click)="addTab = 'routers'">
+              <i class="fas fa-route"></i> Routeurs disponibles ({{ availableRouters().length }})
+            </button>
+                    <button type="button" [class.active]="addTab === 'firewalls'" (click)="addTab = 'firewalls'">
+              <i class="fas fa-fire"></i> Firewalls disponibles ({{ availableFirewalls().length }})
+            </button>
+                </div>
+
+                @if (lastAdded) {
+                <div class="toast-success">
+                    <i class="fas fa-check-circle"></i> {{ lastAdded.name }} ajouté au site ✓
+                </div>
+                } @if (addTab === 'switches') {
+                <div class="equipment-list available">
+                    @for (eq of availableSwitches(); track eq.id) {
+                    <div class="equipment-card clickable" (click)="toggleEquipment('switches', eq.id, eq.name)">
+                        <div class="equipment-icon"><i class="fas fa-exchange-alt"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.site || 'Non affecté' }}</div>
+                        </div>
+                        <i class="fas fa-plus-circle add-icon"></i>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Tous les switchs sont déjà associés à ce site.</div>
+                    }
+                </div>
+                } @if (addTab === 'routers') {
+                <div class="equipment-list available">
+                    @for (eq of availableRouters(); track eq.id) {
+                    <div class="equipment-card clickable" (click)="toggleEquipment('routers', eq.id, eq.name)">
+                        <div class="equipment-icon"><i class="fas fa-route"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.site || 'Non affecté' }}</div>
+                        </div>
+                        <i class="fas fa-plus-circle add-icon"></i>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Tous les routeurs sont déjà associés à ce site.</div>
+                    }
+                </div>
+                } @if (addTab === 'firewalls') {
+                <div class="equipment-list available">
+                    @for (eq of availableFirewalls(); track eq.id) {
+                    <div class="equipment-card clickable" (click)="toggleEquipment('firewalls', eq.id, eq.name)">
+                        <div class="equipment-icon"><i class="fas fa-fire"></i></div>
+                        <div class="equipment-info">
+                            <div class="equipment-name">{{ eq.name }}</div>
+                            <div class="equipment-details">{{ eq.brand }} {{ eq.model }} · {{ eq.site || 'Non affecté' }}</div>
+                        </div>
+                        <i class="fas fa-plus-circle add-icon"></i>
+                    </div>
+                    } @empty {
+                    <div class="empty-message">Tous les firewalls sont déjà associés à ce site.</div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- FORMULAIRE UTILISATEUR                                     -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            @if (type === 'user') {
+            <div class="section-block blue">
+                <h4><i class="fas fa-user-circle"></i> Informations personnelles</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nom complet <span class="req">*</span></label>
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Jean Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email <span class="req">*</span></label>
+                        <input class="form-control" type="email" [(ngModel)]="form['email']" placeholder="jean@exemple.fr">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Département</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['department']" placeholder="ex. IT, Network">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Téléphone</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +33 6 12 34 56 78">
+                    </div>
+                </div>
+            </div>
+            <div class="section-block warning">
+                <h4><i class="fas fa-shield-alt"></i> Rôle & Accès</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Rôle <span class="req">*</span></label>
+                        <select class="form-control" [(ngModel)]="form['role']">
+                <option value="admin">👑 Administrateur</option>
+                <option value="agent">🔧 Agent</option>
+                <option value="viewer">👁 Lecteur</option>
+              </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Statut</label>
+                        <select class="form-control" [(ngModel)]="form['is_active']">
+                <option [ngValue]="true">Actif</option>
+                <option [ngValue]="false">Inactif</option>
+              </select>
+                    </div>
+                </div>
+            </div>
+            <div class="section-block green">
+                <h4><i class="fas fa-lock"></i> Mot de passe {{ isEdit ? '(laisser vide pour conserver)' : '' }}</h4>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe {{ !isEdit ? '*' : '' }}</label>
+                    <input class="form-control" type="password" [(ngModel)]="form['password']" placeholder="••••••••" autocomplete="new-password">
+                </div>
+            </div>
+            }
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- FORMULAIRES ÉQUIPEMENTS (firewall / router / switch)        -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            @if (type === 'firewall' || type === 'router' || type === 'switch') {
+            <!-- Infos générales -->
+            <div class="section-block blue">
+                <h4><i class="fas fa-info-circle"></i> Informations générales</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nom <span class="req">*</span></label>
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" [placeholder]="type==='switch'?'ex. SW-PARIS-01':type==='router'?'ex. RT-PARIS-01':'ex. FW-PARIS-01'">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Site <span class="req">*</span></label>
+                        <select class="form-control" [(ngModel)]="form['site_id']">
+                <option value="">— Sélectionner un site —</option>
+                @for (site of sites; track site.id) {
+                  <option [value]="site.id">{{ site.name }}</option>
+                }
+              </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Marque</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['brand']" [placeholder]="type==='firewall'?'ex. Fortinet':type==='router'?'ex. Cisco':'ex. Cisco, HP'">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Modèle</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['model']" [placeholder]="type==='firewall'?'ex. FortiGate 100F':type==='router'?'ex. Cisco ISR 4451':'ex. Catalyst 9300'">
+                    </div>
+                    @if (type === 'firewall') {
+                    <div class="form-group">
+                        <label class="form-label">Type firewall</label>
+                        <select class="form-control" [(ngModel)]="form['firewall_type']">
+                  <option value="">— Type —</option>
+                  <option value="fortinet">Fortinet</option>
+                  <option value="palo_alto">Palo Alto</option>
+                  <option value="cisco_asa">Cisco ASA</option>
+                  <option value="checkpoint">Check Point</option>
+                  <option value="other">Autre</option>
+                </select>
+                    </div>
+                    }
+                    <div class="form-group">
+                        <label class="form-label">Version firmware</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['firmware_version']" placeholder="ex. 7.2.4">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">N° Série</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['serial_number']" placeholder="ex. FTX1234A567">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Réseau -->
+            <div class="section-block purple">
+                <h4><i class="fas fa-network-wired"></i> Paramètres réseau</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">IP NMS</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['ip_nms']" placeholder="ex. 10.0.0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">VLAN NMS</label>
+                        <input class="form-control" type="number" [(ngModel)]="form['vlan_nms']" min="1" max="4094" placeholder="ex. 100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IP Service</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['ip_service']" placeholder="ex. 192.168.1.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">VLAN Service</label>
+                        <input class="form-control" type="number" [(ngModel)]="form['vlan_service']" min="1" max="4094" placeholder="ex. 200">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credentials -->
+            <div class="section-block green">
+                <h4><i class="fas fa-key"></i> Accès & Credentials</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input class="form-control" type="text" [(ngModel)]="form['username']" placeholder="ex. admin" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe</label>
+                        <input class="form-control" type="password" [(ngModel)]="form['password']" placeholder="••••••••" autocomplete="new-password">
+                    </div>
+                    @if (type === 'firewall' || type === 'router') {
+                    <div class="form-group">
+                        <label class="form-label">Enable password</label>
+                        <input class="form-control" type="password" [(ngModel)]="form['enable_password']" placeholder="••••••••" autocomplete="new-password">
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Statut -->
+            <div class="form-group">
+                <label class="form-label">Statut</label>
+                <select class="form-control" [(ngModel)]="form['status']" style="max-width:300px;">
+            <option value="active">Actif</option>
+            <option value="danger">Inactif</option>
+            @if (type === 'switch') { <option value="warning">Avertissement</option> }
+          </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+                <label class="form-label">Notes</label>
+                <textarea class="form-control" [(ngModel)]="form['notes']" rows="3" placeholder="Informations complémentaires…"></textarea>
+            </div>
+            }
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn btn-outline" (click)="close.emit()" [disabled]="loading()">
+        <i class="fas fa-times"></i> Annuler
+      </button>
+            <button class="btn btn-primary" (click)="onSave()" [disabled]="loading()">
+        @if (loading()) { <span class="spinner-sm"></span> Enregistrement… }
+        @else { <i class="fas fa-save"></i> {{ isEdit ? 'Enregistrer' : 'Créer' }} }
+      </button>
+        </div>
+
+    </div>
+</div>
+}
+
+<!-- Styles inclus directement pour l'autonomie du composant -->
