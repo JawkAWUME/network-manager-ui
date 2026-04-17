@@ -2,11 +2,11 @@
 
 .header-logo {
     background-color: white;
-    padding: 8px 12px;
+    padding: 28px 52px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     border: 1px solid #e9eef2;
-    max-height: 90px;
+    max-height: 120px;
     /* Ajustez selon la hauteur de votre header */
     width: auto;
     object-fit: contain;
