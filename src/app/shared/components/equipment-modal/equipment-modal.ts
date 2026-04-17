@@ -38,6 +38,10 @@ export class EquipmentModalComponent implements OnChanges {
   detailTab: 'switches' | 'routers' | 'firewalls' = 'switches';
   addTab: 'switches' | 'routers' | 'firewalls' = 'switches';
 
+  // Contrôle de la visibilité des mots de passe
+  showPassword = signal(false);
+  showEnablePassword = signal(false);
+
   get isEdit(): boolean { return !!this.editData?.id; }
 
   constructor(private api: ApiService, public auth: AuthService) {}
@@ -46,17 +50,20 @@ export class EquipmentModalComponent implements OnChanges {
     if (ch['type'] || ch['editData']) {
       this.error.set('');
       this.success.set('');
+      // Réinitialiser les toggles
+      this.showPassword.set(false);
+      this.showEnablePassword.set(false);
       if (this.editData) {
         // Édition : on copie les données existantes
         this.form = { ...this.editData, password: '', enable_password: '' };
         // S'assurer que status est un booléen (par sécurité)
         if (this.form['status'] !== undefined) {
-          this.form['status'] = this.form['status']=== true || this.form['status']=== 'active';
+          this.form['status'] = this.form['status'] === true || this.form['status'] === 'active';
         }
       } else {
         // Création : valeurs par défaut
         this.form = {
-          status: true,        // booléen
+          status: true,
           is_active: true,
         };
       }
@@ -75,6 +82,14 @@ export class EquipmentModalComponent implements OnChanges {
     if ((e.target as HTMLElement).classList.contains('modal-overlay')) this.close.emit();
   }
 
+  togglePasswordVisibility(): void {
+    this.showPassword.set(!this.showPassword());
+  }
+
+  toggleEnablePasswordVisibility(): void {
+    this.showEnablePassword.set(!this.showEnablePassword());
+  }
+
   onSave(): void {
     if (!this.form['name']) {
       this.error.set('Le champ Nom est requis.');
@@ -87,7 +102,7 @@ export class EquipmentModalComponent implements OnChanges {
     // Nettoyer et normaliser les données avant envoi
     const cleanedData = this.cleanForm();
     // Convertir le statut en booléen si nécessaire (pour les équipements)
-    if (cleanedData['status'] !== undefined && typeof cleanedData['status']!== 'boolean') {
+    if (cleanedData['status'] !== undefined && typeof cleanedData['status'] !== 'boolean') {
       cleanedData['status'] = cleanedData['status'] === 'active' || cleanedData['status'] === true;
     }
 
@@ -222,7 +237,6 @@ export class EquipmentModalComponent implements OnChanges {
   }
 
   private cleanForm(): Record<string, any> {
-    // Supprime les champs vides ou null/undefined
     const cleaned: Record<string, any> = {};
     for (const [key, value] of Object.entries(this.form)) {
       if (value !== '' && value !== null && value !== undefined) {
