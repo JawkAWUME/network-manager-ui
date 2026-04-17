@@ -897,6 +897,7 @@
             }
 
             <!-- SECTION POUR LES ÉQUIPEMENTS (FIREWALL / ROUTER / SWITCH) -->
+            <!-- SECTION POUR LES ÉQUIPEMENTS (FIREWALL / ROUTER / SWITCH) -->
             @if (currentViewType !== 'site') {
             <div style="border-radius:10px;overflow:hidden;border:1px solid #a5f3fc30;">
                 <div style="background:#ecfeff;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #67e8f9;">
@@ -924,9 +925,19 @@
                         <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Utilisateur</div>
                         <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.username || 'N/A' }}</div>
                     </div>
+                    <!-- NOUVEAU : Mot de passe avec toggle -->
                     <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
                         <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Mot de passe</div>
-                        <div style="font-weight:600;">•••••••••• <span style="font-size:.7rem;color:#9ca3af;">(masqué)</span></div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="font-weight:600;font-family:monospace;">
+                                @if (currentViewItem.password) { {{ showPasswordDetail() ? currentViewItem.password : '••••••••••' }} } @else {
+                                <span style="color:#9ca3af;">Non défini</span> }
+                            </div>
+                            @if (currentViewItem.password) {
+                            <button type="button" (click)="togglePasswordDetail()" style="background:none; border:none; cursor:pointer; color:#6b7280; margin-left:8px;">
+                        <i class="fas" [class.fa-eye]="!showPasswordDetail()" [class.fa-eye-slash]="showPasswordDetail()"></i>
+                    </button> }
+                        </div>
                     </div>
                 </div>
             </div>

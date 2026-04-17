@@ -2,7 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router as AngularRouter } from '@angular/router';
-import { forkJoin } from 'rxjs'; // <-- IMPORT AJOUTÉ
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EquipmentModalComponent, ModalType } from '../../shared/components/equipment-modal/equipment-modal';
@@ -85,6 +85,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   showViewModal = false;
   currentViewItem: any = null;
   currentViewType = '';
+
+  // NOUVEAU : contrôle visibilité mot de passe dans la vue détail
+  showPasswordDetail = signal(false);
 
   // ------------------------------------------------------------
   // Filtres et getters (inchangés)
@@ -329,7 +332,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   exportSites(): void { this.api.exportSites(); }
 
   // ------------------------------------------------------------
-  // GRAPHIQUES (inchangé)
+  // GRAPHIQUES
   // ------------------------------------------------------------
   buildCharts(): void {
     this.charts.forEach(c => c?.destroy());
@@ -403,7 +406,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ------------------------------------------------------------
-  // UTILITAIRES (inchangés)
+  // UTILITAIRES
   // ------------------------------------------------------------
   roleLabel(role: string): string {
     return { admin: 'Administrateur', agent: 'Agent', viewer: 'Lecteur' }[role] ?? role;
@@ -550,6 +553,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentViewItem = item;
     this.currentViewType = type.slice(0, -1);
     this.showViewModal = true;
+    // Réinitialiser le toggle du mot de passe quand on ouvre une nouvelle vue
+    this.showPasswordDetail.set(false);
   }
 
   closeViewModal(): void { this.showViewModal = false; }
@@ -585,5 +590,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   portBarColor(sw: Switch): string {
     const p = this.portUsagePct(sw);
     return p > 85 ? '#ef4444' : p > 65 ? '#f59e0b' : '#10b981';
+  }
+
+  // NOUVEAU : toggle mot de passe dans la vue détail
+  togglePasswordDetail(): void {
+    this.showPasswordDetail.set(!this.showPasswordDetail());
   }
 }
