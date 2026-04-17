@@ -1,3 +1,15 @@
+/* ----- STRUCTURE FLEX POUR LE HEADER (modifiée) ----- */
+
+.header-content {
+    position: relative;
+    /* indispensable pour le centrage absolu */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+
 /* ----- LOGO SENUM DANS UN CADRE BLANC ----- */
 
 .header-logo {
@@ -7,81 +19,74 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     border: 1px solid #e9eef2;
     height: 90px;
-    align-items: center;
-    justify-content: center;
-    /* Ajustez selon la hauteur de votre header */
     width: auto;
     object-fit: contain;
     transition: all 0.2s ease;
 }
 
 
-/* Optionnel : effet au survol */
-
-.header-logo:hover {
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
-    transform: scale(1.02);
-}
-
-
-/* ----- DRAPEAU SÉNÉGALAIS CENTRAL ET AGRANDI ----- */
+/* ----- DRAPEAU SÉNÉGALAIS PARFAITEMENT CENTRÉ ----- */
 
 .header-flag {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Espacement latéral */
+    /* Aucune marge nécessaire */
 }
 
 .senegal-flag {
     height: 100px;
-    /* Augmentation significative de la hauteur */
+    /* garde votre grande taille */
     width: auto;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
     object-fit: cover;
-    /* Garde les proportions */
     transition: transform 0.2s;
 }
 
-.senegal-flag:hover {
-    transform: scale(1.05);
+
+/* ----- ACTIONS À DROITE (inchangé) ----- */
+
+.header-actions {
+    z-index: 2;
+    /* pour passer au-dessus du drapeau si nécessaire */
 }
 
 
-/* ----- STRUCTURE FLEX POUR LE HEADER ----- */
-
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.header-brand {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.header-title {
-    line-height: 1.3;
-}
-
-
-/* Adaptation responsive */
+/* Adaptation responsive : on repasse en flex normal sur mobile pour éviter les chevauchements */
 
 @media (max-width: 768px) {
+    .header-content {
+        position: static;
+        /* annule le position: relative */
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
     .header-flag {
-        margin: 0 0.5rem;
+        position: static;
+        transform: none;
+        order: 1;
+        /* place le drapeau après le logo si besoin */
+        width: 100%;
+        justify-content: center;
+        margin: 5px 0;
     }
     .senegal-flag {
         height: 40px;
-        /* Légèrement plus petit sur mobile */
     }
     .header-logo {
         max-height: 45px;
-        padding: 5px 8px;
+        height: auto;
+    }
+    .header-brand {
+        order: 0;
+    }
+    .header-actions {
+        order: 2;
     }
 }
