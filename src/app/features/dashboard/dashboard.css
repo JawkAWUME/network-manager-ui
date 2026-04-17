@@ -27,6 +27,8 @@
 .header-flag {
     display: flex;
     margin-left: -30vh;
+    align-items: center;
+    justify-content: center;
     /* Espacement latéral */
 }
 
