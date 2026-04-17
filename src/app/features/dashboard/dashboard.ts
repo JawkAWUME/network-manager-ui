@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router as AngularRouter } from '@angular/router';
+import { forkJoin } from 'rxjs'; // <-- IMPORT AJOUTÉ
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EquipmentModalComponent, ModalType } from '../../shared/components/equipment-modal/equipment-modal';
@@ -85,6 +86,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   currentViewItem: any = null;
   currentViewType = '';
 
+  // ------------------------------------------------------------
+  // Filtres et getters (inchangés)
+  // ------------------------------------------------------------
   get filteredFirewalls(): Firewall[] {
     return this.firewalls().filter(
       f =>
@@ -135,14 +139,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         routers_count: routers.filter(rt => rt.site_id === site.id).length,
         switches_count: switches.filter(sw => sw.site_id === site.id).length,
     }));
-}
+  }
 
   get filteredSitesWithCounts(): Site[] {
-      const sites = this.sitesWithCounts;
-      return sites.filter(s =>
-          !this.filterSite.search ||
-          `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase())
-      );
+    const sites = this.sitesWithCounts;
+    return sites.filter(s =>
+        !this.filterSite.search ||
+        `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase())
+    );
   }
 
   get totalDevices(): number {
@@ -162,6 +166,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  // ------------------------------------------------------------
+  // Cycle de vie
+  // ------------------------------------------------------------
   ngOnInit(): void {
     this.loadAll();
   }
@@ -174,13 +181,31 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.charts.forEach(c => c?.destroy());
   }
 
+  // ------------------------------------------------------------
+  // CHARGEMENT DES DONNÉES (SYNCHRONISÉ AVEC forkJoin)
+  // ------------------------------------------------------------
   loadAll(): void {
-    this.api.getDashboard().subscribe(r => this.kpis.set(r.data));
-    this.api.getFirewalls({ limit: 200 }).subscribe(r => this.firewalls.set(r.data));
-    this.api.getRouters({ limit: 200 }).subscribe(r => this.routers.set(r.data));
-    this.api.getSwitches({ limit: 200 }).subscribe(r => this.switches.set(r.data));
-    this.api.getSites({ limit: 200 }).subscribe(r => this.sites.set(r.data));
-    this.api.getUsers().subscribe(r => this.users.set(r.data));
+    forkJoin({
+      dashboard: this.api.getDashboard(),
+      firewalls: this.api.getFirewalls({ limit: 200 }),
+      routers: this.api.getRouters({ limit: 200 }),
+      switches: this.api.getSwitches({ limit: 200 }),
+      sites: this.api.getSites({ limit:200 }),
+      users: this.api.getUsers()
+    }).subscribe({
+      next: ({ dashboard, firewalls, routers, switches, sites, users }) => {
+        this.kpis.set(dashboard.data);
+        this.firewalls.set(firewalls.data);
+        this.routers.set(routers.data);
+        this.switches.set(switches.data);
+        this.sites.set(sites.data);
+        this.users.set(users.data);
+        if (this.activeTab() === 'dashboard') {
+          setTimeout(() => this.buildCharts(), 100);
+        }
+      },
+      error: (err) => console.error('Erreur lors du chargement des données', err)
+    });
   }
 
   setTab(tab: Tab): void {
@@ -190,6 +215,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // ------------------------------------------------------------
+  // GESTION DES MODAUX
+  // ------------------------------------------------------------
   openCreate(type: ModalType): void {
     this.modalEdit.set(null);
     this.modalType.set(type);
@@ -213,9 +241,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   onSaved(): void {
     this.closeModal();
-    this.loadAll();
+    this.loadAll(); // Recharge tout pour garantir la cohérence des compteurs
   }
 
+  // ------------------------------------------------------------
+  // CONFIRMATION
+  // ------------------------------------------------------------
   openConfirmDelete(msg: string, action: () => void): void {
     this.confirmMsg = msg;
     this.confirmAction = action;
@@ -233,13 +264,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.confirmLoading.set(false);
   }
 
+  // ------------------------------------------------------------
+  // ACTIONS CRUD
+  // ------------------------------------------------------------
   deleteFirewall(fw: Firewall): void {
     this.openConfirmDelete(`Supprimer le firewall « ${fw.name} » ?`, () => {
       this.api.deleteFirewall(fw.id).subscribe({
-        next: () => {
-          this.closeConfirm();
-          this.loadAll();
-        },
+        next: () => { this.closeConfirm(); this.loadAll(); },
         error: () => this.closeConfirm(),
       });
     });
@@ -248,10 +279,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteRouter(r: Router): void {
     this.openConfirmDelete(`Supprimer le routeur « ${r.name} » ?`, () => {
       this.api.deleteRouter(r.id).subscribe({
-        next: () => {
-          this.closeConfirm();
-          this.loadAll();
-        },
+        next: () => { this.closeConfirm(); this.loadAll(); },
         error: () => this.closeConfirm(),
       });
     });
@@ -260,10 +288,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteSwitch(sw: Switch): void {
     this.openConfirmDelete(`Supprimer le switch « ${sw.name} » ?`, () => {
       this.api.deleteSwitch(sw.id).subscribe({
-        next: () => {
-          this.closeConfirm();
-          this.loadAll();
-        },
+        next: () => { this.closeConfirm(); this.loadAll(); },
         error: () => this.closeConfirm(),
       });
     });
@@ -272,10 +297,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteSite(site: Site): void {
     this.openConfirmDelete(`Supprimer le site « ${site.name} » ?`, () => {
       this.api.deleteSite(site.id).subscribe({
-        next: () => {
-          this.closeConfirm();
-          this.loadAll();
-        },
+        next: () => { this.closeConfirm(); this.loadAll(); },
         error: () => this.closeConfirm(),
       });
     });
@@ -284,10 +306,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteUser(user: User): void {
     this.openConfirmDelete(`Supprimer l'utilisateur « ${user.name} » ?`, () => {
       this.api.deleteUser(user.id).subscribe({
-        next: () => {
-          this.closeConfirm();
-          this.loadAll();
-        },
+        next: () => { this.closeConfirm(); this.loadAll(); },
         error: () => this.closeConfirm(),
       });
     });
@@ -301,22 +320,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.auth.logout();
   }
 
-  exportFirewalls(): void {
-    this.api.exportFirewalls();
-  }
+  // ------------------------------------------------------------
+  // EXPORTS
+  // ------------------------------------------------------------
+  exportFirewalls(): void { this.api.exportFirewalls(); }
+  exportRouters(): void { this.api.exportRouters(); }
+  exportSwitches(): void { this.api.exportSwitches(); }
+  exportSites(): void { this.api.exportSites(); }
 
-  exportRouters(): void {
-    this.api.exportRouters();
-  }
-
-  exportSwitches(): void {
-    this.api.exportSwitches();
-  }
-
-  exportSites(): void {
-    this.api.exportSites();
-  }
-
+  // ------------------------------------------------------------
+  // GRAPHIQUES (inchangé)
+  // ------------------------------------------------------------
   buildCharts(): void {
     this.charts.forEach(c => c?.destroy());
     this.charts = [];
@@ -329,13 +343,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                 type: 'doughnut',
                 data: {
                     labels: ['Firewalls', 'Routeurs', 'Switches'],
-                    datasets: [
-                        {
-                            data: [k.kpis.firewalls.total, k.kpis.routers.total, k.kpis.switches.total],
-                            backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
-                            borderWidth: 0,
-                        },
-                    ],
+                    datasets: [{
+                        data: [k.kpis.firewalls.total, k.kpis.routers.total, k.kpis.switches.total],
+                        backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
+                        borderWidth: 0,
+                    }],
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
             }),
@@ -356,8 +368,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                     ],
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { position: 'bottom' } },
                     scales: { x: { stacked: true }, y: { stacked: true } },
                 },
@@ -365,16 +376,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         );
     }
 
-    // Graphique "Charge des équipements"
     const loadCanvas = document.getElementById('loadChart') as HTMLCanvasElement | null;
     if (loadCanvas) {
-        // Utilisez des données réelles si disponibles, sinon des données statiques
         const heures = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
-        // Exemple de données statiques (vous pouvez les remplacer par des données calculées)
         const firewallsLoad = [45, 48, 62, 68, 55, 50];
         const routersLoad = [60, 58, 72, 78, 65, 62];
         const switchesLoad = [40, 42, 55, 58, 48, 45];
-
         this.charts.push(
             new (window as any).Chart(loadCanvas, {
                 type: 'line',
@@ -387,23 +394,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
                     ],
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: { callback: (v: any) => v + '%' },
-                        },
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v: any) => v + '%' } } },
                 },
             }),
         );
-    } else {
-        console.warn('Canvas #loadChart introuvable');
     }
-}
+  }
 
+  // ------------------------------------------------------------
+  // UTILITAIRES (inchangés)
+  // ------------------------------------------------------------
   roleLabel(role: string): string {
     return { admin: 'Administrateur', agent: 'Agent', viewer: 'Lecteur' }[role] ?? role;
   }
@@ -440,14 +441,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showSiteEquipmentModal = true;
   }
 
-  closeSiteEquipmentModal(): void {
-    this.showSiteEquipmentModal = false;
-  }
+  closeSiteEquipmentModal(): void { this.showSiteEquipmentModal = false; }
 
   configurePorts(switchId: number): void {
     const sw = this.switches().find(s => s.id === switchId);
     if (!sw) return;
-
     this.modalTitlePorts = `Configuration des ports : ${sw.name}`;
     this.currentSwitchForPorts = sw;
     this.portConfigData = '';
@@ -458,21 +456,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = () => {
-      this.portConfigData = String(reader.result ?? '');
-    };
+    reader.onload = () => { this.portConfigData = String(reader.result ?? ''); };
     reader.readAsText(file);
   }
 
   savePortConfiguration(): void {
     if (!this.currentSwitchForPorts) return;
     this.api.updateSwitchPorts(this.currentSwitchForPorts.id, this.portConfigData).subscribe({
-      next: () => {
-        this.showPortsModal = false;
-        this.loadAll();
-      },
+      next: () => { this.showPortsModal = false; this.loadAll(); },
       error: () => alert('Erreur lors de la mise à jour des ports'),
     });
   }
@@ -480,7 +472,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   updateInterfaces(routerId: number): void {
     const rt = this.routers().find(r => r.id === routerId);
     if (!rt) return;
-
     this.modalTitleInterfaces = `Configuration des interfaces : ${rt.name}`;
     this.currentRouterForInterfaces = rt;
     this.interfacesConfigData = '';
@@ -491,21 +482,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = () => {
-      this.interfacesConfigData = String(reader.result ?? '');
-    };
+    reader.onload = () => { this.interfacesConfigData = String(reader.result ?? ''); };
     reader.readAsText(file);
   }
 
   saveInterfacesUpdate(): void {
     if (!this.currentRouterForInterfaces) return;
     this.api.updateRouterInterfaces(this.currentRouterForInterfaces.id, this.interfacesConfigData).subscribe({
-      next: () => {
-        this.showInterfacesModal = false;
-        this.loadAll();
-      },
+      next: () => { this.showInterfacesModal = false; this.loadAll(); },
       error: () => alert('Erreur lors de la mise à jour des interfaces'),
     });
   }
@@ -513,7 +498,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   updateSecurityPolicies(firewallId: number): void {
     const fw = this.firewalls().find(f => f.id === firewallId);
     if (!fw) return;
-
     this.modalTitlePolicies = `Politiques de sécurité : ${fw.name}`;
     this.currentFirewallForPolicies = fw;
     this.securityPoliciesData = '';
@@ -524,21 +508,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = () => {
-      this.securityPoliciesData = String(reader.result ?? '');
-    };
+    reader.onload = () => { this.securityPoliciesData = String(reader.result ?? ''); };
     reader.readAsText(file);
   }
 
   saveSecurityPolicies(): void {
     if (!this.currentFirewallForPolicies) return;
     this.api.updateFirewallPolicies(this.currentFirewallForPolicies.id, this.securityPoliciesData).subscribe({
-      next: () => {
-        this.showPoliciesModal = false;
-        this.loadAll();
-      },
+      next: () => { this.showPoliciesModal = false; this.loadAll(); },
       error: () => alert('Erreur lors de la mise à jour des politiques'),
     });
   }
@@ -551,7 +529,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   editCurrentUserProfile(): void {
     const currentUser = this.auth.currentUser();
     if (!currentUser) return;
-
     this.editUser({
       id: currentUser.id,
       name: currentUser.name,
@@ -569,17 +546,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     else if (type === 'firewalls') item = this.firewalls().find(f => f.id === id);
     else if (type === 'routers') item = this.routers().find(r => r.id === id);
     else if (type === 'switches') item = this.switches().find(s => s.id === id);
-
     if (!item) return;
-
     this.currentViewItem = item;
     this.currentViewType = type.slice(0, -1);
     this.showViewModal = true;
   }
 
-  closeViewModal(): void {
-    this.showViewModal = false;
-  }
+  closeViewModal(): void { this.showViewModal = false; }
 
   getEquipmentIcon(type: string): string {
     return { firewall: 'fa-fire', router: 'fa-route', switch: 'fa-exchange-alt', site: 'fa-building' }[type] || 'fa-server';
@@ -587,29 +560,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   formatDate(dateString?: string): string {
     if (!dateString) return 'N/A';
-
     try {
       const d = new Date(dateString);
       const diff = Date.now() - d.getTime();
       const mins = Math.floor(diff / 60000);
       const hrs = Math.floor(diff / 3600000);
       const days = Math.floor(diff / 86400000);
-
       if (mins < 1) return "À l'instant";
       if (mins < 60) return `Il y a ${mins} min`;
       if (hrs < 24) return `Il y a ${hrs}h`;
       if (days < 7) return `Il y a ${days}j`;
-
-      return d.toLocaleDateString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return 'N/A';
-    }
+      return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    } catch { return 'N/A'; }
   }
 
   getLastAccessUser(equipment: any): string {
