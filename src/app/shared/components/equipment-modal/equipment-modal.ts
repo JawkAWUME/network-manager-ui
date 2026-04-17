@@ -35,24 +35,38 @@ export class EquipmentModalComponent implements OnChanges {
   selectedFirewallsIds: number[] = [];
   lastAdded: { name: string; type: string } | null = null;
 
-  // NEW: onglets pour l'affichage des équipements associés (édition)
   detailTab: 'switches' | 'routers' | 'firewalls' = 'switches';
-  // NEW: onglets pour l'ajout d'équipements (création ou ajout)
-  addTab: 'switches' | 'routers' | 'firewalls' = 'switches'
+  addTab: 'switches' | 'routers' | 'firewalls' = 'switches';
+
   get isEdit(): boolean { return !!this.editData?.id; }
 
   constructor(private api: ApiService, public auth: AuthService) {}
 
   ngOnChanges(ch: SimpleChanges): void {
     if (ch['type'] || ch['editData']) {
-      this.error.set(''); this.success.set('');
-      this.form = this.editData ? { ...this.editData, password: '', enable_password: '' } : { status: 'active', is_active: true };
+      this.error.set('');
+      this.success.set('');
+      if (this.editData) {
+        // Édition : on copie les données existantes
+        this.form = { ...this.editData, password: '', enable_password: '' };
+        // S'assurer que status est un booléen (par sécurité)
+        if (this.form['status'] !== undefined) {
+          this.form['status'] = this.form['status']=== true || this.form['status']=== 'active';
+        }
+      } else {
+        // Création : valeurs par défaut
+        this.form = {
+          status: true,        // booléen
+          is_active: true,
+        };
+      }
     }
   }
 
   headerIcon(): string {
     return { firewall: 'fa-fire', router: 'fa-route', switch: 'fa-exchange-alt', site: 'fa-building', user: 'fa-user' }[this.type!] ?? 'fa-server';
   }
+
   typeLabel(): string {
     return { firewall: 'Firewall', router: 'Routeur', switch: 'Switch', site: 'Site', user: 'Utilisateur' }[this.type!] ?? '';
   }
@@ -62,42 +76,61 @@ export class EquipmentModalComponent implements OnChanges {
   }
 
   onSave(): void {
-    if (!this.form['name']) { this.error.set('Le champ Nom est requis.'); return; }
-    this.loading.set(true); this.error.set(''); this.success.set('');
+    if (!this.form['name']) {
+      this.error.set('Le champ Nom est requis.');
+      return;
+    }
+    this.loading.set(true);
+    this.error.set('');
+    this.success.set('');
 
-    const obs = this.isEdit ? this.updateCall() : this.createCall();
+    // Nettoyer et normaliser les données avant envoi
+    const cleanedData = this.cleanForm();
+    // Convertir le statut en booléen si nécessaire (pour les équipements)
+    if (cleanedData['status'] !== undefined && typeof cleanedData['status']!== 'boolean') {
+      cleanedData['status'] = cleanedData['status'] === 'active' || cleanedData['status'] === true;
+    }
+
+    const obs = this.isEdit ? this.updateCall(cleanedData) : this.createCall(cleanedData);
     obs.subscribe({
       next: () => {
         this.success.set('Opération réussie !');
-        setTimeout(() => { this.saved.emit(); this.close.emit(); }, 800);
+        setTimeout(() => {
+          this.saved.emit();
+          this.close.emit();
+        }, 800);
         this.loading.set(false);
       },
-      error: (e) => { this.error.set(e.error?.message ?? 'Une erreur est survenue.'); this.loading.set(false); },
+      error: (e) => {
+        this.error.set(e.error?.message ?? 'Une erreur est survenue.');
+        this.loading.set(false);
+      },
     });
   }
 
-  private createCall() {
-    const d = this.cleanForm();
+  private createCall(data: any) {
     switch (this.type) {
-      case 'firewall': return this.api.createFirewall(d);
-      case 'router':   return this.api.createRouter(d);
-      case 'switch':   return this.api.createSwitch(d);
-      case 'site':     return this.api.createSite(d);
-      case 'user':     return this.api.createUser(d as any);
+      case 'firewall': return this.api.createFirewall(data);
+      case 'router':   return this.api.createRouter(data);
+      case 'switch':   return this.api.createSwitch(data);
+      case 'site':     return this.api.createSite(data);
+      case 'user':     return this.api.createUser(data);
       default: throw new Error('type inconnu');
     }
   }
-  private updateCall() {
-    const d = this.cleanForm(); const id = this.editData.id;
+
+  private updateCall(data: any) {
+    const id = this.editData.id;
     switch (this.type) {
-      case 'firewall': return this.api.updateFirewall(id, d);
-      case 'router':   return this.api.updateRouter(id, d);
-      case 'switch':   return this.api.updateSwitch(id, d);
-      case 'site':     return this.api.updateSite(id, d);
-      case 'user':     return this.api.updateUser(id, d);
+      case 'firewall': return this.api.updateFirewall(id, data);
+      case 'router':   return this.api.updateRouter(id, data);
+      case 'switch':   return this.api.updateSwitch(id, data);
+      case 'site':     return this.api.updateSite(id, data);
+      case 'user':     return this.api.updateUser(id, data);
       default: throw new Error('type inconnu');
     }
   }
+
   associatedSwitches(): Switch[] {
     const selectedIds = new Set(this.selectedSwitchesIds);
     return this.allSwitches.filter((equipment) => {
@@ -160,23 +193,17 @@ export class EquipmentModalComponent implements OnChanges {
 
   private getSelectedIdsByType(type: 'switches' | 'routers' | 'firewalls'): number[] {
     switch (type) {
-      case 'switches':
-        return this.selectedSwitchesIds;
-      case 'routers':
-        return this.selectedRoutersIds;
-      case 'firewalls':
-        return this.selectedFirewallsIds;
+      case 'switches': return this.selectedSwitchesIds;
+      case 'routers':  return this.selectedRoutersIds;
+      case 'firewalls':return this.selectedFirewallsIds;
     }
   }
 
   private getAssociatedByType(type: 'switches' | 'routers' | 'firewalls'): Array<Switch | Router | Firewall> {
     switch (type) {
-      case 'switches':
-        return this.associatedSwitches();
-      case 'routers':
-        return this.associatedRouters();
-      case 'firewalls':
-        return this.associatedFirewalls();
+      case 'switches': return this.associatedSwitches();
+      case 'routers':  return this.associatedRouters();
+      case 'firewalls':return this.associatedFirewalls();
     }
   }
 
@@ -195,6 +222,13 @@ export class EquipmentModalComponent implements OnChanges {
   }
 
   private cleanForm(): Record<string, any> {
-    return Object.fromEntries(Object.entries(this.form).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+    // Supprime les champs vides ou null/undefined
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(this.form)) {
+      if (value !== '' && value !== null && value !== undefined) {
+        cleaned[key] = value;
+      }
+    }
+    return cleaned;
   }
 }
