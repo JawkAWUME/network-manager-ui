@@ -945,15 +945,8 @@
 
         <!-- Pied de page avec actions -->
         <div style="padding:20px 24px;border-top:2px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-            <div style="display:flex;gap:10px;">
-                @if (currentViewType === 'switch') {
-                <button class="btn btn-outline btn-sm" (click)="configurePorts(currentViewItem.id); closeViewModal()"><i class="fas fa-cog"></i> Configurer ports</button> } @if (currentViewType === 'router') {
-                <button class="btn btn-outline btn-sm" (click)="updateInterfaces(currentViewItem.id); closeViewModal()"><i class="fas fa-ethernet"></i> Interfaces</button> } @if (currentViewType === 'firewall') {
-                <button class="btn btn-outline btn-sm" (click)="updateSecurityPolicies(currentViewItem.id); closeViewModal()"><i class="fas fa-shield-alt"></i> Politiques</button> }
-            </div>
             <div style="display:flex;gap:12px;">
-                <button class="btn btn-outline" (click)="closeViewModal()"><i class="fas fa-times"></i> Fermer</button> @if (auth.canEdit()) {
-                <button class="btn btn-primary" (click)="openViewItemEdit()"><i class="fas fa-edit"></i> Modifier</button> }
+                <button class="btn btn-outline" (click)="closeViewModal()"><i class="fas fa-times"></i> Fermer</button>
             </div>
         </div>
     </div>
