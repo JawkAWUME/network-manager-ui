@@ -809,6 +809,7 @@
             </div>
 
             <!-- SECTION SPÉCIFIQUE AUX SITES -->
+
             @if (currentViewType === 'site') {
             <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;">
                 <div style="background:#e0f2fe;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bae6fd;">
@@ -822,6 +823,74 @@
                     <div><strong>Contact technique :</strong> {{ currentViewItem.technical_contact || '—' }}</div>
                     <div><strong>Email technique :</strong> {{ currentViewItem.technical_email || '—' }}</div>
                     <div><strong>Téléphone :</strong> {{ currentViewItem.phone || '—' }}</div>
+                </div>
+            </div>
+
+            <!-- ÉQUIPEMENTS ASSOCIÉS -->
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0; margin-top: 16px;">
+                <div style="background:#f0fdf4;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bbf7d0;">
+                    <i class="fas fa-server" style="color:#15803d;"></i>
+                    <span style="font-weight:700;color:#14532d;font-size:.9rem;">Équipements associés</span>
+                </div>
+                <div style="padding:16px;background:white;">
+                    @let siteId = currentViewItem.id; @let siteFirewalls = firewalls().filter(f => f.site_id === siteId); @let siteRouters = routers().filter(r => r.site_id === siteId); @let siteSwitches = switches().filter(s => s.site_id === siteId); @if (siteFirewalls.length
+                    === 0 && siteRouters.length === 0 && siteSwitches.length === 0) {
+                    <p style="color: var(--text-light); text-align: center; padding: 20px;"><i class="fas fa-info-circle"></i> Aucun équipement associé à ce site.</p>
+                    } @else {
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- Firewalls -->
+                        @if (siteFirewalls.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: var(--danger-color);"><i class="fas fa-fire"></i> Firewalls ({{ siteFirewalls.length }})</h5>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                @for (fw of siteFirewalls; track fw.id) {
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: #fef2f2; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                    <div>
+                                        <strong>{{ fw.name }}</strong><br>
+                                        <small>{{ fw.model || 'N/A' }} {{ fw.brand ? '· '+fw.brand : '' }}</small>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('firewalls', fw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                        <!-- Routeurs -->
+                        @if (siteRouters.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: #0ea5e9;"><i class="fas fa-route"></i> Routeurs ({{ siteRouters.length }})</h5>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                @for (rt of siteRouters; track rt.id) {
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: #f0f9ff; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                                    <div>
+                                        <strong>{{ rt.name }}</strong><br>
+                                        <small>{{ rt.model || 'N/A' }} {{ rt.brand ? '· '+rt.brand : '' }}</small>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('routers', rt.id); closeViewModal()"><i class="fas fa-eye"></i></button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                        <!-- Switchs -->
+                        @if (siteSwitches.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: #10b981;"><i class="fas fa-exchange-alt"></i> Switchs ({{ siteSwitches.length }})</h5>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                @for (sw of siteSwitches; track sw.id) {
+                                <div style="display: flex; align-items: center; justify-content: space-between; background: #ecfdf5; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                    <div>
+                                        <strong>{{ sw.name }}</strong><br>
+                                        <small>{{ sw.model || 'N/A' }} {{ sw.brand ? '· '+sw.brand : '' }}</small>
+                                    </div>
+                                    <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('switches', sw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    }
                 </div>
             </div>
             }
