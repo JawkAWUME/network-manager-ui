@@ -16,7 +16,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="header-brand">
             <img src="https://img.icons8.com/color/96/000000/network.png" alt="Logo NetConfig Pro" class="header-logo">
             <h1 class="main-title">
-              <i class="fas fa-network-wired"></i> NetConfig Pro
+              <i class="fas fa-network-wired"></i> SENUM-IP Equipment
             </h1>
           </div>
         </div>
@@ -226,7 +226,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <!-- Footer -->
       <footer class="main-footer">
         <div class="footer-content">
-          <p>&copy; {{ currentYear }} NetConfig Pro - Plateforme de Gestion Réseau</p>
+          <p>&copy; {{ currentYear }} SENUM-IP Equipment - Plateforme de Gestion Réseau</p>
           <div class="footer-links">
             <a href="#" class="footer-link">Mentions légales</a>
             <a href="#" class="footer-link">Politique de confidentialité</a>

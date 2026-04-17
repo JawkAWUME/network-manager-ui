@@ -4,19 +4,24 @@
         <i class="fas fa-tachometer-alt"></i>
         <a (click)="setTab('dashboard')" style="cursor:pointer;">Tableau de Bord</a>
         <i class="fas fa-chevron-right" style="font-size:.7rem;color:#94a3b8;"></i>
-        <strong><i class="fas fa-network-wired"></i> NetConfig Pro</strong>
+        <strong><i class="fas fa-network-wired"></i> SENUM-IP Equipment </strong>
     </span>
 </div>
 
 <header class="main-header">
     <div class="header-content">
         <div class="header-brand">
-            <img src="https://img.icons8.com/color/96/000000/network.png" alt="Logo" class="header-logo">
+            <img src="SENUM_LOGO_PIC.jpeg" alt="Logo" class="header-logo">
             <div class="header-title">
-                <h1 class="main-title"><i class="fas fa-network-wired"></i> NetConfig Pro</h1>
+                <h1 class="main-title"> SENUM-IP Equipment </h1>
                 <p class="subtitle"><i class="fas fa-shield-alt"></i> Plateforme de Gestion des Configurations Réseau</p>
             </div>
         </div>
+
+        <div class="header-flag">
+            <img src="Flag_of_Senegal.png" alt="Drapeau du Sénégal" style="height: 40px; width: auto; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+        </div>
+
         <div class="header-actions">
             @if (auth.canEdit()) {
             <button class="btn btn-accent" (click)="openCreate('site')">

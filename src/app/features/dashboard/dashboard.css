@@ -1,0 +1,24 @@
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-flag {
+    display: flex;
+    align-items: center;
+    margin: 0 1.5rem;
+    /* espacement latéral */
+}
+
+
+/* Optionnel : ajustement responsive */
+
+@media (max-width: 768px) {
+    .header-flag {
+        margin: 0 0.5rem;
+    }
+    .header-flag img {
+        height: 32px;
+    }
+}

@@ -23,6 +23,7 @@ type Tab = 'dashboard' | 'firewalls' | 'routers' | 'switches' | 'sites' | 'users
   standalone: true,
   imports: [CommonModule, FormsModule, EquipmentModalComponent, ConfirmModalComponent, ToastComponent],
   templateUrl: './dashboard.html',
+  styleUrls: ['./dashboard.css'],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private api = inject(ApiService);
