@@ -23,10 +23,6 @@
         </div>
 
         <div class="header-actions">
-            @if (auth.canEdit()) {
-            <button class="btn btn-accent" (click)="openCreate('site')">
-                    <i class="fas fa-plus"></i> Nouveau Site
-                </button> }
             <!-- Bouton export supprimé (optionnel) -->
             <div class="profile-menu">
                 <div class="profile-button" (click)="userMenuOpen.set(!userMenuOpen())">
