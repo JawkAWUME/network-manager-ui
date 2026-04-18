@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 import {
   ApiList, ApiSingle, ApiMessage, DashboardKpis,
-  Firewall, Router, Switch, Site, User,
+  Firewall, Router, Switch, Site, User, PendingChange,
 } from '../../shared/models';
 
 @Injectable({ providedIn: 'root' })
@@ -140,4 +140,14 @@ export class ApiService {
   updateFirewallPolicies(id: number, policies: string): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(`${this.base}/firewalls/${id}/update-security-policies`, { policies });
   }
+
+  getPendingChanges(): Observable<ApiList<PendingChange>> {
+  return this.http.get<ApiList<PendingChange>>(`${this.base}/admin/pending-changes`);
+}
+approveChange(id: number): Observable<ApiMessage> {
+  return this.http.post<ApiMessage>(`${this.base}/admin/pending-changes/${id}/approve`, {});
+}
+rejectChange(id: number, reason: string): Observable<ApiMessage> {
+  return this.http.post<ApiMessage>(`${this.base}/admin/pending-changes/${id}/reject`, { reason });
+}
 }

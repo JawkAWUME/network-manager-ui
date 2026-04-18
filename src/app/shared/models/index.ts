@@ -64,6 +64,27 @@ export interface Switch {
   updated_at?: string;
 }
 
+// ── Pending Change (modération) ────────────────────────────────────────
+export type PendingEntityType = 'firewall' | 'router' | 'switch' | 'site';
+export type ChangeAction = 'create' | 'update' | 'delete';
+
+export interface PendingChange {
+  id: number;
+  entity_type: PendingEntityType;
+  entity_id: number | null;        // null pour les créations
+  action: ChangeAction;
+  new_data: Record<string, any> | null;
+  old_data: Record<string, any> | null;
+  requested_by: UserInfo;          // ou User selon votre modèle
+  requested_by_id: number;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: UserInfo | null;
+  reviewed_by_id: number | null;
+  rejection_reason: string | null;
+}
+
 // ── Dashboard KPIs ────────────────────────────────────────────────────
 export interface DashboardKpis {
   kpis: {

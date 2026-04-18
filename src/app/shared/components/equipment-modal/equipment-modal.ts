@@ -90,38 +90,47 @@ export class EquipmentModalComponent implements OnChanges {
     this.showEnablePassword.set(!this.showEnablePassword());
   }
 
-  onSave(): void {
-    if (!this.form['name']) {
-      this.error.set('Le champ Nom est requis.');
-      return;
-    }
-    this.loading.set(true);
-    this.error.set('');
-    this.success.set('');
-
-    // Nettoyer et normaliser les données avant envoi
-    const cleanedData = this.cleanForm();
-    // Convertir le statut en booléen si nécessaire (pour les équipements)
-    if (cleanedData['status'] !== undefined && typeof cleanedData['status'] !== 'boolean') {
-      cleanedData['status'] = cleanedData['status'] === 'active' || cleanedData['status'] === true;
-    }
-
-    const obs = this.isEdit ? this.updateCall(cleanedData) : this.createCall(cleanedData);
-    obs.subscribe({
-      next: () => {
-        this.success.set('Opération réussie !');
-        setTimeout(() => {
-          this.saved.emit();
-          this.close.emit();
-        }, 800);
-        this.loading.set(false);
-      },
-      error: (e) => {
-        this.error.set(e.error?.message ?? 'Une erreur est survenue.');
-        this.loading.set(false);
-      },
-    });
+  // equipment-modal.component.ts (extrait de onSave)
+onSave(): void {
+  if (!this.form['name']) {
+    this.error.set('Le champ Nom est requis.');
+    return;
   }
+  this.loading.set(true);
+  this.error.set('');
+  this.success.set('');
+
+  // Nettoyer et normaliser les données avant envoi
+  const cleanedData = this.cleanForm();
+  // Convertir le statut en booléen si nécessaire (pour les équipements)
+  if (cleanedData['status'] !== undefined && typeof cleanedData['status'] !== 'boolean') {
+    cleanedData['status'] = cleanedData['status'] === 'active' || cleanedData['status'] === true;
+  }
+
+  const obs = this.isEdit ? this.updateCall(cleanedData) : this.createCall(cleanedData);
+  obs.subscribe({
+    next: (res: any) => {
+      // Vérifier si la réponse contient un pending_id (demande en attente)
+      if (res.pending_id) {
+          const msg = this.isEdit
+            ? 'Modification soumise à validation. Un administrateur doit l’approuver.'
+            : 'Demande de création soumise à validation. Un administrateur doit l’approuver.';
+          this.success.set(msg);
+      } else {
+        this.success.set('Opération réussie !');
+      }
+      setTimeout(() => {
+        this.saved.emit(res); // transmet la réponse (contenant peut-être pending_id)
+        this.close.emit();
+      }, 800);
+      this.loading.set(false);
+    },
+    error: (e) => {
+      this.error.set(e.error?.message ?? 'Une erreur est survenue.');
+      this.loading.set(false);
+    },
+  });
+}
 
   private createCall(data: any) {
     switch (this.type) {

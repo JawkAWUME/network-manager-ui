@@ -8,6 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { EquipmentModalComponent, ModalType } from '../../shared/components/equipment-modal/equipment-modal';
 import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal';
 import { ToastComponent } from '../../shared/components/toast/toast';
+import { ToastService } from '../../core/services/toast.service';
 import {
   DashboardKpis,
   Firewall,
@@ -15,9 +16,10 @@ import {
   Site,
   Switch,
   User,
+  PendingChange
 } from '../../shared/models';
 
-type Tab = 'dashboard' | 'firewalls' | 'routers' | 'switches' | 'sites' | 'users' | 'profile';
+type Tab = 'dashboard' | 'firewalls' | 'routers' | 'switches' | 'sites' | 'users' | 'profile' | 'moderations';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,6 +32,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private api = inject(ApiService);
   public auth = inject(AuthService);
   private router = inject(AngularRouter);
+  private toastService = inject(ToastService);
 
   get allFirewalls(): Firewall[] { return this.firewalls(); }
   get allRouters(): Router[] { return this.routers(); }
@@ -86,8 +89,66 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   currentViewItem: any = null;
   currentViewType = '';
 
-  // NOUVEAU : contrôle visibilité mot de passe dans la vue détail
   showPasswordDetail = signal(false);
+
+  // ------------------------------------------------------------
+  // NOUVEAUX GETTERS POUR LES KPI
+  // ------------------------------------------------------------
+  get activityRate(): number {
+    const allDevices = [...this.firewalls(), ...this.routers(), ...this.switches()];
+    if (allDevices.length === 0) return 0;
+    const activeCount = allDevices.filter(d => d.status === 'active').length;
+    return Math.round((activeCount / allDevices.length) * 100);
+  }
+
+  get recentBackupRate(): number {
+    const allDevices = [...this.firewalls(), ...this.routers(), ...this.switches()];
+    const now = Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const withRecentBackup = allDevices.filter(d => {
+      if (!d.last_backup) return false;
+      const backupDate = new Date(d.last_backup).getTime();
+      return (now - backupDate) <= sevenDays;
+    });
+    const rate = allDevices.length === 0 ? 0 : (withRecentBackup.length / allDevices.length) * 100;
+    return Math.round(rate);
+  }
+
+  pendingChanges = signal<any[]>([]);
+
+loadPendingChanges() {
+  if (this.auth.isAdmin()) {
+    this.api.getPendingChanges().subscribe(res => this.pendingChanges.set(res.data));
+  }
+}
+
+approveChange(id: number) {
+  this.api.approveChange(id).subscribe(() => this.loadPendingChanges());
+}
+
+rejectChange(id: number) {
+  const reason = prompt('Motif du rejet (optionnel)');
+  this.api.rejectChange(id, reason || '').subscribe(() => this.loadPendingChanges());
+}
+
+  get siteEquipmentData(): { siteName: string; total: number }[] {
+    const sites = this.sitesWithCounts;
+    return sites
+      .map(site => ({
+        siteName: site.name,
+        total: (site.firewalls_count || 0) + (site.routers_count || 0) + (site.switches_count || 0)
+      }))
+      .filter(item => item.total > 0)
+      .sort((a, b) => b.total - a.total);
+  }
+
+  get topRoutersByInterfaces(): { name: string; count: number }[] {
+    return this.routers()
+      .filter(r => r.interfaces_count && r.interfaces_count > 0)
+      .sort((a, b) => (b.interfaces_count || 0) - (a.interfaces_count || 0))
+      .slice(0, 5)
+      .map(r => ({ name: r.name, count: r.interfaces_count || 0 }));
+  }
 
   // ------------------------------------------------------------
   // Filtres et getters (inchangés)
@@ -184,9 +245,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.charts.forEach(c => c?.destroy());
   }
 
-  // ------------------------------------------------------------
-  // CHARGEMENT DES DONNÉES (SYNCHRONISÉ AVEC forkJoin)
-  // ------------------------------------------------------------
   loadAll(): void {
     forkJoin({
       dashboard: this.api.getDashboard(),
@@ -218,9 +276,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // ------------------------------------------------------------
-  // GESTION DES MODAUX
-  // ------------------------------------------------------------
   openCreate(type: ModalType): void {
     this.modalEdit.set(null);
     this.modalType.set(type);
@@ -242,14 +297,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.modalEdit.set(null);
   }
 
-  onSaved(): void {
-    this.closeModal();
-    this.loadAll(); // Recharge tout pour garantir la cohérence des compteurs
+  // dashboard.component.ts
+onSaved(response?: any): void {
+  this.closeModal();
+  if (response?.pending_id) {
+    // Afficher une notification supplémentaire (toast)
+    // Vous pouvez utiliser votre service de toast ou une simple alerte
+    // Exemple avec votre composant ToastComponent :
+    this.toastService.show('Demande de modification envoyée à l’administrateur.', 'info');
   }
+  this.loadAll(); // Recharge tout pour garantir la cohérence des compteurs
+}
 
-  // ------------------------------------------------------------
-  // CONFIRMATION
-  // ------------------------------------------------------------
   openConfirmDelete(msg: string, action: () => void): void {
     this.confirmMsg = msg;
     this.confirmAction = action;
@@ -267,9 +326,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.confirmLoading.set(false);
   }
 
-  // ------------------------------------------------------------
-  // ACTIONS CRUD
-  // ------------------------------------------------------------
   deleteFirewall(fw: Firewall): void {
     this.openConfirmDelete(`Supprimer le firewall « ${fw.name} » ?`, () => {
       this.api.deleteFirewall(fw.id).subscribe({
@@ -323,17 +379,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.auth.logout();
   }
 
-  // ------------------------------------------------------------
-  // EXPORTS
-  // ------------------------------------------------------------
   exportFirewalls(): void { this.api.exportFirewalls(); }
   exportRouters(): void { this.api.exportRouters(); }
   exportSwitches(): void { this.api.exportSwitches(); }
   exportSites(): void { this.api.exportSites(); }
 
-  // ------------------------------------------------------------
-  // GRAPHIQUES
-  // ------------------------------------------------------------
   buildCharts(): void {
     this.charts.forEach(c => c?.destroy());
     this.charts = [];
@@ -357,57 +407,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         );
     }
 
-    const barCanvas = document.getElementById('availabilityChart') as HTMLCanvasElement | null;
-    if (barCanvas && k) {
-        const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-        this.charts.push(
-            new (window as any).Chart(barCanvas, {
-                type: 'bar',
-                data: {
-                    labels: days,
-                    datasets: [
-                        { label: 'Actifs', data: days.map(() => Math.round(85 + Math.random() * 14)), backgroundColor: '#10b981' },
-                        { label: 'Inactifs', data: days.map(() => Math.round(1 + Math.random() * 10)), backgroundColor: '#ef4444' },
-                    ],
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { x: { stacked: true }, y: { stacked: true } },
-                },
-            }),
-        );
+    const siteCanvas = document.getElementById('siteEquipmentChart') as HTMLCanvasElement | null;
+    if (siteCanvas && this.siteEquipmentData.length) {
+      this.charts.push(new (window as any).Chart(siteCanvas, {
+        type: 'bar',
+        data: {
+          labels: this.siteEquipmentData.map(d => d.siteName),
+          datasets: [{
+            label: 'Nombre d\'équipements',
+            data: this.siteEquipmentData.map(d => d.total),
+            backgroundColor: '#0ea5e9',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { position: 'top' } }
+        }
+      }));
     }
 
-    const loadCanvas = document.getElementById('loadChart') as HTMLCanvasElement | null;
-    if (loadCanvas) {
-        const heures = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
-        const firewallsLoad = [45, 48, 62, 68, 55, 50];
-        const routersLoad = [60, 58, 72, 78, 65, 62];
-        const switchesLoad = [40, 42, 55, 58, 48, 45];
-        this.charts.push(
-            new (window as any).Chart(loadCanvas, {
-                type: 'line',
-                data: {
-                    labels: heures,
-                    datasets: [
-                        { label: 'Firewalls', data: firewallsLoad, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.1)', borderWidth: 2, tension: 0.4, fill: true },
-                        { label: 'Routeurs', data: routersLoad, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.1)', borderWidth: 2, tension: 0.4, fill: true },
-                        { label: 'Switches', data: switchesLoad, borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.1)', borderWidth: 2, tension: 0.4, fill: true },
-                    ],
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (v: any) => v + '%' } } },
-                },
-            }),
-        );
+    const routerCanvas = document.getElementById('topRoutersChart') as HTMLCanvasElement | null;
+    if (routerCanvas && this.topRoutersByInterfaces.length) {
+      this.charts.push(new (window as any).Chart(routerCanvas, {
+        type: 'bar',
+        data: {
+          labels: this.topRoutersByInterfaces.map(r => r.name),
+          datasets: [{
+            label: 'Nombre d\'interfaces',
+            data: this.topRoutersByInterfaces.map(r => r.count),
+            backgroundColor: '#10b981',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } }
+        }
+      }));
     }
   }
 
-  // ------------------------------------------------------------
-  // UTILITAIRES
-  // ------------------------------------------------------------
   roleLabel(role: string): string {
     return { admin: 'Administrateur', agent: 'Agent', viewer: 'Lecteur' }[role] ?? role;
   }
@@ -553,7 +596,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.currentViewItem = item;
     this.currentViewType = type.slice(0, -1);
     this.showViewModal = true;
-    // Réinitialiser le toggle du mot de passe quand on ouvre une nouvelle vue
     this.showPasswordDetail.set(false);
   }
 
@@ -592,7 +634,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return p > 85 ? '#ef4444' : p > 65 ? '#f59e0b' : '#10b981';
   }
 
-  // NOUVEAU : toggle mot de passe dans la vue détail
   togglePasswordDetail(): void {
     this.showPasswordDetail.set(!this.showPasswordDetail());
   }
