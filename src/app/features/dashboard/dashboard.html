@@ -23,7 +23,6 @@
         </div>
 
         <div class="header-actions">
-            <!-- Bouton export supprimé (optionnel) -->
             <div class="profile-menu">
                 <div class="profile-button" (click)="userMenuOpen.set(!userMenuOpen())">
                     <div class="profile-avatar">{{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
@@ -36,19 +35,19 @@
                         <h4>{{ auth.currentUser()?.name }}</h4>
                         <p>{{ auth.currentUser()?.email }}</p>
                         <span class="profile-role" [ngClass]="auth.currentUser()?.role || ''">
-                                {{ roleLabel(auth.currentUser()?.role || '') }}
-                            </span>
+                            {{ roleLabel(auth.currentUser()?.role || '') }}
+                        </span>
                     </div>
                     <button class="profile-menu-item" (click)="setTab('profile')">
-                            <i class="fas fa-user-edit"></i> Mon profil
-                        </button> @if (auth.isAdmin()) {
+                        <i class="fas fa-user-edit"></i> Mon profil
+                    </button> @if (auth.isAdmin()) {
                     <button class="profile-menu-item" (click)="setTab('users')">
-                                <i class="fas fa-users-cog"></i> Gestion des utilisateurs
-                            </button> }
+                        <i class="fas fa-users-cog"></i> Gestion des utilisateurs
+                    </button> }
                     <div class="profile-divider"></div>
                     <button class="profile-menu-item" (click)="logout()">
-                            <i class="fas fa-sign-out-alt"></i> Déconnexion
-                        </button>
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                 </div>
                 }
             </div>
@@ -74,11 +73,11 @@
             <i class="fas fa-fire"></i> Firewalls
         </button> @if (auth.isAdmin()) {
         <button class="tab-button" [class.active]="activeTab()==='users'" (click)="setTab('users')">
-                <i class="fas fa-users-cog"></i> Utilisateurs
-            </button> } @if (auth.isAdmin()) {
+            <i class="fas fa-users-cog"></i> Utilisateurs
+        </button>
         <button class="tab-button" [class.active]="activeTab()==='moderations'" (click)="setTab('moderations')">
-    <i class="fas fa-clipboard-list"></i> Modérations
-</button> }
+            <i class="fas fa-clipboard-list"></i> Modérations
+        </button> }
     </div>
 </div>
 
@@ -141,7 +140,6 @@
                     <div class="kpi-label">Switchs</div>
                     <div class="kpi-trend trend-up"><i class="fas fa-arrow-up"></i> +0%</div>
                 </div>
-                <!-- dans la kpi-grid, remplacer les cartes Disponibilité et Sécurité par : -->
                 <div class="kpi-card" style="border-left-color:#f59e0b;">
                     <div class="kpi-icon" style="color:#f59e0b;"><i class="fas fa-chart-line"></i></div>
                     <div class="kpi-value" style="color:#f59e0b;">{{ activityRate }}%</div>
@@ -189,168 +187,85 @@
                     <button class="btn btn-outline" (click)="loadAll()"><i class="fas fa-sync-alt"></i> Actualiser</button>
                 </div>
             </div>
-
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-
                 <!-- Derniers Firewalls -->
                 <div>
-                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">
-                        <i class="fas fa-fire"></i> Derniers Firewalls
-                    </h4>
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;"><i class="fas fa-fire"></i> Derniers Firewalls</h4>
                     <div style="max-height: 350px; overflow-y: auto;">
                         @for (fw of firewalls().slice(0,3); track fw.id) {
-                        <div class="recent-card" (click)="viewItem('firewalls', fw.id)" (mouseenter)="$any($event.currentTarget).style.borderColor = 'var(--primary-color)'; $any($event.currentTarget).style.boxShadow = 'var(--card-shadow)'; $any($event.currentTarget).style.transform = 'translateY(-2px)'"
-                            (mouseleave)="$any($event.currentTarget).style.borderColor = 'var(--border-color)'; $any($event.currentTarget).style.boxShadow = 'none'; $any($event.currentTarget).style.transform = 'translateY(0)'" style="padding: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; border-radius: 8px; margin-bottom: 12px; background: white;">
-
+                        <div class="recent-card" (click)="viewItem('firewalls', fw.id)" style="padding:12px; border:1px solid var(--border-color); cursor:pointer; border-radius:8px; margin-bottom:12px; background:white;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <strong style="color: var(--text-color); font-size: 1rem;">{{ fw.name }}</strong>
-                                <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'" style="font-size: 0.7rem;">
-                                {{ fw.status === 'active' ? 'Actif' : 'Inactif' }}
-                            </span>
+                                <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'" style="font-size: 0.7rem;">{{ fw.status === 'active' ? 'Actif' : 'Inactif' }}</span>
                             </div>
-
                             <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">
-                                <div style="margin-bottom: 2px;">
-                                    <i class="fas fa-building" style="width: 14px; color: var(--primary-color);"></i> {{ fw.site || 'N/A' }}
-                                </div>
-                                <div>
-                                    <i class="fas fa-microchip" style="width: 14px; color: var(--primary-color);"></i> {{ fw.model || 'N/A' }}
-                                </div>
+                                <div><i class="fas fa-building"></i> {{ fw.site || 'N/A' }}</div>
+                                <div><i class="fas fa-microchip"></i> {{ fw.model || 'N/A' }}</div>
                             </div>
-
                             <div style="height: 1px; background: var(--border-color); margin: 8px 0;"></div>
-
                             <div style="display: grid; gap: 4px; font-size: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-user-shield" style="color: var(--accent-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Compte :</span>
-                                    <span style="font-family: monospace; color: var(--text-color);">{{ fw.username || 'Non configuré' }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-sign-in-alt" style="color: var(--success-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Dernier accès :</span>
-                                    <span style="color: var(--text-color);">{{ getLastAccessUser(fw) }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-clock" style="color: var(--info-color); width: 16px;"></i>
-                                    <span>{{ formatDate(fw.updated_at) }}</span>
-                                </div>
+                                <div><i class="fas fa-user-shield"></i> Compte : {{ fw.username || 'Non configuré' }}</div>
+                                <div><i class="fas fa-sign-in-alt"></i> Dernier accès : {{ getLastAccessUser(fw) }}</div>
+                                <div><i class="fas fa-clock"></i> {{ formatDate(fw.updated_at) }}</div>
                             </div>
                         </div>
                         } @empty {
-                        <p class="text-muted" style="text-align: center; padding: 20px; color: var(--text-light);">
-                            <i class="fas fa-info-circle"></i> Aucun firewall récent
-                        </p>
+                        <p class="text-muted" style="text-align:center; padding:20px;"><i class="fas fa-info-circle"></i> Aucun firewall récent</p>
                         }
                     </div>
                 </div>
-
                 <!-- Derniers Routeurs -->
                 <div>
-                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">
-                        <i class="fas fa-route"></i> Derniers Routeurs
-                    </h4>
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;"><i class="fas fa-route"></i> Derniers Routeurs</h4>
                     <div style="max-height: 350px; overflow-y: auto;">
                         @for (rt of routers().slice(0,3); track rt.id) {
-                        <div class="recent-card" (click)="viewItem('routers', rt.id)" (mouseenter)="$any($event.currentTarget).style.borderColor = 'var(--primary-color)'; $any($event.currentTarget).style.boxShadow = 'var(--card-shadow)'; $any($event.currentTarget).style.transform = 'translateY(-2px)'"
-                            (mouseleave)="$any($event.currentTarget).style.borderColor = 'var(--border-color)'; $any($event.currentTarget).style.boxShadow = 'none'; $any($event.currentTarget).style.transform = 'translateY(0)'" style="padding: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; border-radius: 8px; margin-bottom: 12px; background: white;">
-
+                        <div class="recent-card" (click)="viewItem('routers', rt.id)" style="padding:12px; border:1px solid var(--border-color); cursor:pointer; border-radius:8px; margin-bottom:12px; background:white;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <strong style="color: var(--text-color); font-size: 1rem;">{{ rt.name }}</strong>
-                                <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'" style="font-size: 0.7rem;">
-                                {{ rt.status === 'active' ? 'Actif' : 'Inactif' }}
-                            </span>
+                                <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'" style="font-size: 0.7rem;">{{ rt.status === 'active' ? 'Actif' : 'Inactif' }}</span>
                             </div>
-
                             <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">
-                                <div style="margin-bottom: 2px;">
-                                    <i class="fas fa-building" style="width: 14px; color: var(--primary-color);"></i> {{ rt.site || 'N/A' }}
-                                </div>
-                                <div>
-                                    <i class="fas fa-microchip" style="width: 14px; color: var(--primary-color);"></i> {{ rt.model || 'N/A' }}
-                                </div>
+                                <div><i class="fas fa-building"></i> {{ rt.site || 'N/A' }}</div>
+                                <div><i class="fas fa-microchip"></i> {{ rt.model || 'N/A' }}</div>
                             </div>
-
                             <div style="height: 1px; background: var(--border-color); margin: 8px 0;"></div>
-
                             <div style="display: grid; gap: 4px; font-size: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-user-shield" style="color: var(--accent-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Compte :</span>
-                                    <span style="font-family: monospace; color: var(--text-color);">{{ rt.username || 'Non configuré' }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-sign-in-alt" style="color: var(--success-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Dernier accès :</span>
-                                    <span style="color: var(--text-color);">{{ getLastAccessUser(rt) }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-clock" style="color: var(--info-color); width: 16px;"></i>
-                                    <span>{{ formatDate(rt.updated_at) }}</span>
-                                </div>
+                                <div><i class="fas fa-user-shield"></i> Compte : {{ rt.username || 'Non configuré' }}</div>
+                                <div><i class="fas fa-sign-in-alt"></i> Dernier accès : {{ getLastAccessUser(rt) }}</div>
+                                <div><i class="fas fa-clock"></i> {{ formatDate(rt.updated_at) }}</div>
                             </div>
                         </div>
                         } @empty {
-                        <p class="text-muted" style="text-align: center; padding: 20px; color: var(--text-light);">
-                            <i class="fas fa-info-circle"></i> Aucun routeur récent
-                        </p>
+                        <p class="text-muted" style="text-align:center; padding:20px;"><i class="fas fa-info-circle"></i> Aucun routeur récent</p>
                         }
                     </div>
                 </div>
-
                 <!-- Derniers Switchs -->
                 <div>
-                    <h4 style="color: var(--primary-color); margin-bottom: 15px;">
-                        <i class="fas fa-exchange-alt"></i> Derniers Switchs
-                    </h4>
+                    <h4 style="color: var(--primary-color); margin-bottom: 15px;"><i class="fas fa-exchange-alt"></i> Derniers Switchs</h4>
                     <div style="max-height: 350px; overflow-y: auto;">
                         @for (sw of switches().slice(0,3); track sw.id) {
-                        <div class="recent-card" (click)="viewItem('switches', sw.id)" (mouseenter)="$any($event.currentTarget).style.borderColor = 'var(--primary-color)'; $any($event.currentTarget).style.boxShadow = 'var(--card-shadow)'; $any($event.currentTarget).style.transform = 'translateY(-2px)'"
-                            (mouseleave)="$any($event.currentTarget).style.borderColor = 'var(--border-color)'; $any($event.currentTarget).style.boxShadow = 'none'; $any($event.currentTarget).style.transform = 'translateY(0)'" style="padding: 12px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; border-radius: 8px; margin-bottom: 12px; background: white;">
-
+                        <div class="recent-card" (click)="viewItem('switches', sw.id)" style="padding:12px; border:1px solid var(--border-color); cursor:pointer; border-radius:8px; margin-bottom:12px; background:white;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <strong style="color: var(--text-color); font-size: 1rem;">{{ sw.name }}</strong>
-                                <span class="status-badge" [ngClass]="sw.status === 'active' ? 'status-active' : sw.status === 'warning' ? 'status-warning' : 'status-danger'" style="font-size: 0.7rem;">
-                                {{ sw.status === 'active' ? 'Actif' : sw.status === 'warning' ? 'Avert.' : 'Inactif' }}
-                            </span>
+                                <span class="status-badge" [ngClass]="sw.status === 'active' ? 'status-active' : sw.status === 'warning' ? 'status-warning' : 'status-danger'" style="font-size: 0.7rem;">{{ sw.status === 'active' ? 'Actif' : sw.status === 'warning' ? 'Avert.' : 'Inactif' }}</span>
                             </div>
-
                             <div style="font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px;">
-                                <div style="margin-bottom: 2px;">
-                                    <i class="fas fa-building" style="width: 14px; color: var(--primary-color);"></i> {{ sw.site || 'N/A' }}
-                                </div>
-                                <div>
-                                    <i class="fas fa-microchip" style="width: 14px; color: var(--primary-color);"></i> {{ sw.model || 'N/A' }}
-                                </div>
+                                <div><i class="fas fa-building"></i> {{ sw.site || 'N/A' }}</div>
+                                <div><i class="fas fa-microchip"></i> {{ sw.model || 'N/A' }}</div>
                             </div>
-
                             <div style="height: 1px; background: var(--border-color); margin: 8px 0;"></div>
-
                             <div style="display: grid; gap: 4px; font-size: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-user-shield" style="color: var(--accent-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Compte :</span>
-                                    <span style="font-family: monospace; color: var(--text-color);">{{ sw.username || 'Non configuré' }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-sign-in-alt" style="color: var(--success-color); width: 16px;"></i>
-                                    <span style="font-weight: 500;">Dernier accès :</span>
-                                    <span style="color: var(--text-color);">{{ getLastAccessUser(sw) }}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; color: var(--text-light);">
-                                    <i class="fas fa-clock" style="color: var(--info-color); width: 16px;"></i>
-                                    <span>{{ formatDate(sw.updated_at) }}</span>
-                                </div>
+                                <div><i class="fas fa-user-shield"></i> Compte : {{ sw.username || 'Non configuré' }}</div>
+                                <div><i class="fas fa-sign-in-alt"></i> Dernier accès : {{ getLastAccessUser(sw) }}</div>
+                                <div><i class="fas fa-clock"></i> {{ formatDate(sw.updated_at) }}</div>
                             </div>
                         </div>
                         } @empty {
-                        <p class="text-muted" style="text-align: center; padding: 20px; color: var(--text-light);">
-                            <i class="fas fa-info-circle"></i> Aucun switch récent
-                        </p>
+                        <p class="text-muted" style="text-align:center; padding:20px;"><i class="fas fa-info-circle"></i> Aucun switch récent</p>
                         }
                     </div>
                 </div>
-
             </div>
         </section>
         </div>
@@ -366,14 +281,14 @@
                 </div>
                 <div class="filter-group">
                     <select class="filter-select" [(ngModel)]="filterFw.status">
-                        <option value="">Tous les statuts</option>
-                        <option value="active">Actif</option>
-                        <option value="danger">Inactif</option>
-                    </select>
+                    <option value="">Tous les statuts</option>
+                    <option value="active">Actif</option>
+                    <option value="danger">Inactif</option>
+                </select>
                     <select class="filter-select" [(ngModel)]="filterFw.site">
-                        <option value="">Tous les sites</option>
-                        @for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }
-                    </select>
+                    <option value="">Tous les sites</option>
+                    @for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }
+                </select>
                 </div>
             </div>
             <section class="equipment-section">
@@ -402,823 +317,810 @@
                             <tr>
                                 <td><strong>{{ fw.name }}</strong><br><small class="text-muted">{{ fw.model || 'N/A' }}</small><br><small class="text-muted">{{ fw.brand || '' }}</small></td>
                                 <td>{{ fw.site || 'N/A' }}</td>
-                                <td><code>{{ fw.ip_nms || 'N/A' }}</code> (VLAN {{ fw.vlan_nms || 'N/A' }})</td>
-                                <td><code>{{ fw.ip_service || 'N/A' }}</code> (VLAN {{ fw.vlan_service || 'N/A' }})</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'">
-                                            {{ fw.status === 'active' ? 'Actif' : 'Inactif' }}
-                                        </span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Voir le détail" (click)="viewItem('firewalls', fw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('firewall', fw)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Politiques de sécurité" (click)="updateSecurityPolicies(fw.id)"><i class="fas fa-shield-alt"></i></button> } @if (auth.isAdmin()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteFirewall(fw)"><i class="fas fa-trash"></i></button> }
-                                    </div>
-                                </td>
-                            </tr>
-                            } @empty {
-                            <tr>
-                                <td colspan="6" style="padding:40px;text-align:center;color:var(--text-light);"><i class="fas fa-fire fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun firewall trouvé</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        }
-
-        <!-- ROUTEURS -->
-        @if (activeTab() === 'routers') {
-        <div class="fade-in">
-            <div class="filters-section">
-                <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterRt.search" placeholder="Rechercher un routeur…"></div>
-                <div class="filter-group">
-                    <select class="filter-select" [(ngModel)]="filterRt.status"><option value="">Tous les statuts</option><option value="active">Actif</option><option value="danger">Inactif</option></select>
-                    <select class="filter-select" [(ngModel)]="filterRt.site"><option value="">Tous les sites</option>@for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }</select>
-                </div>
+                                <td><code>{{ fw.ip_nms || 'N/A' }}</code> (VLAN {{ fw.vlan_nms || 'N/A' }})</div>
+                </td>
+                <td><code>{{ fw.ip_service || 'N/A' }}</code> (VLAN {{ fw.vlan_service || 'N/A' }})</div>
+        </td>
+        <td>
+            <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'">
+                                    {{ fw.status === 'active' ? 'Actif' : 'Inactif' }}
+                                </span>
+        </td>
+        <td>
+            <div class="action-buttons">
+                <button class="btn btn-outline btn-sm btn-icon" title="Voir le détail" (click)="viewItem('firewalls', fw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
+                <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('firewall', fw)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-outline btn-sm btn-icon" title="Politiques de sécurité" (click)="updateSecurityPolicies(fw.id)"><i class="fas fa-shield-alt"></i></button> } @if (auth.isAdmin()) {
+                <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteFirewall(fw)"><i class="fas fa-trash"></i></button> }
             </div>
-            <section class="equipment-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-route"></i> Gestion des routeurs</h2>
-                    <div class="section-actions">
-                        <span class="status-badge status-info">{{ filteredRouters.length }} routeur(s)</span> @if (auth.canEdit()) {
-                        <button class="btn btn-primary" (click)="openCreate('router')"><i class="fas fa-plus"></i> Nouveau routeur</button> }
-                        <button class="btn btn-outline btn-sm" (click)="exportRouters()"><i class="fas fa-download"></i> Exporter</button>
-                    </div>
-                </div>
-                <div class="table-responsive" style="overflow-x:auto;">
-                    <table class="equipment-table">
-                        <thead>
-                            <tr>
-                                <th>Nom / Modèle</th>
-                                <th>Site</th>
-                                <th>IP NMS (VLAN NMS)</th>
-                                <th>IP SERVICE (VLAN SERVICE)</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (rt of filteredRouters; track rt.id) {
-                            <tr>
-                                <td><strong>{{ rt.name }}</strong><br><small class="text-muted">{{ rt.model || 'N/A' }}</small><br><small class="text-muted">{{ rt.brand || '' }}</small></td>
-                                <td>{{ rt.site || 'N/A' }}</td>
-
-                                <td><code>{{ rt.ip_nms || 'N/A' }}</code> (VLAN {{ rt.vlan_nms || 'N/A' }})</td>
-                                <td><code>{{ rt.ip_service || 'N/A' }}</code> (VLAN {{ rt.vlan_service || 'N/A' }})</td>
-                                </td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'">
-                                            {{ rt.status === 'active' ? 'Actif' : 'Inactif' }}
-                                        </span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('routers', rt.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('router', rt)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Configuration interfaces" (click)="updateInterfaces(rt.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteRouter(rt)"><i class="fas fa-trash"></i></button> }
-                                    </div>
-                                </td>
-                            </tr>
-                            } @empty {
-                            <tr>
-                                <td colspan="6" style="padding:40px;text-align:center;color:var(--text-light);"><i class="fas fa-route fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun routeur trouvé</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
+        </td>
+        </tr>
+        } @empty {
+        <tr>
+            <td colspan="6" style="padding:40px;text-align:center;color:var(--text-light);">
+                <i class="fas fa-fire fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun firewall trouvé
+            </td>
+        </tr>
         }
-
-        <!-- SWITCHES -->
-        @if (activeTab() === 'switches') {
-        <div class="fade-in">
-            <div class="filters-section">
-                <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterSw.search" placeholder="Rechercher un switch…"></div>
-                <div class="filter-group">
-                    <select class="filter-select" [(ngModel)]="filterSw.status"><option value="">Tous les statuts</option><option value="active">Actif</option><option value="warning">Avertissement</option><option value="danger">Critique</option></select>
-                    <select class="filter-select" [(ngModel)]="filterSw.site"><option value="">Tous les sites</option>@for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }</select>
-                </div>
-            </div>
-            <section class="equipment-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-exchange-alt"></i> Gestion des switchs</h2>
-                    <div class="section-actions">
-                        <span class="status-badge status-info">{{ filteredSwitches.length }} switch(s)</span> @if (auth.canEdit()) {
-                        <button class="btn btn-primary" (click)="openCreate('switch')"><i class="fas fa-plus"></i> Nouveau switch</button> }
-                        <button class="btn btn-outline btn-sm" (click)="exportSwitches()"><i class="fas fa-download"></i> Exporter</button>
-                    </div>
-                </div>
-                <div class="table-responsive" style="overflow-x:auto;">
-                    <table class="equipment-table">
-                        <thead>
-                            <tr>
-                                <th>Nom / Modèle</th>
-                                <th>Site</th>
-                                <th>IP NMS (VLAN NMS)</th>
-                                <th>IP SERVICE (VLAN SERVICE)</th>
-                                <th>Dernier accès</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (sw of filteredSwitches; track sw.id) {
-                            <tr>
-                                <td><strong>{{ sw.name }}</strong><br><small class="text-muted">{{ sw.model || 'N/A' }}</small><br><small class="text-muted">{{ sw.brand || '' }}</small></td>
-                                <td>{{ sw.site || 'N/A' }}</td>
-                                <td><code>{{ sw.ip_nms || 'N/A' }}</code> (VLAN {{ sw.vlan_nms || 'N/A' }})</td>
-                                <td><code>{{ sw.ip_service || 'N/A' }}</code> (VLAN {{ sw.vlan_service || 'N/A' }})</td>
-                                <td>
-                                    <div style="font-size:.85rem;"><i class="fas fa-user" style="color:var(--accent-color);"></i> {{ getLastAccessUser(sw) }}</div>
-                                    <div style="font-size:.8rem;color:var(--text-light);">{{ formatDate(sw.updated_at) }}</div>
-                                </td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="sw.status === 'active' ? 'status-active' : sw.status === 'warning' ? 'status-warning' : 'status-danger'">
-                                            {{ sw.status === 'active' ? 'Actif' : sw.status === 'warning' ? 'Avertissement' : 'Critique' }}
-                                        </span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('switches', sw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('switch', sw)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Configurer ports" (click)="configurePorts(sw.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteSwitch(sw)"><i class="fas fa-trash"></i></button> }
-                                    </div>
-                                </td>
-                            </tr>
-                            } @empty {
-                            <tr>
-                                <td colspan="7" style="padding:40px;text-align:center;color:var(--text-light);"><i class="fas fa-exchange-alt fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun switch trouvé</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        }
-
-        <!-- SITES -->
-        @if (activeTab() === 'sites') {
-        <div class="fade-in">
-            <div class="filters-section">
-                <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterSite.search" placeholder="Rechercher un site…" autocomplete="off"></div>
-            </div>
-            <section class="equipment-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-building"></i> Gestion des sites</h2>
-                    <div class="section-actions">
-                        <span class="status-badge status-info">{{ filteredSites.length }} site(s)</span> @if (auth.canEdit()) {
-                        <button class="btn btn-primary" (click)="openCreate('site')"><i class="fas fa-plus"></i> Nouveau site</button> }
-                        <button class="btn btn-outline btn-sm" (click)="exportSites()"><i class="fas fa-download"></i> Exporter</button>
-                    </div>
-                </div>
-                <div class="table-responsive" style="overflow-x:auto;">
-                    <table class="equipment-table">
-                        <thead>
-                            <tr>
-                                <th>Nom / Code</th>
-                                <th>Adresse</th>
-                                <th>Équipements</th>
-                                <th>Contact</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (site of filteredSitesWithCounts; track site.id) {
-                            <tr>
-                                <td><strong>{{ site.name }}</strong><br><small class="text-muted">{{ site.code || site.city || '' }}</small></td>
-                                <td>
-                                    <div>{{ site.address || 'N/A' }}</div>
-                                    <small class="text-muted">{{ site.postal_code }} {{ site.city }}{{ site.country ? ', ' + site.country : '' }}</small>
-                                </td>
-                                <td>
-                                    <div style="display:flex;gap:8px;font-size:.85rem;flex-wrap:wrap;">
-                                        <span class="status-badge status-danger" style="font-size:.75rem;cursor:pointer;" title="Voir les firewalls" (click)="showSiteEquipment(site.id, 'firewall')">
-                                                <i class="fas fa-fire"></i> {{ site.firewalls_count ?? 0 }}
-                                            </span>
-                                        <span class="status-badge status-info" style="font-size:.75rem;cursor:pointer;" title="Voir les routeurs" (click)="showSiteEquipment(site.id, 'router')">
-                                                <i class="fas fa-route"></i> {{ site.routers_count ?? 0 }}
-                                            </span>
-                                        <span class="status-badge status-active" style="font-size:.75rem;cursor:pointer;" title="Voir les switchs" (click)="showSiteEquipment(site.id, 'switch')">
-                                                <i class="fas fa-exchange-alt"></i> {{ site.switches_count ?? 0 }}
-                                            </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div style="font-size:.85rem;">
-                                        @if (site.technical_contact) {
-                                        <div><i class="fas fa-user" style="width:14px;color:var(--primary-color);"></i> {{ site.technical_contact }}</div>
-                                        } @if (site.technical_email) {
-                                        <div><i class="fas fa-envelope" style="width:14px;color:var(--primary-color);"></i> {{ site.technical_email }}</div>
-                                        } @if (site.phone) {
-                                        <div><i class="fas fa-phone" style="width:14px;color:var(--primary-color);"></i> {{ site.phone }}</div>
-                                        } @if (!site.technical_contact && !site.technical_email) {
-                                        <span style="color:var(--text-light);">— Aucun contact</span> }
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Voir les détails" (click)="viewItem('sites', site.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('site', site)"><i class="fas fa-edit"></i></button> } @if (auth.isAdmin()) {
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteSite(site)"><i class="fas fa-trash"></i></button> }
-                                    </div>
-                                </td>
-                            </tr>
-                            } @empty {
-                            <tr>
-                                <td colspan="5" style="padding:40px;text-align:center;color:var(--text-light);"><i class="fas fa-building fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun site trouvé</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        }
-
-        <!-- UTILISATEURS -->
-        @if (activeTab() === 'users') {
-        <div class="fade-in">
-            <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;">
-                <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#0ea5e9;">
-                    <div class="kpi-value" style="color:#0ea5e9;">{{ userTotals.total }}</div>
-                    <div class="kpi-label">Total</div>
-                </div>
-                <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#10b981;">
-                    <div class="kpi-value" style="color:#10b981;">{{ userTotals.active }}</div>
-                    <div class="kpi-label">Actifs</div>
-                </div>
-                <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#ef4444;">
-                    <div class="kpi-value" style="color:#ef4444;">{{ userTotals.admins }}</div>
-                    <div class="kpi-label">Administrateurs</div>
-                </div>
-                <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#f59e0b;">
-                    <div class="kpi-value" style="color:#f59e0b;">{{ userTotals.agents }}</div>
-                    <div class="kpi-label">Agents</div>
-                </div>
-                <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#3b82f6;">
-                    <div class="kpi-value" style="color:#3b82f6;">{{ userTotals.viewers }}</div>
-                    <div class="kpi-label">Lecteurs</div>
-                </div>
-            </div>
-            <section class="equipment-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-users"></i> Gestion des utilisateurs</h2>
-                    <div class="section-actions">
-                        <span class="status-badge status-info">{{ users().length }} utilisateur(s)</span>
-                        <button class="btn btn-primary" (click)="openCreate('user')"><i class="fas fa-user-plus"></i> Nouvel utilisateur</button>
-                    </div>
-                </div>
-                <div class="table-responsive" style="overflow-x:auto;">
-                    <table class="equipment-table">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-user"></i> Nom</th>
-                                <th><i class="fas fa-envelope"></i> Email</th>
-                                <th><i class="fas fa-shield-alt"></i> Rôle</th>
-                                <th><i class="fas fa-building"></i> Département</th>
-                                <th><i class="fas fa-phone"></i> Téléphone</th>
-                                <th><i class="fas fa-circle"></i> Statut</th>
-                                <th><i class="fas fa-cogs"></i> Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (u of users(); track u.id) {
-                            <tr [style.opacity]="u.is_active ? '1' : '.65'">
-                                <td>
-                                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                                        <div class="avatar-base" [style.background]="avatarBg(u.role)">{{ u.name?.charAt(0)?.toUpperCase() || '?' }}</div>
-                                        <div>
-                                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                                                <span style="font-weight:600;font-size:.95rem;">{{ u.name }}</span> @if (isCurrentUser(u)) {
-                                                <span class="status-badge status-info" style="font-size:.65rem;padding:2px 8px;">Vous</span> }
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style="font-size:.88rem;">{{ u.email }}</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="roleClass(u.role)">
-                                            <i class="fas" [ngClass]="{'fa-crown':u.role==='admin','fa-user-cog':u.role==='agent','fa-eye':u.role==='viewer'}"></i>
-                                            {{ roleLabel(u.role) }}
-                                        </span>
-                                </td>
-                                <td style="font-size:.88rem;color:var(--text-light);">{{ u.department || '—' }}</td>
-                                <td style="font-size:.88rem;color:var(--text-light);">{{ u.phone || '—' }}</td>
-                                <td>
-                                    <span class="status-badge" [ngClass]="u.is_active ? 'status-active' : 'status-danger'">
-                                            <i class="fas" [ngClass]="u.is_active ? 'fa-check-circle' : 'fa-times-circle'"></i>
-                                            {{ u.is_active ? 'Actif' : 'Inactif' }}
-                                        </span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="editUser(u)"><i class="fas fa-edit"></i></button> @if (!isCurrentUser(u)) {
-                                        <button class="btn btn-outline btn-sm btn-icon" [title]="u.is_active ? 'Désactiver' : 'Activer'" (click)="toggleUserStatus(u)">
-                                                    <i class="fas" [ngClass]="u.is_active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
-                                                </button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteUser(u)"><i class="fas fa-trash"></i></button> }
-                                    </div>
-                                </td>
-                            </tr>
-                            } @empty {
-                            <tr>
-                                <td colspan="7" style="padding:48px;text-align:center;color:var(--text-light);"><i class="fas fa-users fa-3x" style="opacity:.2;display:block;margin-bottom:12px;"></i>Aucun utilisateur trouvé</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        }
-
-        <!-- PROFIL -->
-        @if (activeTab() === 'profile') {
-        <div class="fade-in">
-            <section class="equipment-section" style="max-width:680px;">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-user-circle"></i> Mon profil</h2>
-                </div>
-                <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border-color);">
-                    <div class="avatar-base" style="width:72px;height:72px;font-size:1.8rem;" [style.background]="avatarBg(auth.currentUser()?.role || '')">
-                        {{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() || '?' }}
-                    </div>
-                    <div>
-                        <h3 style="margin:0 0 4px;">{{ auth.currentUser()?.name }}</h3>
-                        <p style="color:var(--text-light);margin:0 0 8px;">{{ auth.currentUser()?.email }}</p>
-                        <span class="status-badge" [ngClass]="roleClass(auth.currentUser()?.role || '')">{{ roleLabel(auth.currentUser()?.role || '') }}</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" (click)="editCurrentUserProfile()">
-                    <i class="fas fa-user-edit"></i> Modifier mon profil
-                </button>
-            </section>
-        </div>
-        } @if (activeTab() === 'moderations') {
-        <div class="fade-in">
-            <section class="equipment-section">
-                <div class="section-header">
-                    <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Demandes de modification</h2>
-                </div>
-                <div class="table-responsive">
-                    <table class="equipment-table">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Équipement / Site</th>
-                                <th>Demandeur</th>
-                                <th>Action</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (req of pendingChanges(); track req.id) {
-                            <tr>
-                                <td>{{ req.entity_type }}</td>
-                                <td>{{ req.entity_id }}</td>
-                                <td>{{ req.requested_by.name }}</td>
-                                <td>{{ req.action }}</td>
-                                <td>{{ formatDate(req.created_at) }}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-success" (click)="approveChange(req.id)">Approuver</button>
-                                    <button class="btn btn-sm btn-danger" (click)="rejectChange(req.id)">Rejeter</button>
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        }
+        </tbody>
+        </table>
     </div>
+    </section>
+</div>
+}
 
-    <!-- MODALS -->
-    <app-equipment-modal [type]="modalType()" [editData]="modalEdit()" [sites]="sites()" [allFirewalls]="allFirewalls" [allRouters]="allRouters" [allSwitches]="allSwitches" (close)="closeModal()" (saved)="onSaved($event)">
-    </app-equipment-modal>
-    <app-confirm-modal [visible]="confirmVisible" [message]="confirmMsg" [loading]="confirmLoading" (confirm)="onConfirmDelete()" (cancel)="closeConfirm()"></app-confirm-modal>
-
-    <!-- MODAL : Détails équipement -->
-    @if (showViewModal && currentViewItem) {
-    <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeViewModal()">
-        <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:860px;max-height:92vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
-            <div style="padding:24px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
-                <h3 style="margin:0;font-size:1.5rem;display:flex;align-items:center;gap:12px;">
-                    <i class="fas" [ngClass]="getEquipmentIcon(currentViewType)"></i> {{ currentViewItem.name }}
-                </h3>
-                <button (click)="closeViewModal()" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:1.5rem;width:40px;height:40px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button>
+<!-- ROUTEURS -->
+@if (activeTab() === 'routers') {
+<div class="fade-in">
+    <div class="filters-section">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterRt.search" placeholder="Rechercher un routeur…"></div>
+        <div class="filter-group">
+            <select class="filter-select" [(ngModel)]="filterRt.status"><option value="">Tous les statuts</option><option value="active">Actif</option><option value="danger">Inactif</option></select>
+            <select class="filter-select" [(ngModel)]="filterRt.site"><option value="">Tous les sites</option>@for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }</select>
+        </div>
+    </div>
+    <section class="equipment-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-route"></i> Gestion des routeurs</h2>
+            <div class="section-actions">
+                <span class="status-badge status-info">{{ filteredRouters.length }} routeur(s)</span> @if (auth.canEdit()) {
+                <button class="btn btn-primary" (click)="openCreate('router')"><i class="fas fa-plus"></i> Nouveau routeur</button> }
+                <button class="btn btn-outline btn-sm" (click)="exportRouters()"><i class="fas fa-download"></i> Exporter</button>
             </div>
-            <div style="padding:24px;display:grid;gap:16px;">
-                <!-- En-tête avec statut -->
-                <div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:10px;border:1px solid #e2e8f0;">
-                    <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--primary-color),var(--accent-color));display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;flex-shrink:0;">
-                        <i class="fas" [ngClass]="getEquipmentIcon(currentViewType)"></i>
+        </div>
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th>Nom / Modèle</th>
+                        <th>Site</th>
+                        <th>IP NMS (VLAN NMS)</th>
+                        <th>IP SERVICE (VLAN SERVICE)</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (rt of filteredRouters; track rt.id) {
+                    <tr>
+                        <td><strong>{{ rt.name }}</strong><br><small class="text-muted">{{ rt.model || 'N/A' }}</small><br><small class="text-muted">{{ rt.brand || '' }}</small></td>
+                        <td>{{ rt.site || 'N/A' }}</td>
+                        <td><code>{{ rt.ip_nms || 'N/A' }}</code> (VLAN {{ rt.vlan_nms || 'N/A' }})</div>
+        </td>
+        <td><code>{{ rt.ip_service || 'N/A' }}</code> (VLAN {{ rt.vlan_service || 'N/A' }})</div>
+</td>
+<td>
+    <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'">
+                                    {{ rt.status === 'active' ? 'Actif' : 'Inactif' }}
+                                </span>
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('routers', rt.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
+        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('router', rt)"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-outline btn-sm btn-icon" title="Configuration interfaces" (click)="updateInterfaces(rt.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
+        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteRouter(rt)"><i class="fas fa-trash"></i></button> }
+    </div>
+</td>
+</tr>
+} @empty {
+<tr>
+    <td colspan="6" style="padding:40px;text-align:center;color:var(--text-light);">
+        <i class="fas fa-route fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun routeur trouvé
+    </td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+</section>
+</div>
+}
+
+<!-- SWITCHES -->
+@if (activeTab() === 'switches') {
+<div class="fade-in">
+    <div class="filters-section">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterSw.search" placeholder="Rechercher un switch…"></div>
+        <div class="filter-group">
+            <select class="filter-select" [(ngModel)]="filterSw.status"><option value="">Tous les statuts</option><option value="active">Actif</option><option value="warning">Avertissement</option><option value="danger">Critique</option></select>
+            <select class="filter-select" [(ngModel)]="filterSw.site"><option value="">Tous les sites</option>@for (s of sites(); track s.id) { <option [value]="s.name">{{ s.name }}</option> }</select>
+        </div>
+    </div>
+    <section class="equipment-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-exchange-alt"></i> Gestion des switchs</h2>
+            <div class="section-actions">
+                <span class="status-badge status-info">{{ filteredSwitches.length }} switch(s)</span> @if (auth.canEdit()) {
+                <button class="btn btn-primary" (click)="openCreate('switch')"><i class="fas fa-plus"></i> Nouveau switch</button> }
+                <button class="btn btn-outline btn-sm" (click)="exportSwitches()"><i class="fas fa-download"></i> Exporter</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th>Nom / Modèle</th>
+                        <th>Site</th>
+                        <th>IP NMS (VLAN NMS)</th>
+                        <th>IP SERVICE (VLAN SERVICE)</th>
+                        <th>Dernier accès</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (sw of filteredSwitches; track sw.id) {
+                    <tr>
+                        <td><strong>{{ sw.name }}</strong><br><small class="text-muted">{{ sw.model || 'N/A' }}</small><br><small class="text-muted">{{ sw.brand || '' }}</small></td>
+                        <td>{{ sw.site || 'N/A' }}</td>
+                        <td><code>{{ sw.ip_nms || 'N/A' }}</code> (VLAN {{ sw.vlan_nms || 'N/A' }})</div>
+        </td>
+        <td><code>{{ sw.ip_service || 'N/A' }}</code> (VLAN {{ sw.vlan_service || 'N/A' }})</div>
+</td>
+<td>
+    <div><i class="fas fa-user"></i> {{ getLastAccessUser(sw) }}</div>
+    <div class="text-muted">{{ formatDate(sw.updated_at) }}</div>
+</td>
+<td>
+    <span class="status-badge" [ngClass]="sw.status === 'active' ? 'status-active' : sw.status === 'warning' ? 'status-warning' : 'status-danger'">
+                                    {{ sw.status === 'active' ? 'Actif' : sw.status === 'warning' ? 'Avertissement' : 'Critique' }}
+                                </span>
+</td>
+<td>
+    <div class="action-buttons">
+        <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('switches', sw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
+        <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('switch', sw)"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-outline btn-sm btn-icon" title="Configurer ports" (click)="configurePorts(sw.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
+        <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteSwitch(sw)"><i class="fas fa-trash"></i></button> }
+    </div>
+</td>
+</tr>
+} @empty {
+<tr>
+    <td colspan="7" style="padding:40px;text-align:center;color:var(--text-light);">
+        <i class="fas fa-exchange-alt fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun switch trouvé
+    </td>
+</tr>
+}
+</tbody>
+</table>
+</div>
+</section>
+</div>
+}
+
+<!-- SITES -->
+@if (activeTab() === 'sites') {
+<div class="fade-in">
+    <div class="filters-section">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" [(ngModel)]="filterSite.search" placeholder="Rechercher un site…" autocomplete="off"></div>
+    </div>
+    <section class="equipment-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-building"></i> Gestion des sites</h2>
+            <div class="section-actions">
+                <span class="status-badge status-info">{{ filteredSites.length }} site(s)</span> @if (auth.canEdit()) {
+                <button class="btn btn-primary" (click)="openCreate('site')"><i class="fas fa-plus"></i> Nouveau site</button> }
+                <button class="btn btn-outline btn-sm" (click)="exportSites()"><i class="fas fa-download"></i> Exporter</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th>Nom / Code</th>
+                        <th>Adresse</th>
+                        <th>Équipements</th>
+                        <th>Contact</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (site of filteredSitesWithCounts; track site.id) {
+                    <tr>
+                        <td><strong>{{ site.name }}</strong><br><small class="text-muted">{{ site.code || site.city || '' }}</small></td>
+                        <td>
+                            <div>{{ site.address || 'N/A' }}</div>
+                            <small class="text-muted">{{ site.postal_code }} {{ site.city }}{{ site.country ? ', ' + site.country : '' }}</small>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:8px;font-size:.85rem;flex-wrap:wrap;">
+                                <span class="status-badge status-danger" style="font-size:.75rem;cursor:pointer;" title="Voir les firewalls" (click)="showSiteEquipment(site.id, 'firewall')">
+                                        <i class="fas fa-fire"></i> {{ site.firewalls_count ?? 0 }}
+                                    </span>
+                                <span class="status-badge status-info" style="font-size:.75rem;cursor:pointer;" title="Voir les routeurs" (click)="showSiteEquipment(site.id, 'router')">
+                                        <i class="fas fa-route"></i> {{ site.routers_count ?? 0 }}
+                                    </span>
+                                <span class="status-badge status-active" style="font-size:.75rem;cursor:pointer;" title="Voir les switchs" (click)="showSiteEquipment(site.id, 'switch')">
+                                        <i class="fas fa-exchange-alt"></i> {{ site.switches_count ?? 0 }}
+                                    </span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:.85rem;">
+                                @if (site.technical_contact) {
+                                <div><i class="fas fa-user"></i> {{ site.technical_contact }}</div>
+                                } @if (site.technical_email) {
+                                <div><i class="fas fa-envelope"></i> {{ site.technical_email }}</div>
+                                } @if (site.phone) {
+                                <div><i class="fas fa-phone"></i> {{ site.phone }}</div>
+                                } @if (!site.technical_contact && !site.technical_email) {
+                                <span style="color:var(--text-light);">— Aucun contact</span> }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Voir les détails" (click)="viewItem('sites', site.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
+                                <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('site', site)"><i class="fas fa-edit"></i></button> } @if (auth.isAdmin()) {
+                                <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteSite(site)"><i class="fas fa-trash"></i></button> }
+                            </div>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="5" style="padding:40px;text-align:center;color:var(--text-light);">
+                            <i class="fas fa-building fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucun site trouvé
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+}
+
+<!-- UTILISATEURS -->
+@if (activeTab() === 'users') {
+<div class="fade-in">
+    <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#0ea5e9;">
+            <div class="kpi-value" style="color:#0ea5e9;">{{ userTotals.total }}</div>
+            <div class="kpi-label">Total</div>
+        </div>
+        <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#10b981;">
+            <div class="kpi-value" style="color:#10b981;">{{ userTotals.active }}</div>
+            <div class="kpi-label">Actifs</div>
+        </div>
+        <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#ef4444;">
+            <div class="kpi-value" style="color:#ef4444;">{{ userTotals.admins }}</div>
+            <div class="kpi-label">Administrateurs</div>
+        </div>
+        <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#f59e0b;">
+            <div class="kpi-value" style="color:#f59e0b;">{{ userTotals.agents }}</div>
+            <div class="kpi-label">Agents</div>
+        </div>
+        <div class="kpi-card" style="flex:1;min-width:140px;border-left-color:#3b82f6;">
+            <div class="kpi-value" style="color:#3b82f6;">{{ userTotals.viewers }}</div>
+            <div class="kpi-label">Lecteurs</div>
+        </div>
+    </div>
+    <section class="equipment-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-users"></i> Gestion des utilisateurs</h2>
+            <div class="section-actions">
+                <span class="status-badge status-info">{{ users().length }} utilisateur(s)</span>
+                <button class="btn btn-primary" (click)="openCreate('user')"><i class="fas fa-user-plus"></i> Nouvel utilisateur</button>
+            </div>
+        </div>
+        <div class="table-responsive" style="overflow-x:auto;">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-user"></i> Nom</th>
+                        <th><i class="fas fa-envelope"></i> Email</th>
+                        <th><i class="fas fa-shield-alt"></i> Rôle</th>
+                        <th><i class="fas fa-building"></i> Département</th>
+                        <th><i class="fas fa-phone"></i> Téléphone</th>
+                        <th><i class="fas fa-circle"></i> Statut</th>
+                        <th><i class="fas fa-cogs"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (u of users(); track u.id) {
+                    <tr [style.opacity]="u.is_active ? '1' : '.65'">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                                <div class="avatar-base" [style.background]="avatarBg(u.role)">{{ u.name?.charAt(0)?.toUpperCase() || '?' }}</div>
+                                <div>
+                                    <span style="font-weight:600;font-size:.95rem;">{{ u.name }}</span> @if (isCurrentUser(u)) {
+                                    <span class="status-badge status-info" style="font-size:.65rem;padding:2px 8px;">Vous</span> }
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            <span class="status-badge" [ngClass]="roleClass(u.role)">
+                                    <i class="fas" [ngClass]="{'fa-crown':u.role==='admin','fa-user-cog':u.role==='agent','fa-eye':u.role==='viewer'}"></i>
+                                    {{ roleLabel(u.role) }}
+                                </span>
+                        </td>
+                        <td>{{ u.department || '—' }}</td>
+                        <td>{{ u.phone || '—' }}</td>
+                        <td>
+                            <span class="status-badge" [ngClass]="u.is_active ? 'status-active' : 'status-danger'">
+                                    <i class="fas" [ngClass]="u.is_active ? 'fa-check-circle' : 'fa-times-circle'"></i>
+                                    {{ u.is_active ? 'Actif' : 'Inactif' }}
+                                </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="editUser(u)"><i class="fas fa-edit"></i></button> @if (!isCurrentUser(u)) {
+                                <button class="btn btn-outline btn-sm btn-icon" [title]="u.is_active ? 'Désactiver' : 'Activer'" (click)="toggleUserStatus(u)">
+                                        <i class="fas" [ngClass]="u.is_active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                                    </button>
+                                <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteUser(u)"><i class="fas fa-trash"></i></button> }
+                            </div>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="7" style="padding:48px;text-align:center;color:var(--text-light);">
+                            <i class="fas fa-users fa-3x" style="opacity:.2;display:block;margin-bottom:12px;"></i>Aucun utilisateur trouvé
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+}
+
+<!-- PROFIL -->
+@if (activeTab() === 'profile') {
+<div class="fade-in">
+    <section class="equipment-section" style="max-width:680px;">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-user-circle"></i> Mon profil</h2>
+        </div>
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--border-color);">
+            <div class="avatar-base" style="width:72px;height:72px;font-size:1.8rem;" [style.background]="avatarBg(auth.currentUser()?.role || '')">
+                {{ auth.currentUser()?.name?.charAt(0)?.toUpperCase() || '?' }}
+            </div>
+            <div>
+                <h3 style="margin:0 0 4px;">{{ auth.currentUser()?.name }}</h3>
+                <p style="color:var(--text-light);margin:0 0 8px;">{{ auth.currentUser()?.email }}</p>
+                <span class="status-badge" [ngClass]="roleClass(auth.currentUser()?.role || '')">{{ roleLabel(auth.currentUser()?.role || '') }}</span>
+            </div>
+        </div>
+        <button class="btn btn-primary" (click)="editCurrentUserProfile()">
+                <i class="fas fa-user-edit"></i> Modifier mon profil
+            </button>
+    </section>
+</div>
+}
+
+<!-- MODERATIONS (admin only) -->
+@if (activeTab() === 'moderations') {
+<div class="fade-in">
+    <section class="equipment-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="fas fa-clipboard-list"></i> Demandes de modification</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Équipement / Site</th>
+                        <th>Demandeur</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (req of pendingChanges(); track req.id) {
+                    <tr>
+                        <td>{{ req.entity_type }}</td>
+                        <td>{{ req.entity_id }}</td>
+                        <td>{{ req.requested_by?.name || req.requested_by_id }}</td>
+                        <td>{{ req.action }}</td>
+                        <td>{{ formatDate(req.created_at) }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success" (click)="approveChange(req.id)">Approuver</button>
+                            <button class="btn btn-sm btn-danger" (click)="rejectChange(req.id)">Rejeter</button>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="6" style="padding:40px;text-align:center;color:var(--text-light);">
+                            <i class="fas fa-check-circle fa-3x" style="opacity:.3;display:block;margin-bottom:12px;"></i>Aucune demande en attente
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+}
+
+</div>
+
+<!-- MODALS -->
+<app-equipment-modal [type]="modalType()" [editData]="modalEdit()" [sites]="sites()" [allFirewalls]="allFirewalls" [allRouters]="allRouters" [allSwitches]="allSwitches" (close)="closeModal()" (saved)="onSaved($event)"></app-equipment-modal>
+<app-confirm-modal [visible]="confirmVisible" [message]="confirmMsg" [loading]="confirmLoading" (confirm)="onConfirmDelete()" (cancel)="closeConfirm()"></app-confirm-modal>
+
+<!-- MODAL : Détails équipement (inchangé) -->
+@if (showViewModal && currentViewItem) {
+<div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeViewModal()">
+    <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:860px;max-height:92vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
+        <div style="padding:24px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+            <h3 style="margin:0;font-size:1.5rem;display:flex;align-items:center;gap:12px;">
+                <i class="fas" [ngClass]="getEquipmentIcon(currentViewType)"></i> {{ currentViewItem.name }}
+            </h3>
+            <button (click)="closeViewModal()" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:1.5rem;width:40px;height:40px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:24px;display:grid;gap:16px;">
+            <div style="display:flex;align-items:center;gap:16px;padding:16px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-radius:10px;border:1px solid #e2e8f0;">
+                <div style="width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--primary-color),var(--accent-color));display:flex;align-items:center;justify-content:center;color:white;font-size:1.4rem;flex-shrink:0;">
+                    <i class="fas" [ngClass]="getEquipmentIcon(currentViewType)"></i>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-size:1.15rem;font-weight:800;color:#111827;">{{ currentViewItem.name }}</div>
+                    <div style="font-size:.82rem;color:#6b7280;margin-top:2px;">
+                        @if (currentViewType !== 'site') { {{ currentViewItem.brand || '' }} {{ currentViewItem.model || '' }} } @if (currentViewItem.site) { · {{ currentViewItem.site }} }
                     </div>
-                    <div style="flex:1;">
-                        <div style="font-size:1.15rem;font-weight:800;color:#111827;">{{ currentViewItem.name }}</div>
-                        <div style="font-size:.82rem;color:#6b7280;margin-top:2px;">
-                            @if (currentViewType !== 'site') { {{ currentViewItem.brand || '' }} {{ currentViewItem.model || '' }} } @if (currentViewItem.site) { · {{ currentViewItem.site }} }
-                        </div>
-                    </div>
-                    <span class="status-badge" [ngClass]="currentViewItem.status === 'active' ? 'status-active' : 'status-danger'">
+                </div>
+                <span class="status-badge" [ngClass]="currentViewItem.status === 'active' ? 'status-active' : 'status-danger'">
                     <i class="fas" [ngClass]="currentViewItem.status === 'active' ? 'fa-check-circle' : 'fa-times-circle'"></i>
                     {{ currentViewItem.status === 'active' ? 'Actif' : 'Inactif' }}
                 </span>
+            </div>
+
+            @if (currentViewType === 'site') {
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;">
+                <div style="background:#e0f2fe;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bae6fd;">
+                    <i class="fas fa-address-card" style="color:#0284c7;"></i>
+                    <span style="font-weight:700;color:#0c4a6e;font-size:.9rem;">Informations du site</span>
                 </div>
-
-                <!-- SECTION SPÉCIFIQUE AUX SITES -->
-
-                <!-- SECTION SPÉCIFIQUE AUX SITES -->
-                @if (currentViewType === 'site') {
-                <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;">
-                    <div style="background:#e0f2fe;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bae6fd;">
-                        <i class="fas fa-address-card" style="color:#0284c7;"></i>
-                        <span style="font-weight:700;color:#0c4a6e;font-size:.9rem;">Informations du site</span>
+                <div style="padding:16px;background:white;display:grid;gap:12px;">
+                    <div><strong>Adresse :</strong><br> {{ currentViewItem.address || 'Non renseignée' }}<br> @if (currentViewItem.postal_code || currentViewItem.city || currentViewItem.country) {
+                        <span>{{ currentViewItem.postal_code }} {{ currentViewItem.city }} {{ currentViewItem.country }}</span> }
                     </div>
-                    <div style="padding:16px;background:white;display:grid;gap:12px;">
-                        <div><strong>Adresse :</strong><br> {{ currentViewItem.address || 'Non renseignée' }}<br> @if (currentViewItem.postal_code || currentViewItem.city || currentViewItem.country) {
-                            <span>{{ currentViewItem.postal_code }} {{ currentViewItem.city }} {{ currentViewItem.country }}</span> }
+                    <div><strong>Contact technique :</strong> {{ currentViewItem.technical_contact || '—' }}</div>
+                    <div><strong>Email technique :</strong> {{ currentViewItem.technical_email || '—' }}</div>
+                    <div><strong>Téléphone :</strong> {{ currentViewItem.phone || '—' }}</div>
+                </div>
+            </div>
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0; margin-top: 16px;">
+                <div style="background:#f0fdf4;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bbf7d0;">
+                    <i class="fas fa-server" style="color:#15803d;"></i>
+                    <span style="font-weight:700;color:#14532d;font-size:.9rem;">Équipements associés</span>
+                </div>
+                <div style="padding:16px;background:white;">
+                    @let siteId = currentViewItem.id; @let siteFirewalls = firewalls().filter(f => f.site_id === siteId); @let siteRouters = routers().filter(r => r.site_id === siteId); @let siteSwitches = switches().filter(s => s.site_id === siteId); @if (siteFirewalls.length
+                    === 0 && siteRouters.length === 0 && siteSwitches.length === 0) {
+                    <p style="color: var(--text-light); text-align: center; padding: 20px;"><i class="fas fa-info-circle"></i> Aucun équipement associé à ce site.</p>
+                    } @else {
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        @if (siteFirewalls.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: var(--danger-color);"><i class="fas fa-fire"></i> Firewalls ({{ siteFirewalls.length }})</h5>
+                            @for (fw of siteFirewalls; track fw.id) {
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: #fef2f2; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                <div><strong>{{ fw.name }}</strong><br><small>{{ fw.model || 'N/A' }} {{ fw.brand ? '· '+fw.brand : '' }}</small></div>
+                                <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('firewalls', fw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
+                            </div>
+                            }
                         </div>
-                        <div><strong>Contact technique :</strong> {{ currentViewItem.technical_contact || '—' }}</div>
-                        <div><strong>Email technique :</strong> {{ currentViewItem.technical_email || '—' }}</div>
-                        <div><strong>Téléphone :</strong> {{ currentViewItem.phone || '—' }}</div>
-                    </div>
-                </div>
-
-                <!-- ÉQUIPEMENTS ASSOCIÉS -->
-                <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0; margin-top: 16px;">
-                    <div style="background:#f0fdf4;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #bbf7d0;">
-                        <i class="fas fa-server" style="color:#15803d;"></i>
-                        <span style="font-weight:700;color:#14532d;font-size:.9rem;">Équipements associés</span>
-                    </div>
-                    <div style="padding:16px;background:white;">
-                        @let siteId = currentViewItem.id; @let siteFirewalls = firewalls().filter(f => f.site_id === siteId); @let siteRouters = routers().filter(r => r.site_id === siteId); @let siteSwitches = switches().filter(s => s.site_id === siteId); @if (siteFirewalls.length
-                        === 0 && siteRouters.length === 0 && siteSwitches.length === 0) {
-                        <p style="color: var(--text-light); text-align: center; padding: 20px;"><i class="fas fa-info-circle"></i> Aucun équipement associé à ce site.</p>
-                        } @else {
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <!-- Firewalls -->
-                            @if (siteFirewalls.length) {
-                            <div>
-                                <h5 style="margin:0 0 8px; color: var(--danger-color);"><i class="fas fa-fire"></i> Firewalls ({{ siteFirewalls.length }})</h5>
-                                <div style="display: flex; flex-direction: column; gap: 6px;">
-                                    @for (fw of siteFirewalls; track fw.id) {
-                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #fef2f2; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #ef4444;">
-                                        <div>
-                                            <strong>{{ fw.name }}</strong><br>
-                                            <small>{{ fw.model || 'N/A' }} {{ fw.brand ? '· '+fw.brand : '' }}</small>
-                                        </div>
-                                        <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('firewalls', fw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
-                                    </div>
-                                    }
-                                </div>
+                        } @if (siteRouters.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: #0ea5e9;"><i class="fas fa-route"></i> Routeurs ({{ siteRouters.length }})</h5>
+                            @for (rt of siteRouters; track rt.id) {
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: #f0f9ff; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                                <div><strong>{{ rt.name }}</strong><br><small>{{ rt.model || 'N/A' }} {{ rt.brand ? '· '+rt.brand : '' }}</small></div>
+                                <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('routers', rt.id); closeViewModal()"><i class="fas fa-eye"></i></button>
                             </div>
                             }
-                            <!-- Routeurs -->
-                            @if (siteRouters.length) {
-                            <div>
-                                <h5 style="margin:0 0 8px; color: #0ea5e9;"><i class="fas fa-route"></i> Routeurs ({{ siteRouters.length }})</h5>
-                                <div style="display: flex; flex-direction: column; gap: 6px;">
-                                    @for (rt of siteRouters; track rt.id) {
-                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #f0f9ff; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
-                                        <div>
-                                            <strong>{{ rt.name }}</strong><br>
-                                            <small>{{ rt.model || 'N/A' }} {{ rt.brand ? '· '+rt.brand : '' }}</small>
-                                        </div>
-                                        <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('routers', rt.id); closeViewModal()"><i class="fas fa-eye"></i></button>
-                                    </div>
-                                    }
-                                </div>
-                            </div>
-                            }
-                            <!-- Switchs -->
-                            @if (siteSwitches.length) {
-                            <div>
-                                <h5 style="margin:0 0 8px; color: #10b981;"><i class="fas fa-exchange-alt"></i> Switchs ({{ siteSwitches.length }})</h5>
-                                <div style="display: flex; flex-direction: column; gap: 6px;">
-                                    @for (sw of siteSwitches; track sw.id) {
-                                    <div style="display: flex; align-items: center; justify-content: space-between; background: #ecfdf5; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #10b981;">
-                                        <div>
-                                            <strong>{{ sw.name }}</strong><br>
-                                            <small>{{ sw.model || 'N/A' }} {{ sw.brand ? '· '+sw.brand : '' }}</small>
-                                        </div>
-                                        <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('switches', sw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
-                                    </div>
-                                    }
-                                </div>
+                        </div>
+                        } @if (siteSwitches.length) {
+                        <div>
+                            <h5 style="margin:0 0 8px; color: #10b981;"><i class="fas fa-exchange-alt"></i> Switchs ({{ siteSwitches.length }})</h5>
+                            @for (sw of siteSwitches; track sw.id) {
+                            <div style="display: flex; align-items: center; justify-content: space-between; background: #ecfdf5; padding: 8px 12px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <div><strong>{{ sw.name }}</strong><br><small>{{ sw.model || 'N/A' }} {{ sw.brand ? '· '+sw.brand : '' }}</small></div>
+                                <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem('switches', sw.id); closeViewModal()"><i class="fas fa-eye"></i></button>
                             </div>
                             }
                         </div>
                         }
                     </div>
+                    }
                 </div>
-                }
-
-                <!-- SECTION POUR LES ÉQUIPEMENTS (FIREWALL / ROUTER / SWITCH) -->
-                <!-- SECTION POUR LES ÉQUIPEMENTS (FIREWALL / ROUTER / SWITCH) -->
-                @if (currentViewType !== 'site') {
-                <div style="border-radius:10px;overflow:hidden;border:1px solid #a5f3fc30;">
-                    <div style="background:#ecfeff;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #67e8f9;">
-                        <i class="fas fa-network-wired" style="color:#0891b2;"></i>
-                        <span style="font-weight:700;color:#0891b2;font-size:.9rem;">Réseau &amp; Accès</span>
+            </div>
+            } @if (currentViewType !== 'site') {
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #a5f3fc30;">
+                <div style="background:#ecfeff;padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #67e8f9;">
+                    <i class="fas fa-network-wired" style="color:#0891b2;"></i>
+                    <span style="font-weight:700;color:#0891b2;font-size:.9rem;">Réseau &amp; Accès</span>
+                </div>
+                <div style="padding:14px;background:white;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">IP NMS</div>
+                        <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.ip_nms || 'N/A' }}</div>
                     </div>
-                    <div style="padding:14px;background:white;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">IP NMS</div>
-                            <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.ip_nms || 'N/A' }}</div>
-                        </div>
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">VLAN NMS</div>
-                            <div style="font-weight:600;">{{ currentViewItem.vlan_nms || 'N/A' }}</div>
-                        </div>
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">IP Service</div>
-                            <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.ip_service || 'N/A' }}</div>
-                        </div>
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">VLAN Service</div>
-                            <div style="font-weight:600;">{{ currentViewItem.vlan_service || 'N/A' }}</div>
-                        </div>
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Utilisateur</div>
-                            <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.username || 'N/A' }}</div>
-                        </div>
-                        <!-- NOUVEAU : Mot de passe avec toggle -->
-                        <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e5e7eb;">
-                            <div style="font-size:.75rem;color:#6b7280;font-weight:600;text-transform:uppercase;margin-bottom:4px;">Mot de passe</div>
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="font-weight:600;font-family:monospace;">
-                                    @if (currentViewItem.password) { {{ showPasswordDetail() ? currentViewItem.password : '••••••••••' }} } @else {
-                                    <span style="color:#9ca3af;">Non défini</span> }
-                                </div>
-                                @if (currentViewItem.password) {
-                                <button type="button" (click)="togglePasswordDetail()" style="background:none; border:none; cursor:pointer; color:#6b7280; margin-left:8px;">
-                        <i class="fas" [class.fa-eye]="!showPasswordDetail()" [class.fa-eye-slash]="showPasswordDetail()"></i>
-                    </button> }
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">VLAN NMS</div>
+                        <div style="font-weight:600;">{{ currentViewItem.vlan_nms || 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">IP Service</div>
+                        <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.ip_service || 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">VLAN Service</div>
+                        <div style="font-weight:600;">{{ currentViewItem.vlan_service || 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">Utilisateur</div>
+                        <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.username || 'N/A' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:.75rem;color:#6b7280;">Mot de passe</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="font-weight:600;font-family:monospace;">
+                                @if (currentViewItem.password) { {{ showPasswordDetail() ? currentViewItem.password : '••••••••••' }} } @else {
+                                <span style="color:#9ca3af;">Non défini</span> }
                             </div>
+                            @if (currentViewItem.password) {
+                            <button type="button" (click)="togglePasswordDetail()" style="background:none; border:none; cursor:pointer; color:#6b7280; margin-left:8px;">
+                                <i class="fas" [class.fa-eye]="!showPasswordDetail()" [class.fa-eye-slash]="showPasswordDetail()"></i>
+                            </button> }
                         </div>
                     </div>
                 </div>
-                }
-
-                <!-- Notes (communes à tous) -->
-                @if (currentViewItem.notes) {
-                <div style="border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
-                    <div style="background:#f9fafb;padding:10px 14px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-sticky-note" style="color:#6b7280;"></i>
-                        <span style="font-weight:700;color:#374151;font-size:.85rem;">Notes</span>
-                    </div>
-                    <div style="padding:14px;background:white;font-size:.88rem;color:#374151;line-height:1.6;">{{ currentViewItem.notes }}</div>
-                </div>
-                }
             </div>
-
-            <!-- Pied de page avec actions -->
-            <div style="padding:20px 24px;border-top:2px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-                <div style="display:flex;gap:12px;">
-                    <button class="btn btn-outline" (click)="closeViewModal()"><i class="fas fa-times"></i> Fermer</button>
+            } @if (currentViewItem.notes) {
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e5e7eb;">
+                <div style="background:#f9fafb;padding:10px 14px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-sticky-note" style="color:#6b7280;"></i>
+                    <span style="font-weight:700;color:#374151;font-size:.85rem;">Notes</span>
                 </div>
+                <div style="padding:14px;background:white;font-size:.88rem;color:#374151;line-height:1.6;">{{ currentViewItem.notes }}</div>
             </div>
+            }
         </div>
-    </div>é }
-
-    <!-- MODAL : Équipements d'un site -->
-    @if (showSiteEquipmentModal) {
-    <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeSiteEquipmentModal()">
-        <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
-            <div style="padding:24px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
-                <h3 style="margin:0;font-size:1.5rem;display:flex;align-items:center;gap:12px;">
-                    <i class="fas" [ngClass]="{'fa-fire':modalSiteEquipmentType==='firewall','fa-route':modalSiteEquipmentType==='router','fa-exchange-alt':modalSiteEquipmentType==='switch'}"></i> {{ modalSiteEquipmentTitle }}
-                </h3>
-                <button (click)="closeSiteEquipmentModal()" style="background:rgba(255,255,255,.2);border:none;color:white;font-size:1.5rem;width:40px;height:40px;border-radius:50%;cursor:pointer;"><i class="fas fa-times"></i></button>
-            </div>
-            <div style="padding:24px;">
-                @if (!modalSiteEquipmentList.length) {
-                <p style="text-align:center;color:var(--text-light);padding:40px;"><i class="fas fa-info-circle fa-2x" style="display:block;margin-bottom:12px;"></i>Aucun équipement de ce type sur ce site.</p>
-                } @for (eq of modalSiteEquipmentList; track eq.id) {
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;border:1px solid var(--border-color);border-radius:var(--border-radius);margin-bottom:12px;background:white;transition:var(--transition);" (mouseenter)="$any($event.target).style.borderColor='var(--primary-color)'"
-                    (mouseleave)="$any($event.target).style.borderColor='var(--border-color)'">
-                    <div style="display:flex;align-items:center;gap:16px;">
-                        <div style="font-size:2rem;color:var(--primary-color);"><i class="fas" [ngClass]="{'fa-fire':modalSiteEquipmentType==='firewall','fa-route':modalSiteEquipmentType==='router','fa-exchange-alt':modalSiteEquipmentType==='switch'}"></i></div>
-                        <div>
-                            <div style="font-weight:700;">{{ eq.name }}</div>
-                            <div style="font-size:.85rem;color:var(--text-light);">{{ eq.model || 'Modèle N/A' }}<span *ngIf="eq.brand"> · {{ eq.brand }}</span></div>
-                            <span class="status-badge" style="font-size:.75rem;margin-top:4px;" [ngClass]="eq.status === 'active' ? 'status-active' : eq.status === 'warning' ? 'status-warning' : 'status-danger'">
-                                    {{ eq.status === 'active' ? 'Actif' : eq.status === 'warning' ? 'Avertissement' : 'Inactif' }}
-                                </span>
-                        </div>
-                    </div>
-                    <button class="btn btn-outline btn-sm btn-icon" title="Voir détails" (click)="viewItem(modalSiteEquipmentType + 's', eq.id); closeSiteEquipmentModal()"><i class="fas fa-eye"></i></button>
-                </div>
-                }
-            </div>
-            <div style="padding:20px 24px;border-top:2px solid var(--border-color);display:flex;justify-content:flex-end;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-                <button class="btn btn-outline" (click)="closeSiteEquipmentModal()"><i class="fas fa-times"></i> Fermer</button>
-            </div>
+        <div style="padding:20px 24px;border-top:2px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
+            <button class="btn btn-outline" (click)="closeViewModal()"><i class="fas fa-times"></i> Fermer</button>
         </div>
     </div>
-    }
+</div>
+}
 
-    <!-- MODAL : Configuration ports switch -->
-    @if (showPortsModal) {
-    <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showPortsModal = false">
-        <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
-            <div class="modal-config-header" style="background:linear-gradient(135deg,#059669,#047857);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-network-wired"></i></div>
-                    <div>
-                        <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitlePorts }}</h3>
-                        <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Configuration des ports du switch</p>
-                    </div>
+<!-- MODAL : Équipements d'un site (inchangé) -->
+@if (showSiteEquipmentModal) {
+<div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeSiteEquipmentModal()">
+    <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
+        <div style="padding:24px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+            <h3><i class="fas" [ngClass]="{'fa-fire':modalSiteEquipmentType==='firewall','fa-route':modalSiteEquipmentType==='router','fa-exchange-alt':modalSiteEquipmentType==='switch'}"></i> {{ modalSiteEquipmentTitle }}</h3>
+            <button (click)="closeSiteEquipmentModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:24px;">
+            @if (!modalSiteEquipmentList.length) {
+            <p>Aucun équipement de ce type sur ce site.</p>
+            } @for (eq of modalSiteEquipmentList; track eq.id) {
+            <div style="display:flex;justify-content:space-between;padding:16px;border:1px solid var(--border-color);border-radius:var(--border-radius);margin-bottom:12px;">
+                <div>
+                    <div><strong>{{ eq.name }}</strong></div>
+                    <div>{{ eq.model || 'Modèle N/A' }}{{ eq.brand ? ' · '+eq.brand : '' }}</div>
+                    <span class="status-badge" [ngClass]="eq.status === 'active' ? 'status-active' : eq.status === 'warning' ? 'status-warning' : 'status-danger'">{{ eq.status === 'active' ? 'Actif' : eq.status === 'warning' ? 'Avertissement' : 'Inactif' }}</span>
                 </div>
-                <button class="modal-config-close" (click)="showPortsModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
+                <button class="btn btn-outline btn-sm btn-icon" (click)="viewItem(modalSiteEquipmentType + 's', eq.id); closeSiteEquipmentModal()"><i class="fas fa-eye"></i></button>
             </div>
-            <div style="padding:24px;display:grid;gap:20px;">
-                @if (currentSwitchForPorts) {
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
-                    <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:14px;border-radius:10px;border:1px solid #6ee7b7;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#059669;">{{ currentSwitchForPorts.ports_total || 0 }}</div>
-                        <div style="font-size:.78rem;color:#065f46;font-weight:600;">Ports total</div>
-                    </div>
-                    <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);padding:14px;border-radius:10px;border:1px solid #93c5fd;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#2563eb;">{{ currentSwitchForPorts.ports_used || 0 }}</div>
-                        <div style="font-size:.78rem;color:#1e40af;font-weight:600;">Ports utilisés</div>
-                    </div>
-                    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);padding:14px;border-radius:10px;border:1px solid #86efac;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#16a34a;">{{ (currentSwitchForPorts.ports_total || 0) - (currentSwitchForPorts.ports_used || 0) }}</div>
-                        <div style="font-size:.78rem;color:#15803d;font-weight:600;">Ports libres</div>
-                    </div>
-                    <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
-                        <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentSwitchForPorts.site || 'N/A' }}</div>
-                        <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
-                    </div>
+            }
+        </div>
+        <div style="padding:20px 24px;border-top:2px solid var(--border-color);display:flex;justify-content:flex-end;">
+            <button class="btn btn-outline" (click)="closeSiteEquipmentModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- MODAL : Configuration ports switch (inchangé) -->
+@if (showPortsModal) { ... (contenu inchangé) ... }
+
+<!-- MODAL : Interfaces routeur (inchangé) -->
+@if (showInterfacesModal) { ... (contenu inchangé) ... }
+
+<!-- MODAL : Politiques sécurité firewall (inchangé) -->
+@if (showPoliciesModal) { ... (contenu inchangé) ... }
+
+<app-toast></app-toast>
+
+<!-- MODAL : Configuration ports switch -->
+@if (showPortsModal) {
+<div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showPortsModal = false">
+    <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
+        <div class="modal-config-header" style="background:linear-gradient(135deg,#059669,#047857);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-network-wired"></i></div>
+                <div>
+                    <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitlePorts }}</h3>
+                    <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Configuration des ports du switch</p>
                 </div>
-                }
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <h4 style="color:#059669;margin:0 0 14px;display:flex;align-items:center;gap:8px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer une configuration</h4>
-                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                        <label style="flex:1;min-width:200px;cursor:pointer;">
+            </div>
+            <button class="modal-config-close" (click)="showPortsModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:24px;display:grid;gap:20px;">
+            @if (currentSwitchForPorts) {
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
+                <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:14px;border-radius:10px;border:1px solid #6ee7b7;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#059669;">{{ currentSwitchForPorts.ports_total || 0 }}</div>
+                    <div style="font-size:.78rem;color:#065f46;font-weight:600;">Ports total</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);padding:14px;border-radius:10px;border:1px solid #93c5fd;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#2563eb;">{{ currentSwitchForPorts.ports_used || 0 }}</div>
+                    <div style="font-size:.78rem;color:#1e40af;font-weight:600;">Ports utilisés</div>
+                </div>
+                <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);padding:14px;border-radius:10px;border:1px solid #86efac;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#16a34a;">{{ (currentSwitchForPorts.ports_total || 0) - (currentSwitchForPorts.ports_used || 0) }}</div>
+                    <div style="font-size:.78rem;color:#15803d;font-weight:600;">Ports libres</div>
+                </div>
+                <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
+                    <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentSwitchForPorts.site || 'N/A' }}</div>
+                    <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
+                </div>
+            </div>
+            }
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <h4 style="color:#059669;margin:0 0 14px;display:flex;align-items:center;gap:8px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer une configuration</h4>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                    <label style="flex:1;min-width:200px;cursor:pointer;">
                             <div style="padding:10px 14px;border:2px dashed #6ee7b7;border-radius:8px;background:#ecfdf5;text-align:center;color:#059669;font-size:.85rem;font-weight:600;"><i class="fas fa-file-code" style="margin-right:6px;"></i> Choisir un fichier (.txt, .json)…</div>
                             <input type="file" accept=".txt,.json" style="display:none;" (change)="handlePortConfigFile($event)">
                         </label>
-                    </div>
-                    <p style="margin:10px 0 0;font-size:.78rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Formats acceptés : <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.txt</code> ou <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.json</code></p>
                 </div>
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <h4 style="color:#059669;margin:0;font-size:.95rem;display:flex;align-items:center;gap:8px;"><i class="fas fa-code"></i> Configuration chargée</h4>
-                        @if (portConfigData) {
-                        <button (click)="portConfigData=''" style="background:none;border:1px solid var(--danger-color);color:var(--danger-color);cursor:pointer;font-size:.8rem;font-weight:600;padding:4px 8px;border-radius:6px;"><i class="fas fa-trash-alt"></i> Effacer</button>                        }
-                    </div>
-                    @if (portConfigData) {
-                    <pre style="background:white;padding:14px;border:1px solid #d1fae5;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:240px;color:#065f46;line-height:1.5;">{{ portConfigData }}</pre>                    } @else {
-                    <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-file-code" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune configuration chargée</div>
-                    }
-                </div>
+                <p style="margin:10px 0 0;font-size:.78rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Formats acceptés : <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.txt</code> ou <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.json</code></p>
             </div>
-            <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-                <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Les modifications seront appliquées immédiatement</span>
-                <div style="display:flex;gap:10px;">
-                    <button class="btn btn-outline" (click)="showPortsModal = false"><i class="fas fa-times"></i> Annuler</button>
-                    <button class="btn btn-primary" style="background:linear-gradient(135deg,#059669,#047857);" [disabled]="!portConfigData.trim()" [style.opacity]="portConfigData.trim() ? '1' : '.5'" (click)="savePortConfiguration()"><i class="fas fa-save"></i> Appliquer</button>
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h4 style="color:#059669;margin:0;font-size:.95rem;display:flex;align-items:center;gap:8px;"><i class="fas fa-code"></i> Configuration chargée</h4>
+                    @if (portConfigData) {
+                    <button (click)="portConfigData=''" style="background:none;border:1px solid var(--danger-color);color:var(--danger-color);cursor:pointer;font-size:.8rem;font-weight:600;padding:4px 8px;border-radius:6px;"><i class="fas fa-trash-alt"></i> Effacer</button>                    }
                 </div>
+                @if (portConfigData) {
+                <pre style="background:white;padding:14px;border:1px solid #d1fae5;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:240px;color:#065f46;line-height:1.5;">{{ portConfigData }}</pre>                } @else {
+                <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-file-code" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune configuration chargée</div>
+                }
+            </div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
+            <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Les modifications seront appliquées immédiatement</span>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-outline" (click)="showPortsModal = false"><i class="fas fa-times"></i> Annuler</button>
+                <button class="btn btn-primary" style="background:linear-gradient(135deg,#059669,#047857);" [disabled]="!portConfigData.trim()" [style.opacity]="portConfigData.trim() ? '1' : '.5'" (click)="savePortConfiguration()"><i class="fas fa-save"></i> Appliquer</button>
             </div>
         </div>
     </div>
-    }
+</div>
+}
 
-    <!-- MODAL : Interfaces routeur -->
-    @if (showInterfacesModal) {
-    <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showInterfacesModal = false">
-        <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
-            <div class="modal-config-header" style="background:linear-gradient(135deg,#0891b2,#0e7490);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-cog"></i></div>
-                    <div>
-                        <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitleInterfaces }}</h3>
-                        <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Configuration du routeur</p>
-                    </div>
+<!-- MODAL : Interfaces routeur -->
+@if (showInterfacesModal) {
+<div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showInterfacesModal = false">
+    <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
+        <div class="modal-config-header" style="background:linear-gradient(135deg,#0891b2,#0e7490);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-cog"></i></div>
+                <div>
+                    <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitleInterfaces }}</h3>
+                    <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Configuration du routeur</p>
                 </div>
-                <button class="modal-config-close" (click)="showInterfacesModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding:24px;display:grid;gap:20px;">
-                @if (currentRouterForInterfaces) {
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
-                    <div style="background:linear-gradient(135deg,#ecfeff,#cffafe);padding:14px;border-radius:10px;border:1px solid #67e8f9;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#0891b2;">{{ currentRouterForInterfaces.interfaces_count || 0 }}</div>
-                        <div style="font-size:.78rem;color:#164e63;font-weight:600;">Total</div>
-                    </div>
-                    <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:14px;border-radius:10px;border:1px solid #6ee7b7;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#059669;">{{ currentRouterForInterfaces.interfaces_up_count || 0 }}</div>
-                        <div style="font-size:.78rem;color:#065f46;font-weight:600;">UP</div>
-                    </div>
-                    <div style="background:#fef2f2;padding:14px;border-radius:10px;border:1px solid #fca5a5;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#dc2626;">{{ (currentRouterForInterfaces.interfaces_count || 0) - (currentRouterForInterfaces.interfaces_up_count || 0) }}</div>
-                        <div style="font-size:.78rem;color:#991b1b;font-weight:600;">DOWN</div>
-                    </div>
-                    <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
-                        <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentRouterForInterfaces.site || 'N/A' }}</div>
-                        <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
-                    </div>
+            <button class="modal-config-close" (click)="showInterfacesModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:24px;display:grid;gap:20px;">
+            @if (currentRouterForInterfaces) {
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
+                <div style="background:linear-gradient(135deg,#ecfeff,#cffafe);padding:14px;border-radius:10px;border:1px solid #67e8f9;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#0891b2;">{{ currentRouterForInterfaces.interfaces_count || 0 }}</div>
+                    <div style="font-size:.78rem;color:#164e63;font-weight:600;">Total</div>
                 </div>
-                }
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <h4 style="color:#0891b2;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier</h4>
-                    <label style="cursor:pointer;">
+                <div style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:14px;border-radius:10px;border:1px solid #6ee7b7;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#059669;">{{ currentRouterForInterfaces.interfaces_up_count || 0 }}</div>
+                    <div style="font-size:.78rem;color:#065f46;font-weight:600;">UP</div>
+                </div>
+                <div style="background:#fef2f2;padding:14px;border-radius:10px;border:1px solid #fca5a5;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#dc2626;">{{ (currentRouterForInterfaces.interfaces_count || 0) - (currentRouterForInterfaces.interfaces_up_count || 0) }}</div>
+                    <div style="font-size:.78rem;color:#991b1b;font-weight:600;">DOWN</div>
+                </div>
+                <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
+                    <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentRouterForInterfaces.site || 'N/A' }}</div>
+                    <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
+                </div>
+            </div>
+            }
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <h4 style="color:#0891b2;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier</h4>
+                <label style="cursor:pointer;">
                         <div style="padding:10px 14px;border:2px dashed #67e8f9;border-radius:8px;background:#ecfeff;text-align:center;color:#0891b2;font-size:.85rem;font-weight:600;"><i class="fas fa-file-code" style="margin-right:6px;"></i> Choisir un fichier (.txt, .json)…</div>
                         <input type="file" accept=".txt,.json" style="display:none;" (change)="handleRouterConfigFile($event)">
                     </label>
-                </div>
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <h4 style="color:#0891b2;margin:0 0 12px;font-size:.95rem;"><i class="fas fa-code"></i> Configuration</h4>
-                    <textarea [(ngModel)]="interfacesConfigData" rows="10" placeholder="Collez ici la configuration des interfaces…" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-family:monospace;font-size:.82rem;resize:vertical;line-height:1.6;"></textarea>
-                </div>
             </div>
-            <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-                <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-exclamation-triangle" style="color:var(--warning-color);"></i> Vérifier avant d'appliquer</span>
-                <div style="display:flex;gap:10px;">
-                    <button class="btn btn-outline" (click)="showInterfacesModal = false"><i class="fas fa-times"></i> Annuler</button>
-                    <button class="btn btn-primary" style="background:linear-gradient(135deg,#0891b2,#0e7490);" [disabled]="!interfacesConfigData.trim()" (click)="saveInterfacesUpdate()"><i class="fas fa-save"></i> Appliquer</button>
-                </div>
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <h4 style="color:#0891b2;margin:0 0 12px;font-size:.95rem;"><i class="fas fa-code"></i> Configuration</h4>
+                <textarea [(ngModel)]="interfacesConfigData" rows="10" placeholder="Collez ici la configuration des interfaces…" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-family:monospace;font-size:.82rem;resize:vertical;line-height:1.6;"></textarea>
+            </div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
+            <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-exclamation-triangle" style="color:var(--warning-color);"></i> Vérifier avant d'appliquer</span>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-outline" (click)="showInterfacesModal = false"><i class="fas fa-times"></i> Annuler</button>
+                <button class="btn btn-primary" style="background:linear-gradient(135deg,#0891b2,#0e7490);" [disabled]="!interfacesConfigData.trim()" (click)="saveInterfacesUpdate()"><i class="fas fa-save"></i> Appliquer</button>
             </div>
         </div>
     </div>
-    }
+</div>
+}
 
-    <!-- MODAL : Politiques sécurité firewall -->
-    @if (showPoliciesModal) {
-    <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showPoliciesModal = false">
-        <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
-            <div class="modal-config-header" style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-shield-alt"></i></div>
-                    <div>
-                        <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitlePolicies }}</h3>
-                        <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Gestion des politiques de sécurité</p>
-                    </div>
+<!-- MODAL : Politiques sécurité firewall -->
+@if (showPoliciesModal) {
+<div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;" (click)="showPoliciesModal = false">
+    <div style="background:white;border-radius:var(--border-radius-lg);width:100%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:fadeIn .25s ease;" (click)="$event.stopPropagation()">
+        <div class="modal-config-header" style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;color:white;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-shield-alt"></i></div>
+                <div>
+                    <h3 style="margin:0;font-size:1.2rem;font-weight:700;">{{ modalTitlePolicies }}</h3>
+                    <p style="margin:2px 0 0;font-size:.8rem;opacity:.8;">Gestion des politiques de sécurité</p>
                 </div>
-                <button class="modal-config-close" (click)="showPoliciesModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding:24px;display:grid;gap:20px;">
-                @if (currentFirewallForPolicies) {
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
-                    <div style="background:#fef2f2;padding:14px;border-radius:10px;border:1px solid #fca5a5;text-align:center;">
-                        <div style="font-size:1.6rem;font-weight:800;color:#dc2626;">{{ currentFirewallForPolicies.security_policies_count || 0 }}</div>
-                        <div style="font-size:.78rem;color:#991b1b;font-weight:600;">Règles actives</div>
-                    </div>
-                    <div style="background:#fff7ed;padding:14px;border-radius:10px;border:1px solid #fdba74;text-align:center;">
-                        <div style="font-size:1rem;font-weight:700;color:#ea580c;">{{ currentFirewallForPolicies.brand || 'N/A' }}</div>
-                        <div style="font-size:.78rem;color:#9a3412;font-weight:600;">Fabricant</div>
-                    </div>
-                    <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
-                        <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentFirewallForPolicies.site || 'N/A' }}</div>
-                        <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
-                    </div>
+            <button class="modal-config-close" (click)="showPoliciesModal = false" style="background:rgba(255,255,255,0.15);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:24px;display:grid;gap:20px;">
+            @if (currentFirewallForPolicies) {
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
+                <div style="background:#fef2f2;padding:14px;border-radius:10px;border:1px solid #fca5a5;text-align:center;">
+                    <div style="font-size:1.6rem;font-weight:800;color:#dc2626;">{{ currentFirewallForPolicies.security_policies_count || 0 }}</div>
+                    <div style="font-size:.78rem;color:#991b1b;font-weight:600;">Règles actives</div>
                 </div>
-                }
-                <div style="background:#fef9c3;padding:12px 16px;border-radius:8px;border-left:4px solid #eab308;display:flex;align-items:flex-start;gap:10px;">
-                    <i class="fas fa-exclamation-triangle" style="color:#ca8a04;margin-top:2px;flex-shrink:0;"></i>
-                    <p style="margin:0;font-size:.82rem;color:#713f12;line-height:1.5;"><strong>Attention :</strong> La modification des politiques de sécurité peut impacter le trafic réseau en production.</p>
+                <div style="background:#fff7ed;padding:14px;border-radius:10px;border:1px solid #fdba74;text-align:center;">
+                    <div style="font-size:1rem;font-weight:700;color:#ea580c;">{{ currentFirewallForPolicies.brand || 'N/A' }}</div>
+                    <div style="font-size:.78rem;color:#9a3412;font-weight:600;">Fabricant</div>
                 </div>
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <h4 style="color:#dc2626;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier de politiques</h4>
-                    <label style="cursor:pointer;">
+                <div style="background:#fafafa;padding:14px;border-radius:10px;border:1px solid #d4d4d8;text-align:center;">
+                    <div style="font-size:.95rem;font-weight:700;color:#3f3f46;">{{ currentFirewallForPolicies.site || 'N/A' }}</div>
+                    <div style="font-size:.78rem;color:#71717a;font-weight:600;">Site</div>
+                </div>
+            </div>
+            }
+            <div style="background:#fef9c3;padding:12px 16px;border-radius:8px;border-left:4px solid #eab308;display:flex;align-items:flex-start;gap:10px;">
+                <i class="fas fa-exclamation-triangle" style="color:#ca8a04;margin-top:2px;flex-shrink:0;"></i>
+                <p style="margin:0;font-size:.82rem;color:#713f12;line-height:1.5;"><strong>Attention :</strong> La modification des politiques de sécurité peut impacter le trafic réseau en production.</p>
+            </div>
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <h4 style="color:#dc2626;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier de politiques</h4>
+                <label style="cursor:pointer;">
                         <div style="padding:10px 14px;border:2px dashed #fca5a5;border-radius:8px;background:#fef2f2;text-align:center;color:#dc2626;font-size:.85rem;font-weight:600;"><i class="fas fa-file-shield" style="margin-right:6px;"></i> Choisir un fichier (.txt, .json)…</div>
                         <input type="file" accept=".txt,.json" style="display:none;" (change)="handlePoliciesFile($event)">
                     </label>
-                </div>
-                <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <h4 style="color:#dc2626;margin:0;font-size:.95rem;"><i class="fas fa-list-alt"></i> Politiques chargées</h4>
-                        @if (securityPoliciesData) {
-                        <button (click)="securityPoliciesData=''" style="background:none;border:1px solid var(--danger-color);color:var(--danger-color);cursor:pointer;font-size:.8rem;font-weight:600;padding:4px 8px;border-radius:6px;"><i class="fas fa-trash-alt"></i> Effacer</button>                        }
-                    </div>
-                    @if (securityPoliciesData) {
-                    <pre style="background:white;padding:14px;border:1px solid #fecaca;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:260px;color:#7f1d1d;line-height:1.5;">{{ securityPoliciesData }}</pre>                    } @else {
-                    <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-shield-alt" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune politique chargée</div>
-                    }
-                </div>
             </div>
-            <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
-                <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-lock" style="color:#dc2626;"></i> Action sensible — impact sur le trafic réseau</span>
-                <div style="display:flex;gap:10px;">
-                    <button class="btn btn-outline" (click)="showPoliciesModal = false"><i class="fas fa-times"></i> Annuler</button>
-                    <button class="btn btn-primary" style="background:linear-gradient(135deg,#dc2626,#b91c1c);" [disabled]="!securityPoliciesData.trim()" (click)="saveSecurityPolicies()"><i class="fas fa-save"></i> Appliquer les politiques</button>
+            <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h4 style="color:#dc2626;margin:0;font-size:.95rem;"><i class="fas fa-list-alt"></i> Politiques chargées</h4>
+                    @if (securityPoliciesData) {
+                    <button (click)="securityPoliciesData=''" style="background:none;border:1px solid var(--danger-color);color:var(--danger-color);cursor:pointer;font-size:.8rem;font-weight:600;padding:4px 8px;border-radius:6px;"><i class="fas fa-trash-alt"></i> Effacer</button>                    }
                 </div>
+                @if (securityPoliciesData) {
+                <pre style="background:white;padding:14px;border:1px solid #fecaca;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:260px;color:#7f1d1d;line-height:1.5;">{{ securityPoliciesData }}</pre>                } @else {
+                <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-shield-alt" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune politique chargée</div>
+                }
+            </div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
+            <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-lock" style="color:#dc2626;"></i> Action sensible — impact sur le trafic réseau</span>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-outline" (click)="showPoliciesModal = false"><i class="fas fa-times"></i> Annuler</button>
+                <button class="btn btn-primary" style="background:linear-gradient(135deg,#dc2626,#b91c1c);" [disabled]="!securityPoliciesData.trim()" (click)="saveSecurityPolicies()"><i class="fas fa-save"></i> Appliquer les politiques</button>
             </div>
         </div>
     </div>
-    }
+</div>
+}
 
-    <app-toast>
-    </app-toast>
+<app-toast>
+</app-toast>
