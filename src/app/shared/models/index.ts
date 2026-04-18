@@ -37,6 +37,7 @@ export interface Firewall {
   serial_number?: string; asset_tag?: string; notes?: string;
   status: 'active' | 'danger'; last_backup?: string;
   updated_at?: string;
+  configuration?: string; // Configuration des politiques de sécurité au format texte (ex: JSON, YAML, etc.)
 }
 
 // ── Router ────────────────────────────────────────────────────────────
@@ -49,6 +50,7 @@ export interface Router {
   routing_protocols?: string[];
   serial_number?: string; asset_tag?: string; notes?: string;
   status: 'active' | 'danger'; last_backup?: string;
+  interfaces_config?: string; // Configuration des interfaces au format texte (ex: JSON, YAML, etc.)
   updated_at?: string;
 }
 
@@ -62,6 +64,7 @@ export interface Switch {
   serial_number?: string; asset_tag?: string; notes?: string;
   status: 'active' | 'warning' | 'danger'; last_backup?: string;
   updated_at?: string;
+  port_config?: string; // Configuration des ports au format texte (ex: JSON, YAML, etc.)
 }
 
 // ── Pending Change (modération) ────────────────────────────────────────

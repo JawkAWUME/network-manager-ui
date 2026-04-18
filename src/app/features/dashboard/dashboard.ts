@@ -494,7 +494,7 @@ onSaved(response?: any): void {
     if (!sw) return;
     this.modalTitlePorts = `Configuration des ports : ${sw.name}`;
     this.currentSwitchForPorts = sw;
-    this.portConfigData = '';
+    this.portConfigData = sw.port_config || '';
     this.showPortsModal = true;
   }
 
@@ -520,7 +520,7 @@ onSaved(response?: any): void {
     if (!rt) return;
     this.modalTitleInterfaces = `Configuration des interfaces : ${rt.name}`;
     this.currentRouterForInterfaces = rt;
-    this.interfacesConfigData = '';
+    this.interfacesConfigData = rt.interfaces_config || '';
     this.showInterfacesModal = true;
   }
 
@@ -546,7 +546,7 @@ onSaved(response?: any): void {
     if (!fw) return;
     this.modalTitlePolicies = `Politiques de sécurité : ${fw.name}`;
     this.currentFirewallForPolicies = fw;
-    this.securityPoliciesData = '';
+    this.securityPoliciesData = fw.configuration || '';
     this.showPoliciesModal = true;
   }
 
