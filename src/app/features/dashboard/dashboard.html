@@ -391,9 +391,9 @@
                             <tr>
                                 <th>Nom / Modèle</th>
                                 <th>Site</th>
-                                <th>IP NMS / SERVICE</th>
+                                <th>IP NMS (VLAN NMS)</th>
+                                <th>IP SERVICE (VLAN SERVICE)</th>
                                 <th>Statut</th>
-                                <th>Politiques</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -402,16 +402,13 @@
                             <tr>
                                 <td><strong>{{ fw.name }}</strong><br><small class="text-muted">{{ fw.model || 'N/A' }}</small><br><small class="text-muted">{{ fw.brand || '' }}</small></td>
                                 <td>{{ fw.site || 'N/A' }}</td>
-                                <td>
-                                    <div><code>{{ fw.ip_nms || 'N/A' }}</code> (VLAN {{ fw.vlan_nms || 'N/A' }})</div>
-                                    <div><code>{{ fw.ip_service || 'N/A' }}</code> (VLAN {{ fw.vlan_service || 'N/A' }})</div>
-                                </td>
+                                <td><code>{{ fw.ip_nms || 'N/A' }}</code> (VLAN {{ fw.vlan_nms || 'N/A' }})</td>
+                                <td><code>{{ fw.ip_service || 'N/A' }}</code> (VLAN {{ fw.vlan_service || 'N/A' }})</td>
                                 <td>
                                     <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'">
                                             {{ fw.status === 'active' ? 'Actif' : 'Inactif' }}
                                         </span>
                                 </td>
-                                <td><span class="status-badge status-info">{{ (fw.security_policies_count ?? 0) }} règle(s)</span></td>
                                 <td>
                                     <div class="action-buttons">
                                         <button class="btn btn-outline btn-sm btn-icon" title="Voir le détail" (click)="viewItem('firewalls', fw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
@@ -458,8 +455,8 @@
                             <tr>
                                 <th>Nom / Modèle</th>
                                 <th>Site</th>
-                                <th>IP NMS / SERVICE</th>
-                                <th>Interfaces</th>
+                                <th>IP NMS (VLAN NMS)</th>
+                                <th>IP SERVICE (VLAN SERVICE)</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
@@ -469,11 +466,10 @@
                             <tr>
                                 <td><strong>{{ rt.name }}</strong><br><small class="text-muted">{{ rt.model || 'N/A' }}</small><br><small class="text-muted">{{ rt.brand || '' }}</small></td>
                                 <td>{{ rt.site || 'N/A' }}</td>
-                                <td>
-                                    <div><code>{{ rt.ip_nms || 'N/A' }}</code> (VLAN {{ rt.vlan_nms || 'N/A' }})</div>
-                                    <div><code>{{ rt.ip_service || 'N/A' }}</code> (VLAN {{ rt.vlan_service || 'N/A' }})</div>
+
+                                <td><code>{{ rt.ip_nms || 'N/A' }}</code> (VLAN {{ rt.vlan_nms || 'N/A' }})</td>
+                                <td><code>{{ rt.ip_service || 'N/A' }}</code> (VLAN {{ rt.vlan_service || 'N/A' }})</td>
                                 </td>
-                                <td><span class="status-badge status-info">{{ rt.interfaces_up_count ?? 0 }}/{{ rt.interfaces_count ?? 0 }}</span></td>
                                 <td>
                                     <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'">
                                             {{ rt.status === 'active' ? 'Actif' : 'Inactif' }}
@@ -525,8 +521,8 @@
                             <tr>
                                 <th>Nom / Modèle</th>
                                 <th>Site</th>
-                                <th>IP NMS / SERVICE</th>
-                                <th>Ports / VLANs</th>
+                                <th>IP NMS (VLAN NMS)</th>
+                                <th>IP SERVICE (VLAN SERVICE)</th>
                                 <th>Dernier accès</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
@@ -537,19 +533,8 @@
                             <tr>
                                 <td><strong>{{ sw.name }}</strong><br><small class="text-muted">{{ sw.model || 'N/A' }}</small><br><small class="text-muted">{{ sw.brand || '' }}</small></td>
                                 <td>{{ sw.site || 'N/A' }}</td>
-                                <td>
-                                    <div><code>{{ sw.ip_nms || 'N/A' }}</code> (VLAN {{ sw.vlan_nms || 'N/A' }})</div>
-                                    <div><code>{{ sw.ip_service || 'N/A' }}</code> (VLAN {{ sw.vlan_service || 'N/A' }})</div>
-                                </td>
-                                <td>
-                                    <div style="display:flex;align-items:center;gap:8px;">
-                                        <div style="flex:1;background:#e2e8f0;border-radius:4px;height:8px;min-width:60px;">
-                                            <div [style.width.%]="portUsagePct(sw)" [style.background]="portBarColor(sw)" style="height:8px;border-radius:4px;transition:width .3s;"></div>
-                                        </div>
-                                        <small>{{ sw.ports_used ?? 0 }}/{{ sw.ports_total ?? 0 }}</small>
-                                    </div>
-                                    <small style="color:var(--text-light);">{{ sw.vlan_nms ?? sw.vlan_service ?? 0 }} VLAN(s)</small>
-                                </td>
+                                <td><code>{{ sw.ip_nms || 'N/A' }}</code> (VLAN {{ sw.vlan_nms || 'N/A' }})</td>
+                                <td><code>{{ sw.ip_service || 'N/A' }}</code> (VLAN {{ sw.vlan_service || 'N/A' }})</td>
                                 <td>
                                     <div style="font-size:.85rem;"><i class="fas fa-user" style="color:var(--accent-color);"></i> {{ getLastAccessUser(sw) }}</div>
                                     <div style="font-size:.8rem;color:var(--text-light);">{{ formatDate(sw.updated_at) }}</div>
@@ -1235,4 +1220,5 @@
     </div>
     }
 
-    <app-toast></app-toast>
+    <app-toast>
+    </app-toast>
