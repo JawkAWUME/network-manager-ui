@@ -54,11 +54,11 @@ export class EquipmentModalComponent implements OnChanges {
       this.showPassword.set(false);
       this.showEnablePassword.set(false);
       if (this.editData) {
-        // Édition : on copie les données existantes
+        // Copie des données existantes
         this.form = { ...this.editData, password: '', enable_password: '' };
-        // S'assurer que status est un booléen (par sécurité)
-        if (this.form['status'] !== undefined) {
-          this.form['status'] = this.form['status'] === true || this.form['status'] === 'active';
+        // S'assurer que status reste une chaîne (backend attend une chaîne)
+        if (this.form['status'] !== undefined && typeof this.form['status'] !== 'string') {
+          this.form['status'] = this.form['status'] ? 'active' : 'inactive';
         }
       } else {
         // Création : valeurs par défaut
