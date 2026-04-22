@@ -62,10 +62,16 @@ export class EquipmentModalComponent implements OnChanges {
         }
       } else {
         // Création : valeurs par défaut
-        this.form = {
-          status: true,
-          is_active: true,
-        };
+        const defaultForm: Record<string, any> = {};
+        if (this.type === 'site') {
+          defaultForm['status'] = 'active';   // chaîne de caractères
+        } else if (this.type === 'user') {
+          defaultForm['is_active'] = true;
+        } else {
+          // Équipements : le select fournira 'active' par défaut si on ne met rien
+          defaultForm['status'] = 'active';
+        }
+        this.form = defaultForm;
       }
     }
   }
