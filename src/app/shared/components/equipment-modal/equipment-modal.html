@@ -405,8 +405,8 @@
             <div class="form-group">
                 <label class="form-label">Statut</label>
                 <select class="form-control" [(ngModel)]="form['status']" style="max-width:300px;">
-            <option value=true>Actif</option>
-            <option value=false>Inactif</option>
+            <option value="active">Actif</option>
+            <option value="inactive">Inactif</option>
             @if (type === 'switch') { <option value="warning">Avertissement</option> }
           </select>
             </div>
