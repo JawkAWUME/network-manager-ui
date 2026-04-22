@@ -107,19 +107,29 @@ onSave(): void {
   this.success.set('');
 
   const cleanedData = this.cleanForm();
-  // Aucune conversion de status – on envoie la chaîne telle quelle
+  // ✅ Aucune conversion de status – on envoie la chaîne telle quelle
 
   const obs = this.isEdit ? this.updateCall(cleanedData) : this.createCall(cleanedData);
   obs.subscribe({
-    next: () => {
-      this.success.set('Opération réussie');
+    next: (res: any) => {
+      if (res.pending_id) {
+        const msg = this.isEdit
+          ? 'Modification soumise à validation. Un administrateur doit l’approuver.'
+          : 'Demande de création soumise à validation. Un administrateur doit l’approuver.';
+        this.success.set(msg);
+      } else {
+        this.success.set('Opération réussie !');
+      }
+      setTimeout(() => {
+        this.saved.emit(res);
+        this.close.emit();
+      }, 800);
       this.loading.set(false);
-      this.saved.emit();
     },
-    error: (err) => {
-      this.error.set(err?.error?.message || 'Une erreur est survenue');
+    error: (e) => {
+      this.error.set(e.error?.message ?? 'Une erreur est survenue.');
       this.loading.set(false);
-    }
+    },
   });
 }
 
