@@ -106,35 +106,20 @@ onSave(): void {
   this.error.set('');
   this.success.set('');
 
-  // Nettoyer et normaliser les données avant envoi
   const cleanedData = this.cleanForm();
-  // Convertir le statut en booléen si nécessaire (pour les équipements)
-  if (cleanedData['status'] !== undefined && typeof cleanedData['status'] !== 'boolean') {
-    cleanedData['status'] = cleanedData['status'] === 'active' || cleanedData['status'] === true;
-  }
+  // Aucune conversion de status – on envoie la chaîne telle quelle
 
   const obs = this.isEdit ? this.updateCall(cleanedData) : this.createCall(cleanedData);
   obs.subscribe({
-    next: (res: any) => {
-      // Vérifier si la réponse contient un pending_id (demande en attente)
-      if (res.pending_id) {
-          const msg = this.isEdit
-            ? 'Modification soumise à validation. Un administrateur doit l’approuver.'
-            : 'Demande de création soumise à validation. Un administrateur doit l’approuver.';
-          this.success.set(msg);
-      } else {
-        this.success.set('Opération réussie !');
-      }
-      setTimeout(() => {
-        this.saved.emit(res); // transmet la réponse (contenant peut-être pending_id)
-        this.close.emit();
-      }, 800);
+    next: () => {
+      this.success.set('Opération réussie');
       this.loading.set(false);
+      this.saved.emit();
     },
-    error: (e) => {
-      this.error.set(e.error?.message ?? 'Une erreur est survenue.');
+    error: (err) => {
+      this.error.set(err?.error?.message || 'Une erreur est survenue');
       this.loading.set(false);
-    },
+    }
   });
 }
 
