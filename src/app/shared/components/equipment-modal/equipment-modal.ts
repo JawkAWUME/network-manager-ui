@@ -230,9 +230,15 @@ export class EquipmentModalComponent implements OnChanges {
     if (type === 'firewalls') this.selectedFirewallsIds = this.selectedFirewallsIds.filter(x => x !== id);
   }
 
-  private cleanForm(): Record<string, any> {
-    return Object.fromEntries(
-      Object.entries(this.form).filter(([, v]) => v !== '' && v !== null && v !== undefined),
-    );
+ // equipment-modal.component.ts
+private cleanForm(): Record<string, any> {
+  const cleaned = Object.fromEntries(
+    Object.entries(this.form).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+  );
+  // ✅ Convertir site_id en nombre si présent
+  if (cleaned['site_id'] !== undefined) {
+    cleaned['site_id'] = Number(cleaned['site_id']);
   }
+  return cleaned;
+}
 }
