@@ -170,23 +170,70 @@ export class EquipmentModalComponent implements OnChanges {
     const siteId = this.editData.id;
     const tasks: any[] = [];
 
+    // Fonctions pour retrouver l'équipement complet
+    const findRouter = (id: number) => this.allRouters.find(r => r.id === id);
+    const findSwitch = (id: number) => this.allSwitches.find(s => s.id === id);
+    const findFirewall = (id: number) => this.allFirewalls.find(f => f.id === id);
+
     // Ajouts (sélectionnés mais pas dans l'état initial)
     const addedSwitches  = this.selectedSwitchesIds.filter(id => !this.initialSwitches.includes(id));
     const addedRouters   = this.selectedRoutersIds.filter(id => !this.initialRouters.includes(id));
     const addedFirewalls = this.selectedFirewallsIds.filter(id => !this.initialFirewalls.includes(id));
 
-    addedSwitches.forEach(id => tasks.push(this.api.updateSwitch(id, { site_id: siteId })));
-    addedRouters.forEach(id  => tasks.push(this.api.updateRouter(id, { site_id: siteId })));
-    addedFirewalls.forEach(id => tasks.push(this.api.updateFirewall(id, { site_id: siteId })));
+    addedSwitches.forEach(id => {
+      const eq = findSwitch(id);
+      if (eq) {
+        const payload = { ...eq, site_id: siteId };
+        delete (payload as any).site;  // supprimer la relation
+        tasks.push(this.api.updateSwitch(id, payload));
+      }
+    });
+    addedRouters.forEach(id => {
+      const eq = findRouter(id);
+      if (eq) {
+        const payload = { ...eq, site_id: siteId };
+        delete (payload as any).site;
+        tasks.push(this.api.updateRouter(id, payload));
+      }
+    });
+    addedFirewalls.forEach(id => {
+      const eq = findFirewall(id);
+      if (eq) {
+        const payload = { ...eq, site_id: siteId };
+        delete (payload as any).site;
+        tasks.push(this.api.updateFirewall(id, payload));
+      }
+    });
 
     // Dissociations (présentes dans l'état initial mais plus sélectionnées)
     const removedSwitches  = this.initialSwitches.filter(id => !this.selectedSwitchesIds.includes(id));
     const removedRouters   = this.initialRouters.filter(id => !this.selectedRoutersIds.includes(id));
     const removedFirewalls = this.initialFirewalls.filter(id => !this.selectedFirewallsIds.includes(id));
 
-    removedSwitches.forEach(id => tasks.push(this.api.updateSwitch(id, { site_id: undefined })));
-    removedRouters.forEach(id  => tasks.push(this.api.updateRouter(id, { site_id: undefined })));
-    removedFirewalls.forEach(id => tasks.push(this.api.updateFirewall(id, { site_id: undefined })));
+    removedSwitches.forEach(id => {
+      const eq = findSwitch(id);
+      if (eq) {
+        const payload = { ...eq, site_id: undefined };
+        delete (payload as any).site;
+        tasks.push(this.api.updateSwitch(id, payload));
+      }
+    });
+    removedRouters.forEach(id => {
+      const eq = findRouter(id);
+      if (eq) {
+        const payload = { ...eq, site_id: undefined };
+        delete (payload as any).site;
+        tasks.push(this.api.updateRouter(id, payload));
+      }
+    });
+    removedFirewalls.forEach(id => {
+      const eq = findFirewall(id);
+      if (eq) {
+        const payload = { ...eq, site_id: undefined };
+        delete (payload as any).site;
+        tasks.push(this.api.updateFirewall(id, payload));
+      }
+    });
 
     return tasks.length ? forkJoin(tasks) : of(null);
   }
