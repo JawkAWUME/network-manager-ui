@@ -159,6 +159,7 @@ export class EquipmentModalComponent implements OnChanges {
 
   private updateCall(data: any) {
     const id = this.editData.id;
+    console.log(`Updating ${this.type} with ID ${id} and data:`, data);
     switch (this.type) {
       case 'firewall': return this.api.updateFirewall(id, data);
       case 'router':   return this.api.updateRouter(id, data);
