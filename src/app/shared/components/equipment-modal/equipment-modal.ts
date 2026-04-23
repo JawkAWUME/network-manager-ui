@@ -234,7 +234,14 @@ export class EquipmentModalComponent implements OnChanges {
  // equipment-modal.component.ts
 private cleanForm(): Record<string, any> {
   const cleaned = Object.fromEntries(
-    Object.entries(this.form).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+    Object.entries(this.form)
+      .filter(([key, v]) => {
+        // Exclure les clés de relations et les valeurs vides/nulles
+        if (key === 'site' || key === 'user' || key === 'configuration_histories' || key.startsWith('__')) {
+          return false;
+        }
+        return v !== '' && v !== null && v !== undefined;
+      })
   );
   // ✅ Convertir site_id en nombre si présent
   if (cleaned['site_id'] !== undefined) {
