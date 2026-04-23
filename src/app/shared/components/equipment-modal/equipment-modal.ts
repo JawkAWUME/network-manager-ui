@@ -131,7 +131,7 @@ export class EquipmentModalComponent implements OnChanges {
     if (cleaned['status'] !== undefined) {
       cleaned['status'] = this.normalizeStatus(cleaned['status']);
     }
-
+    console.log('Données nettoyées à envoyer :', cleaned);
     const obs = this.isEdit ? this.updateCall(cleaned) : this.createCall(cleaned);
     obs.subscribe({
       next: () => {
