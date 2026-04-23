@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Firewall, Router, Site, Switch } from '../../../shared/models';
@@ -37,6 +38,11 @@ export class EquipmentModalComponent implements OnChanges {
   selectedFirewallsIds: number[] = [];
   lastAdded: { name: string; type: string } | null = null;
 
+  // État initial pour détecter les changements d'associations
+  private initialSwitches: number[] = [];
+  private initialRouters: number[] = [];
+  private initialFirewalls: number[] = [];
+
   detailTab: 'switches' | 'routers' | 'firewalls' = 'switches';
   addTab:    'switches' | 'routers' | 'firewalls' = 'switches';
 
@@ -54,15 +60,30 @@ export class EquipmentModalComponent implements OnChanges {
       this.showPassword.set(false);
       this.showEnablePassword.set(false);
 
+      // Réinitialiser les sélections
+      this.selectedSwitchesIds  = [];
+      this.selectedRoutersIds   = [];
+      this.selectedFirewallsIds = [];
+
       if (this.editData) {
         // Copie des données existantes
         this.form = { ...this.editData, password: '', enable_password: '' };
 
-        // ✅ Normaliser status → toujours une STRING
-        // Le backend Switch stockait parfois true/false (boolean)
-        // On le convertit ici une fois pour toutes
+        // Normalisation du statut
         if (this.form['status'] !== undefined) {
           this.form['status'] = this.normalizeStatus(this.form['status']);
+        }
+
+        // Si on édite un site, on pré-remplit les sélections d'équipements associés
+        if (this.type === 'site') {
+          this.selectedSwitchesIds  = this.allSwitches.filter(eq => eq.site_id === this.editData.id).map(eq => eq.id);
+          this.selectedRoutersIds   = this.allRouters.filter(eq => eq.site_id === this.editData.id).map(eq => eq.id);
+          this.selectedFirewallsIds = this.allFirewalls.filter(eq => eq.site_id === this.editData.id).map(eq => eq.id);
+
+          // Sauvegarde de l'état initial pour comparer plus tard
+          this.initialSwitches  = [...this.selectedSwitchesIds];
+          this.initialRouters   = [...this.selectedRoutersIds];
+          this.initialFirewalls = [...this.selectedFirewallsIds];
         }
       } else {
         // Création : valeurs par défaut
@@ -71,7 +92,6 @@ export class EquipmentModalComponent implements OnChanges {
           defaultForm['is_active'] = true;
           defaultForm['role']      = 'agent';
         } else {
-          // site, firewall, router, switch → status string
           defaultForm['status'] = 'active';
         }
         this.form = defaultForm;
@@ -79,15 +99,11 @@ export class EquipmentModalComponent implements OnChanges {
     }
   }
 
-  /**
-   * Normalise n'importe quelle valeur de status en string.
-   * Gère le cas legacy où l'entité Switch stockait un boolean.
-   */
   private normalizeStatus(value: any): string {
     if (value === true  || value === 1)    return 'active';
     if (value === false || value === 0)    return 'danger';
     if (typeof value === 'string' && value.trim() !== '') return value;
-    return 'active'; // fallback
+    return 'active';
   }
 
   headerIcon(): string {
@@ -127,13 +143,17 @@ export class EquipmentModalComponent implements OnChanges {
 
     const cleaned = this.cleanForm();
 
-    // ✅ Garantie finale : status est toujours une string avant envoi
     if (cleaned['status'] !== undefined) {
       cleaned['status'] = this.normalizeStatus(cleaned['status']);
     }
-    console.log('Données nettoyées à envoyer :', cleaned);
-    const obs = this.isEdit ? this.updateCall(cleaned) : this.createCall(cleaned);
-    obs.subscribe({
+
+    // Opération principale (création ou mise à jour de l'entité)
+    const mainOp = this.isEdit ? this.updateCall(cleaned) : this.createCall(cleaned);
+
+    // Si c'est un site en édition, on doit également sauvegarder les associations d'équipements
+    const equipOp = (this.type === 'site' && this.isEdit) ? this.saveEquipmentAssociations() : of(null);
+
+    forkJoin([mainOp, equipOp]).subscribe({
       next: () => {
         this.success.set('Opération réussie');
         this.loading.set(false);
@@ -142,8 +162,33 @@ export class EquipmentModalComponent implements OnChanges {
       error: (err) => {
         this.error.set(err?.error?.message || 'Une erreur est survenue');
         this.loading.set(false);
-      },
+      }
     });
+  }
+
+  private saveEquipmentAssociations() {
+    const siteId = this.editData.id;
+    const tasks: any[] = [];
+
+    // Ajouts (sélectionnés mais pas dans l'état initial)
+    const addedSwitches  = this.selectedSwitchesIds.filter(id => !this.initialSwitches.includes(id));
+    const addedRouters   = this.selectedRoutersIds.filter(id => !this.initialRouters.includes(id));
+    const addedFirewalls = this.selectedFirewallsIds.filter(id => !this.initialFirewalls.includes(id));
+
+    addedSwitches.forEach(id => tasks.push(this.api.updateSwitch(id, { site_id: siteId })));
+    addedRouters.forEach(id  => tasks.push(this.api.updateRouter(id, { site_id: siteId })));
+    addedFirewalls.forEach(id => tasks.push(this.api.updateFirewall(id, { site_id: siteId })));
+
+    // Dissociations (présentes dans l'état initial mais plus sélectionnées)
+    const removedSwitches  = this.initialSwitches.filter(id => !this.selectedSwitchesIds.includes(id));
+    const removedRouters   = this.initialRouters.filter(id => !this.selectedRoutersIds.includes(id));
+    const removedFirewalls = this.initialFirewalls.filter(id => !this.selectedFirewallsIds.includes(id));
+
+    removedSwitches.forEach(id => tasks.push(this.api.updateSwitch(id, { site_id: undefined })));
+    removedRouters.forEach(id  => tasks.push(this.api.updateRouter(id, { site_id: undefined })));
+    removedFirewalls.forEach(id => tasks.push(this.api.updateFirewall(id, { site_id: undefined })));
+
+    return tasks.length ? forkJoin(tasks) : of(null);
   }
 
   private createCall(data: any) {
@@ -159,7 +204,6 @@ export class EquipmentModalComponent implements OnChanges {
 
   private updateCall(data: any) {
     const id = this.editData.id;
-    console.log(`Updating ${this.type} with ID ${id} and data:`, data);
     switch (this.type) {
       case 'firewall': return this.api.updateFirewall(id, data);
       case 'router':   return this.api.updateRouter(id, data);
@@ -231,22 +275,21 @@ export class EquipmentModalComponent implements OnChanges {
     if (type === 'firewalls') this.selectedFirewallsIds = this.selectedFirewallsIds.filter(x => x !== id);
   }
 
- // equipment-modal.component.ts
-private cleanForm(): Record<string, any> {
-  const cleaned = Object.fromEntries(
-    Object.entries(this.form)
-      .filter(([key, v]) => {
-        // Exclure les clés de relations et les valeurs vides/nulles
-        if (key === 'site' || key === 'user' || key === 'configuration_histories' || key.startsWith('__')) {
-          return false;
-        }
-        return v !== '' && v !== null && v !== undefined;
-      })
-  );
-  // ✅ Convertir site_id en nombre si présent
-  if (cleaned['site_id'] !== undefined) {
-    cleaned['site_id'] = Number(cleaned['site_id']);
+  private cleanForm(): Record<string, any> {
+    const cleaned = Object.fromEntries(
+      Object.entries(this.form)
+        .filter(([key, v]) => {
+          // Exclure les clés de relations et les valeurs vides/nulles
+          if (key === 'site' || key === 'user' || key === 'configuration_histories' || key.startsWith('__')) {
+            return false;
+          }
+          return v !== '' && v !== null && v !== undefined;
+        })
+    );
+    // Convertir site_id en nombre si présent
+    if (cleaned['site_id'] !== undefined) {
+      cleaned['site_id'] = Number(cleaned['site_id']);
+    }
+    return cleaned;
   }
-  return cleaned;
-}
 }
