@@ -1035,6 +1035,9 @@
                     </div>
                 </div>
                 }
+                <button *ngIf="interfacesConfigData.trim()" (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger la configuration
+                </button>
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <h4 style="color:#0891b2;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier</h4>
                     <label style="cursor:pointer;">
@@ -1045,10 +1048,9 @@
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <h4 style="color:#0891b2;margin:0 0 12px;font-size:.95rem;"><i class="fas fa-code"></i> Configuration</h4>
                     <textarea [(ngModel)]="interfacesConfigData" rows="10" placeholder="Collez ici la configuration des interfaces…" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-family:monospace;font-size:.82rem;resize:vertical;line-height:1.6;"></textarea>
-                    <button *ngIf="interfacesConfigData.trim()" (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
-                        <i class="fas fa-download"></i> Télécharger la configuration
-                    </button>
+
                 </div>
+
             </div>
             <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
                 <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-exclamation-triangle" style="color:var(--warning-color);"></i> Vérifier avant d'appliquer</span>
@@ -1140,5 +1142,9 @@
 <app-toast>
 </app-toast>
 
+<app-toast>
+</app-toast>
+<app-toast>
+</app-toast>
 <app-toast>
 </app-toast>
