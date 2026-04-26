@@ -920,16 +920,8 @@
     </div>
     }
 
-    <!-- MODAL : Configuration ports switch (inchangé) -->
-    @if (showPortsModal) { ... (contenu inchangé) ... }
 
-    <!-- MODAL : Interfaces routeur (inchangé) -->
-    @if (showInterfacesModal) { ... (contenu inchangé) ... }
 
-    <!-- MODAL : Politiques sécurité firewall (inchangé) -->
-    @if (showPoliciesModal) { ... (contenu inchangé) ... }
-
-    <app-toast></app-toast>
 
     <!-- MODAL : Configuration ports switch -->
     @if (showPortsModal) {
@@ -974,6 +966,9 @@
                             <input type="file" accept=".txt,.json" style="display:none;" (change)="handlePortConfigFile($event)">
                         </label>
                     </div>
+                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger la configuration
+                    </button>
                     <p style="margin:10px 0 0;font-size:.78rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Formats acceptés : <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.txt</code> ou <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.json</code></p>
 
                 </div>
@@ -1041,10 +1036,10 @@
                     <label style="cursor:pointer;">
                         <div style="padding:10px 14px;border:2px dashed #67e8f9;border-radius:8px;background:#ecfeff;text-align:center;color:#0891b2;font-size:.85rem;font-weight:600;"><i class="fas fa-file-code" style="margin-right:6px;"></i> Choisir un fichier (.txt, .json)…</div>
                         <input type="file" accept=".txt,.json" style="display:none;" (change)="handleRouterConfigFile($event)">
-                          <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
-                        <i class="fas fa-download"></i> Télécharger la configuration
-                        </button>
                     </label>
+                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger la configuration
+                    </button>
                 </div>
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <h4 style="color:#0891b2;margin:0 0 12px;font-size:.95rem;"><i class="fas fa-code"></i> Configuration</h4>
@@ -1058,6 +1053,9 @@
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-outline" (click)="showInterfacesModal = false"><i class="fas fa-times"></i> Annuler</button>
                     <button class="btn btn-primary" style="background:linear-gradient(135deg,#0891b2,#0e7490);" [disabled]="!interfacesConfigData.trim()" (click)="saveInterfacesUpdate()"><i class="fas fa-save"></i> Appliquer</button>
+                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger la configuration
+                    </button>
                 </div>
             </div>
         </div>
@@ -1132,6 +1130,9 @@
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-outline" (click)="showPoliciesModal = false"><i class="fas fa-times"></i> Annuler</button>
                     <button class="btn btn-primary" style="background:linear-gradient(135deg,#dc2626,#b91c1c);" [disabled]="!securityPoliciesData.trim()" (click)="saveSecurityPolicies()"><i class="fas fa-save"></i> Appliquer les politiques</button>
+                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger la configuration
+                    </button>
                 </div>
             </div>
         </div>
@@ -1143,13 +1144,3 @@
 </div>
 </div>
 }
-
-<app-toast>
-</app-toast>
-
-<app-toast>
-</app-toast>
-<app-toast>
-</app-toast>
-<app-toast>
-</app-toast>
