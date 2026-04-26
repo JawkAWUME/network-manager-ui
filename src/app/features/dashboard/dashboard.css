@@ -14,11 +14,11 @@
 
 .header-logo {
     background-color: white;
-    padding: 5px 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    padding: 3px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     border: 1px solid #e9eef2;
-    height: 90px;
+    height: 54px;
     width: auto;
     object-fit: contain;
     transition: all 0.2s ease;
@@ -38,11 +38,11 @@
 }
 
 .senegal-flag {
-    height: 100px;
+    height: 52px;
     /* garde votre grande taille */
     width: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #e2e8f0;
     object-fit: cover;
     transition: transform 0.2s;
@@ -77,10 +77,10 @@
         margin: 5px 0;
     }
     .senegal-flag {
-        height: 40px;
+        height: 32px;
     }
     .header-logo {
-        max-height: 45px;
+        max-height: 38px;
         height: auto;
     }
     .header-brand {

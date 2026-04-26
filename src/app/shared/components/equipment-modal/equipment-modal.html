@@ -2,37 +2,45 @@
 <div class="modal-overlay" (click)="onOverlayClick($event)">
     <div class="modal-box" (click)="$event.stopPropagation()">
 
-        <!-- Header -->
+        <!-- ══ HEADER ══════════════════════════════════════════════════ -->
         <div class="modal-header">
             <h3>
                 <i class="fas" [ngClass]="headerIcon()"></i> {{ isEdit ? 'Modifier' : 'Créer' }} — {{ typeLabel() }}
             </h3>
-            <button class="modal-close" (click)="close.emit()"><i class="fas fa-times"></i></button>
+            <button class="modal-close" (click)="close.emit()">
+        <i class="fas fa-times"></i>
+      </button>
         </div>
 
-        <!-- Body -->
+        <!-- ══ BODY ════════════════════════════════════════════════════ -->
         <div class="modal-body">
+
             @if (error()) {
-            <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> {{ error() }}</div>
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> {{ error() }}
+            </div>
             } @if (success()) {
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ success() }}</div>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ success() }}
+            </div>
             }
 
-            <!-- ═══════════════════════════════════════════════════════════ -->
-            <!-- FORMULAIRE SITE (avec gestion des équipements associés)      -->
-            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════
+           FORMULAIRE SITE
+           ══════════════════════════════════════════════════════════ -->
             @if (type === 'site') {
+
             <!-- 1. Informations générales -->
             <div class="section-block blue">
                 <h4><i class="fas fa-info-circle"></i> Informations générales</h4>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nom <span class="req">*</span></label>
-                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Siège Social Paris">
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Siège Social Dakar">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Code</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['code']" placeholder="ex. PAR-HQ">
+                        <input class="form-control" type="text" [(ngModel)]="form['code']" placeholder="ex. DKR-HQ">
                     </div>
                     <div class="form-group full-width">
                         <label class="form-label">Description</label>
@@ -47,19 +55,19 @@
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label class="form-label">Adresse</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['address']" placeholder="ex. 123 Avenue des Champs-Élysées">
+                        <input class="form-control" type="text" [(ngModel)]="form['address']" placeholder="ex. Avenue Cheikh Anta Diop">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Code postal</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['postal_code']" placeholder="ex. 75008">
+                        <input class="form-control" type="text" [(ngModel)]="form['postal_code']" placeholder="ex. 10700">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Ville</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['city']" placeholder="ex. Paris">
+                        <input class="form-control" type="text" [(ngModel)]="form['city']" placeholder="ex. Dakar">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Pays</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['country']" placeholder="ex. France">
+                        <input class="form-control" type="text" [(ngModel)]="form['country']" placeholder="ex. Sénégal">
                     </div>
                 </div>
             </div>
@@ -70,20 +78,20 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nom du contact</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['technical_contact']" placeholder="ex. Jean Dupont">
+                        <input class="form-control" type="text" [(ngModel)]="form['technical_contact']" placeholder="ex. Mamadou Diallo">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Email</label>
-                        <input class="form-control" type="email" [(ngModel)]="form['technical_email']" placeholder="ex. contact@site.fr">
+                        <input class="form-control" type="email" [(ngModel)]="form['technical_email']" placeholder="ex. contact@site.sn">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Téléphone</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +33 1 23 45 67 89">
+                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +221 33 123 45 67">
                     </div>
                 </div>
             </div>
 
-            <!-- 4. Gestion des équipements (uniquement en mode édition) -->
+            <!-- 4. Équipements associés (édition seulement) -->
             @if (isEdit) {
             <div class="section-block purple">
                 <h4><i class="fas fa-network-wired"></i> Équipements du site</h4>
@@ -94,7 +102,6 @@
                     <span class="badge">{{ associatedFirewalls().length }} firewall(s)</span>
                 </div>
 
-                <!-- Onglets pour afficher les équipements associés par type -->
                 <div class="tabs">
                     <button type="button" [class.active]="detailTab === 'switches'" (click)="detailTab = 'switches'">
                 <i class="fas fa-exchange-alt"></i> Switchs ({{ associatedSwitches().length }})
@@ -107,7 +114,6 @@
               </button>
                 </div>
 
-                <!-- Liste des switchs associés -->
                 @if (detailTab === 'switches') {
                 <div class="equipment-list">
                     @for (eq of associatedSwitches(); track eq.id) {
@@ -125,10 +131,7 @@
                     <div class="empty-message">Aucun switch associé à ce site.</div>
                     }
                 </div>
-                }
-
-                <!-- Liste des routeurs associés -->
-                @if (detailTab === 'routers') {
+                } @if (detailTab === 'routers') {
                 <div class="equipment-list">
                     @for (eq of associatedRouters(); track eq.id) {
                     <div class="equipment-card">
@@ -145,10 +148,7 @@
                     <div class="empty-message">Aucun routeur associé à ce site.</div>
                     }
                 </div>
-                }
-
-                <!-- Liste des firewalls associés -->
-                @if (detailTab === 'firewalls') {
+                } @if (detailTab === 'firewalls') {
                 <div class="equipment-list">
                     @for (eq of associatedFirewalls(); track eq.id) {
                     <div class="equipment-card">
@@ -168,7 +168,7 @@
                 }
 
                 <hr class="separator">
-                <h5><i class="fas fa-plus-circle"></i> Ajouter d’autres équipements</h5>
+                <h5><i class="fas fa-plus-circle"></i> Ajouter d'autres équipements</h5>
             </div>
             }
 
@@ -239,33 +239,34 @@
             </div>
             }
 
-            <!-- ═══════════════════════════════════════════════════════════ -->
-            <!-- FORMULAIRE UTILISATEUR                                     -->
-            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════
+           FORMULAIRE UTILISATEUR
+           ══════════════════════════════════════════════════════════ -->
             @if (type === 'user') {
             <div class="section-block blue">
                 <h4><i class="fas fa-user-circle"></i> Informations personnelles</h4>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nom complet <span class="req">*</span></label>
-                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Jean Dupont">
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" placeholder="ex. Mamadou Diallo">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Email <span class="req">*</span></label>
-                        <input class="form-control" type="email" [(ngModel)]="form['email']" placeholder="jean@exemple.fr">
+                        <input class="form-control" type="email" [(ngModel)]="form['email']" placeholder="mamadou@exemple.sn">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Département</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['department']" placeholder="ex. IT, Network">
+                        <input class="form-control" type="text" [(ngModel)]="form['department']" placeholder="ex. IT, Réseau">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Téléphone</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +33 6 12 34 56 78">
+                        <input class="form-control" type="text" [(ngModel)]="form['phone']" placeholder="ex. +221 77 123 45 67">
                     </div>
                 </div>
             </div>
+
             <div class="section-block warning">
-                <h4><i class="fas fa-shield-alt"></i> Rôle & Accès</h4>
+                <h4><i class="fas fa-shield-alt"></i> Rôle &amp; Accès</h4>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Rôle <span class="req">*</span></label>
@@ -284,6 +285,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="section-block green">
                 <h4><i class="fas fa-lock"></i> Mot de passe {{ isEdit ? '(laisser vide pour conserver)' : '' }}</h4>
                 <div class="form-group">
@@ -293,17 +295,18 @@
             </div>
             }
 
-            <!-- ═══════════════════════════════════════════════════════════ -->
-            <!-- FORMULAIRES ÉQUIPEMENTS (firewall / router / switch)        -->
-            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- ══════════════════════════════════════════════════════════
+           FORMULAIRES ÉQUIPEMENTS — firewall / router / switch
+           ══════════════════════════════════════════════════════════ -->
             @if (type === 'firewall' || type === 'router' || type === 'switch') {
-            <!-- Infos générales -->
+
+            <!-- Informations générales -->
             <div class="section-block blue">
                 <h4><i class="fas fa-info-circle"></i> Informations générales</h4>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nom <span class="req">*</span></label>
-                        <input class="form-control" type="text" [(ngModel)]="form['name']" [placeholder]="type==='switch'?'ex. SW-PARIS-01':type==='router'?'ex. RT-PARIS-01':'ex. FW-PARIS-01'">
+                        <input class="form-control" type="text" [(ngModel)]="form['name']" [placeholder]="type==='switch' ? 'ex. SW-DKR-01' : type==='router' ? 'ex. RT-DKR-01' : 'ex. FW-DKR-01'">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Site <span class="req">*</span></label>
@@ -316,11 +319,11 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Marque</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['brand']" [placeholder]="type==='firewall'?'ex. Fortinet':type==='router'?'ex. Cisco':'ex. Cisco, HP'">
+                        <input class="form-control" type="text" [(ngModel)]="form['brand']" [placeholder]="type==='firewall' ? 'ex. Fortinet' : type==='router' ? 'ex. Cisco' : 'ex. Cisco, HP'">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Modèle</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['model']" [placeholder]="type==='firewall'?'ex. FortiGate 100F':type==='router'?'ex. Cisco ISR 4451':'ex. Catalyst 9300'">
+                        <input class="form-control" type="text" [(ngModel)]="form['model']" [placeholder]="type==='firewall' ? 'ex. FortiGate 100F' : type==='router' ? 'ex. Cisco ISR 4451' : 'ex. Catalyst 9300'">
                     </div>
                     @if (type === 'firewall') {
                     <div class="form-group">
@@ -346,7 +349,7 @@
                 </div>
             </div>
 
-            <!-- Réseau -->
+            <!-- Paramètres réseau -->
             <div class="section-block purple">
                 <h4><i class="fas fa-network-wired"></i> Paramètres réseau</h4>
                 <div class="form-grid">
@@ -369,10 +372,9 @@
                 </div>
             </div>
 
-            <!-- Credentials -->
-            <!-- Credentials -->
+            <!-- Accès & Credentials -->
             <div class="section-block green">
-                <h4><i class="fas fa-key"></i> Accès & Credentials</h4>
+                <h4><i class="fas fa-key"></i> Accès &amp; Credentials</h4>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Nom d'utilisateur</label>
@@ -380,25 +382,115 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Mot de passe</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input class="form-control" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="form['password']" placeholder="••••••••" autocomplete="new-password" style="flex: 1;">
-                            <button type="button" class="btn-icon" (click)="togglePasswordVisibility()" style="background: none; border: none; cursor: pointer; color: #6b7280;">
-                    <i class="fas" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <input class="form-control" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="form['password']" placeholder="••••••••" autocomplete="new-password" style="flex:1;">
+                            <button type="button" class="btn-icon" (click)="togglePasswordVisibility()" style="background:none;border:none;cursor:pointer;color:#6b7280;">
+                  <i class="fas" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
                 </button>
                         </div>
                     </div>
                     @if (type === 'firewall' || type === 'router') {
                     <div class="form-group">
                         <label class="form-label">Enable password</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <input class="form-control" [type]="showEnablePassword() ? 'text' : 'password'" [(ngModel)]="form['enable_password']" placeholder="••••••••" autocomplete="new-password" style="flex: 1;">
-                            <button type="button" class="btn-icon" (click)="toggleEnablePasswordVisibility()" style="background: none; border: none; cursor: pointer; color: #6b7280;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <input class="form-control" [type]="showEnablePassword() ? 'text' : 'password'" [(ngModel)]="form['enable_password']" placeholder="••••••••" autocomplete="new-password" style="flex:1;">
+                            <button type="button" class="btn-icon" (click)="toggleEnablePasswordVisibility()" style="background:none;border:none;cursor:pointer;color:#6b7280;">
                     <i class="fas" [class.fa-eye]="!showEnablePassword()" [class.fa-eye-slash]="showEnablePassword()"></i>
-                </button>
+                  </button>
                         </div>
                     </div>
                     }
                 </div>
+            </div>
+
+            <!-- ══ UPLOAD FICHIER DE CONFIGURATION ══════════════════════ -->
+            <div class="section-block" style="border-left:4px solid #0891b2;">
+                <h4 style="color:#0891b2;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-file-upload"></i> {{ configFieldLabel() }}
+                </h4>
+
+                <!-- Indicateur si une config existe déjà (mode édition) -->
+                @if (isEdit && existingConfigContent() && !form['config_filename']) {
+                <div style="margin-bottom:12px;padding:10px 14px;background:#f0fdf4;
+                        border-radius:8px;border:1px solid #86efac;
+                        display:flex;align-items:center;gap:10px;font-size:.85rem;">
+                    <i class="fas fa-check-circle" style="color:#16a34a;"></i>
+                    <span style="color:#14532d;font-weight:600;">
+                Une configuration est déjà enregistrée pour cet équipement.
+              </span>
+                    <span style="color:#4ade80;font-size:.78rem;">
+                ({{ existingConfigContent().length }} caractères)
+              </span>
+                </div>
+                }
+
+                <!-- Zone d'upload -->
+                <label style="cursor:pointer;display:block;margin-bottom:12px;">
+            <div class="upload-zone"
+                 style="padding:16px;border:2px dashed #67e8f9;border-radius:10px;
+                        background:#ecfeff;text-align:center;color:#0891b2;
+                        font-size:.88rem;font-weight:600;transition:all .2s;
+                        display:flex;align-items:center;justify-content:center;gap:10px;">
+              <i class="fas fa-file-code" style="font-size:1.4rem;"></i>
+              <span>
+                Choisir un fichier de configuration
+                <small style="display:block;font-weight:400;font-size:.78rem;color:#0e7490;margin-top:3px;">
+                  Formats acceptés : .txt · .json · .cfg · .conf
+                </small>
+              </span>
+            </div>
+            <input type="file"
+                   accept=".txt,.json,.cfg,.conf"
+                   style="display:none;"
+                   (change)="onConfigFileSelected($event)">
+          </label>
+
+                <!-- Fichier sélectionné -->
+                @if (form['config_filename']) {
+                <div style="margin-bottom:10px;padding:10px 14px;background:#f0f9ff;
+                        border-radius:8px;border:1px solid #bae6fd;
+                        display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:.85rem;color:#0369a1;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-file-check"></i>
+                <strong>{{ form['config_filename'] }}</strong>
+              </span>
+                    <button type="button" (click)="clearConfigFile()" style="background:none;border:none;color:#ef4444;cursor:pointer;
+                             font-size:.85rem;padding:4px 8px;border-radius:4px;
+                             transition:background .2s;" title="Supprimer le fichier">
+                <i class="fas fa-times"></i> Retirer
+              </button>
+                </div>
+
+                <!-- Aperçu du contenu -->
+                @if (form['config_preview']) {
+                <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;
+                            margin-bottom:6px;">
+                        <span style="font-size:.78rem;color:#6b7280;font-weight:600;
+                               text-transform:uppercase;letter-spacing:.05em;">
+                    <i class="fas fa-eye"></i> Aperçu
+                  </span>
+                        <span style="font-size:.72rem;color:#94a3b8;">
+                    (2 000 premiers caractères)
+                  </span>
+                    </div>
+                    <pre style="background:white;padding:14px;border:1px solid #bae6fd;
+                            border-radius:8px;font-family:monospace;font-size:.78rem;
+                            overflow-x:auto;white-space:pre-wrap;max-height:200px;
+                            color:#0c4a6e;line-height:1.5;margin:0;">{{ form['config_preview'] }}</pre>
+                </div>
+                } }
+
+                <!-- Info aide -->
+                <p style="margin-top:10px;font-size:.76rem;color:#94a3b8;
+                    display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-info-circle"></i> Le fichier sera enregistré dans le champ
+                    <code style="background:#e0f2fe;padding:1px 6px;border-radius:4px;color:#0369a1;">
+              @if (type === 'switch') { port_config }
+              @if (type === 'router') { interfaces_config }
+              @if (type === 'firewall') { configuration }
+            </code> de l'équipement.
+                </p>
             </div>
 
             <!-- Statut -->
@@ -407,7 +499,9 @@
                 <select class="form-control" [(ngModel)]="form['status']" style="max-width:300px;">
             <option value="active">Actif</option>
             <option value="inactive">Inactif</option>
-            @if (type === 'switch') { <option value="warning">Avertissement</option> }
+            @if (type === 'switch') {
+              <option value="warning">Avertissement</option>
+            }
           </select>
             </div>
 
@@ -417,21 +511,26 @@
                 <textarea class="form-control" [(ngModel)]="form['notes']" rows="3" placeholder="Informations complémentaires…"></textarea>
             </div>
             }
-        </div>
 
-        <!-- Footer -->
+        </div>
+        <!-- /modal-body -->
+
+        <!-- ══ FOOTER ═══════════════════════════════════════════════ -->
         <div class="modal-footer">
             <button class="btn btn-outline" (click)="close.emit()" [disabled]="loading()">
         <i class="fas fa-times"></i> Annuler
       </button>
             <button class="btn btn-primary" (click)="onSave()" [disabled]="loading()">
-        @if (loading()) { <span class="spinner-sm"></span> Enregistrement… }
-        @else { <i class="fas fa-save"></i> {{ isEdit ? 'Enregistrer' : 'Créer' }} }
+        @if (loading()) {
+          <span class="spinner-sm"></span> Enregistrement…
+        } @else {
+          <i class="fas fa-save"></i> {{ isEdit ? 'Enregistrer' : 'Créer' }}
+        }
       </button>
         </div>
 
     </div>
+    <!-- /modal-box -->
 </div>
+<!-- /modal-overlay -->
 }
-
-<!-- Styles inclus directement pour l'autonomie du composant -->
