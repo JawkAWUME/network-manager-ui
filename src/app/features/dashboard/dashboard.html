@@ -1113,6 +1113,12 @@
                     <pre style="background:white;padding:14px;border:1px solid #fecaca;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:260px;color:#7f1d1d;line-height:1.5;">{{ securityPoliciesData }}</pre>                    } @else {
                     <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-shield-alt" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune politique chargée</div>
                     }
+
+                    <!-- Ajoute dans la div "Politiques chargées", après le <pre> : -->
+                    @if (securityPoliciesData) {
+                    <button (click)="downloadConfig(securityPoliciesData, 'security-policies.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                        <i class="fas fa-download"></i> Télécharger les politiques
+                    </button> }
                 </div>
             </div>
             <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
@@ -1130,6 +1136,9 @@
     </app-toast>
 </div>
 }
+
+<app-toast>
+</app-toast>
 
 <app-toast>
 </app-toast>
