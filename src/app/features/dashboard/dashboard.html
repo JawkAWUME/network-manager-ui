@@ -1035,7 +1035,7 @@
                     </div>
                 </div>
                 }
-                <button *ngIf="interfacesConfigData.trim()" (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
                         <i class="fas fa-download"></i> Télécharger la configuration
                 </button>
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
