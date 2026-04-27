@@ -204,6 +204,7 @@ h6 {
 
 .profile-menu {
     position: relative;
+    z-index: 2000;
 }
 
 .profile-button {
@@ -253,7 +254,7 @@ h6 {
     box-shadow: var(--card-shadow-hover);
     border: 1px solid var(--border-color);
     overflow: hidden;
-    z-index: 1100;
+    z-index: 2000;
     animation: fadeIn .2s ease;
 }
 
