@@ -26,12 +26,14 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.currentUser.set(null);
-    this.router.navigate(['/login']);
-  }
+ logout(): void {
+  localStorage.removeItem(this.TOKEN_KEY);
+  localStorage.removeItem(this.USER_KEY);
+  this.currentUser.set(null);
+  this.router.navigate(['/login']).then(() => {
+    window.location.reload(); // recharge complète pour repartir de zéro
+  });
+}
 
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);

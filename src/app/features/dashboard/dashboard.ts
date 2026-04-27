@@ -246,6 +246,13 @@ rejectChange(id: number) {
   }
 
   loadAll(): void {
+    this.kpis.set(null);
+    this.firewalls.set([]);
+    this.routers.set([]);
+    this.switches.set([]);
+    this.sites.set([]);
+    this.users.set([]);
+    
     forkJoin({
       dashboard: this.api.getDashboard(),
       firewalls: this.api.getFirewalls({ limit: 200 }),
@@ -265,7 +272,10 @@ rejectChange(id: number) {
           setTimeout(() => this.buildCharts(), 100);
         }
       },
-      error: (err) => console.error('Erreur lors du chargement des données', err)
+      error: (err) => {
+        console.error('Erreur lors du chargement des données', err);
+        this.kpis.set(null);
+      }
     });
   }
 
