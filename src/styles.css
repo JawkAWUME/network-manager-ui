@@ -342,7 +342,7 @@ h6 {
     margin: 22px auto;
     max-width: 1400px;
     box-shadow: var(--card-shadow);
-    position: sticky;
+    /* position: sticky; */
     top: 0;
     z-index: 90;
     border-bottom: 3px solid var(--border-color);
