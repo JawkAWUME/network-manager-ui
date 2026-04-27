@@ -1,4 +1,4 @@
-<!-- dashboard.html (corrigé) -->
+<!-- dashboard.html (corrigé et nettoyé) -->
 <div class="breadcrumb">
     <span style="max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:8px;">
         <i class="fas fa-tachometer-alt"></i>
@@ -744,7 +744,7 @@
     <app-equipment-modal [type]="modalType()" [editData]="modalEdit()" [sites]="sites()" [allFirewalls]="allFirewalls" [allRouters]="allRouters" [allSwitches]="allSwitches" (close)="closeModal()" (saved)="onSaved($event)"></app-equipment-modal>
     <app-confirm-modal [visible]="confirmVisible" [message]="confirmMsg" [loading]="confirmLoading" (confirm)="onConfirmDelete()" (cancel)="closeConfirm()"></app-confirm-modal>
 
-    <!-- MODAL : Détails équipement (inchangé) -->
+    <!-- MODAL : Détails équipement -->
     @if (showViewModal && currentViewItem) {
     <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeViewModal()">
         <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:860px;max-height:92vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
@@ -891,7 +891,7 @@
     </div>
     }
 
-    <!-- MODAL : Équipements d'un site (inchangé) -->
+    <!-- MODAL : Équipements d'un site -->
     @if (showSiteEquipmentModal) {
     <div class="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;" (click)="closeSiteEquipmentModal()">
         <div style="background:white;border-radius:var(--border-radius-lg);width:92%;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:var(--card-shadow-hover);animation:fadeIn .3s ease;" (click)="$event.stopPropagation()">
@@ -919,9 +919,6 @@
         </div>
     </div>
     }
-
-
-
 
     <!-- MODAL : Configuration ports switch -->
     @if (showPortsModal) {
@@ -966,11 +963,10 @@
                             <input type="file" accept=".txt,.json" style="display:none;" (change)="handlePortConfigFile($event)">
                         </label>
                     </div>
-                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
+                    <button (click)="downloadConfig(portConfigData, 'port-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#059669,#047857);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
                         <i class="fas fa-download"></i> Télécharger la configuration
                     </button>
                     <p style="margin:10px 0 0;font-size:.78rem;color:var(--text-light);"><i class="fas fa-info-circle"></i> Formats acceptés : <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.txt</code> ou <code style="background:#e2e8f0;padding:1px 5px;border-radius:4px;">.json</code></p>
-
                 </div>
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1030,7 +1026,6 @@
                     </div>
                 </div>
                 }
-
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <h4 style="color:#0891b2;margin:0 0 14px;font-size:.95rem;"><i class="fas fa-file-upload"></i> Importer un fichier</h4>
                     <label style="cursor:pointer;">
@@ -1044,18 +1039,13 @@
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <h4 style="color:#0891b2;margin:0 0 12px;font-size:.95rem;"><i class="fas fa-code"></i> Configuration</h4>
                     <textarea [(ngModel)]="interfacesConfigData" rows="10" placeholder="Collez ici la configuration des interfaces…" style="width:100%;padding:12px;border:2px solid var(--border-color);border-radius:8px;font-family:monospace;font-size:.82rem;resize:vertical;line-height:1.6;"></textarea>
-
                 </div>
-
             </div>
             <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
                 <span style="font-size:.8rem;color:var(--text-light);"><i class="fas fa-exclamation-triangle" style="color:var(--warning-color);"></i> Vérifier avant d'appliquer</span>
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-outline" (click)="showInterfacesModal = false"><i class="fas fa-times"></i> Annuler</button>
                     <button class="btn btn-primary" style="background:linear-gradient(135deg,#0891b2,#0e7490);" [disabled]="!interfacesConfigData.trim()" (click)="saveInterfacesUpdate()"><i class="fas fa-save"></i> Appliquer</button>
-                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
-                        <i class="fas fa-download"></i> Télécharger la configuration
-                    </button>
                 </div>
             </div>
         </div>
@@ -1103,9 +1093,6 @@
                         <div style="padding:10px 14px;border:2px dashed #fca5a5;border-radius:8px;background:#fef2f2;text-align:center;color:#dc2626;font-size:.85rem;font-weight:600;"><i class="fas fa-file-shield" style="margin-right:6px;"></i> Choisir un fichier (.txt, .json)…</div>
                         <input type="file" accept=".txt,.json" style="display:none;" (change)="handlePoliciesFile($event)">
                     </label>
-                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
-                        <i class="fas fa-download"></i> Télécharger la configuration
-                    </button>
                 </div>
                 <div style="background:#f8fafc;padding:20px;border-radius:10px;border:1px solid var(--border-color);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -1114,15 +1101,12 @@
                         <button (click)="securityPoliciesData=''" style="background:none;border:1px solid var(--danger-color);color:var(--danger-color);cursor:pointer;font-size:.8rem;font-weight:600;padding:4px 8px;border-radius:6px;"><i class="fas fa-trash-alt"></i> Effacer</button>                        }
                     </div>
                     @if (securityPoliciesData) {
-                    <pre style="background:white;padding:14px;border:1px solid #fecaca;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:260px;color:#7f1d1d;line-height:1.5;">{{ securityPoliciesData }}</pre>                    } @else {
-                    <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-shield-alt" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune politique chargée</div>
-                    }
-
-                    <!-- Ajoute dans la div "Politiques chargées", après le <pre> : -->
-                    <!-- @if (securityPoliciesData) {
+                    <pre style="background:white;padding:14px;border:1px solid #fecaca;border-radius:8px;font-family:monospace;font-size:.82rem;overflow-x:auto;white-space:pre-wrap;max-height:260px;color:#7f1d1d;line-height:1.5;">{{ securityPoliciesData }}</pre>
                     <button (click)="downloadConfig(securityPoliciesData, 'security-policies.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
                         <i class="fas fa-download"></i> Télécharger les politiques
-                    </button> } -->
+                    </button> } @else {
+                    <div style="padding:32px;text-align:center;color:var(--text-light);border:2px dashed var(--border-color);border-radius:8px;background:white;"><i class="fas fa-shield-alt" style="font-size:2rem;opacity:.3;display:block;margin-bottom:8px;"></i>Aucune politique chargée</div>
+                    }
                 </div>
             </div>
             <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);">
@@ -1130,15 +1114,10 @@
                 <div style="display:flex;gap:10px;">
                     <button class="btn btn-outline" (click)="showPoliciesModal = false"><i class="fas fa-times"></i> Annuler</button>
                     <button class="btn btn-primary" style="background:linear-gradient(135deg,#dc2626,#b91c1c);" [disabled]="!securityPoliciesData.trim()" (click)="saveSecurityPolicies()"><i class="fas fa-save"></i> Appliquer les politiques</button>
-                    <button (click)="downloadConfig(interfacesConfigData, 'interfaces-config.txt')" style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:700;font-family:var(--font-primary);">
-                        <i class="fas fa-download"></i> Télécharger la configuration
-                    </button>
                 </div>
             </div>
         </div>
     </div>
     }
 
-    <app-toast>
-    </app-toast>
-</div>
+    <app-toast></app-toast>
