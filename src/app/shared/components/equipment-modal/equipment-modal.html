@@ -1,4 +1,3 @@
-@if (type) {
 <div class="modal-overlay" (click)="onOverlayClick($event)">
     <div class="modal-box" (click)="$event.stopPropagation()">
 
@@ -381,23 +380,37 @@
                         <input class="form-control" type="text" [(ngModel)]="form['username']" placeholder="ex. admin" autocomplete="off">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Mot de passe</label>
+                        <label class="form-label">Mot de passe {{isEdit ? '(laisser vide pour conserver)' : ''}}</label>
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <input class="form-control" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="form['password']" placeholder="••••••••" autocomplete="new-password" style="flex:1;">
+                            <input class="form-control" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="form['password']" placeholder="isEdit && !form['password'] && editData?.password ? '••••••••' : '••••••••'" autocomplete="new-password" style="flex:1;">
                             <button type="button" class="btn-icon" (click)="togglePasswordVisibility()" style="background:none;border:none;cursor:pointer;color:#6b7280;">
                   <i class="fas" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
                 </button>
                         </div>
+                        @if (isEdit && editData?.password && !form['password']) {
+                        <small style="color:#6b7280;font-size:0.75rem;display:block;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Mot de passe actuel : 
+                            <span [style.font-family]="showPassword() ? 'monospace' : 'inherit'">
+                                {{ showPassword() ? editData.password : '••••••••' }}
+                            </span>
+                        </small> }
                     </div>
                     @if (type === 'firewall' || type === 'router') {
                     <div class="form-group">
-                        <label class="form-label">Enable password</label>
+                        <label class="form-label">Enable password {{isEdit ? '(laisser vide pour conserver)' : ''}}</label>
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <input class="form-control" [type]="showEnablePassword() ? 'text' : 'password'" [(ngModel)]="form['enable_password']" placeholder="••••••••" autocomplete="new-password" style="flex:1;">
+                            <input class="form-control" [type]="showEnablePassword() ? 'text' : 'password'" [(ngModel)]="form['enable_password']" placeholder="isEdit && !form['enable_password'] && editData?.enable_password ? '••••••••' : '••••••••'" autocomplete="new-password" style="flex:1;">
                             <button type="button" class="btn-icon" (click)="toggleEnablePasswordVisibility()" style="background:none;border:none;cursor:pointer;color:#6b7280;">
                     <i class="fas" [class.fa-eye]="!showEnablePassword()" [class.fa-eye-slash]="showEnablePassword()"></i>
                   </button>
                         </div>
+                        @if (isEdit && editData?.enable_password && !form['enable_password']) {
+                        <small style="color:#6b7280;font-size:0.75rem;display:block;margin-top:4px;">
+                            <i class="fas fa-info-circle"></i> Enable password actuel : 
+                            <span [style.font-family]="showEnablePassword() ? 'monospace' : 'inherit'">
+                                {{ showEnablePassword() ? editData.enable_password : '••••••••' }}
+                            </span>
+                        </small> }
                     </div>
                     }
                 </div>
@@ -528,9 +541,7 @@
         }
       </button>
         </div>
-
     </div>
     <!-- /modal-box -->
 </div>
 <!-- /modal-overlay -->
-}

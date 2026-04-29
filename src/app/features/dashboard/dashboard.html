@@ -308,6 +308,7 @@
                                 <th>Site</th>
                                 <th>IP NMS (VLAN NMS)</th>
                                 <th>IP SERVICE (VLAN SERVICE)</th>
+                                <th>Dernier Accès</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
@@ -320,6 +321,10 @@
                                 <td><code>{{ fw.ip_nms || 'N/A' }}</code> (VLAN {{ fw.vlan_nms || 'N/A' }})
                                 </td>
                                 <td><code>{{ fw.ip_service || 'N/A' }}</code> (VLAN {{ fw.vlan_service || 'N/A' }})
+                                </td>
+                                <td>
+                                    <div><i class="fas fa-user"></i> {{ getLastAccessUser(fw) }}</div>
+                                    <div class="text-muted">{{ formatDate(fw.updated_at) }}</div>
                                 </td>
                                 <td>
                                     <span class="status-badge" [ngClass]="fw.status === 'active' ? 'status-active' : 'status-danger'">
@@ -376,6 +381,7 @@
                                 <th>Site</th>
                                 <th>IP NMS (VLAN NMS)</th>
                                 <th>IP SERVICE (VLAN SERVICE)</th>
+                                <th>Dernier Accès</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
@@ -388,6 +394,10 @@
                                 <td><code>{{ rt.ip_nms || 'N/A' }}</code> (VLAN {{ rt.vlan_nms || 'N/A' }})
                                 </td>
                                 <td><code>{{ rt.ip_service || 'N/A' }}</code> (VLAN {{ rt.vlan_service || 'N/A' }})
+                                </td>
+                                <td>
+                                    <div><i class="fas fa-user"></i> {{ getLastAccessUser(rt) }}</div>
+                                    <div class="text-muted">{{ formatDate(rt.updated_at) }}</div>
                                 </td>
                                 <td>
                                     <span class="status-badge" [ngClass]="rt.status === 'active' ? 'status-active' : 'status-danger'">
@@ -1119,5 +1129,4 @@
         </div>
     </div>
     }
-
     <app-toast></app-toast>

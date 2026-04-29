@@ -63,15 +63,15 @@ export class EquipmentModalComponent implements OnChanges {
       this.showPassword.set(false);
       this.showEnablePassword.set(false);
 
-      // Réinitialiser les sélections et le fichier uploadé
       this.selectedSwitchesIds  = [];
       this.selectedRoutersIds   = [];
       this.selectedFirewallsIds = [];
 
       if (this.editData) {
-        this.form = { ...this.editData, password: '', enable_password: '' };
+        // ✅ Ne pas masquer les mots de passe existants
+        this.form = { ...this.editData };
 
-        // Normalisation du statut (legacy boolean → string)
+        // Normalisation du statut
         if (this.form['status'] !== undefined) {
           this.form['status'] = this.normalizeStatus(this.form['status']);
         }
@@ -367,11 +367,15 @@ export class EquipmentModalComponent implements OnChanges {
   private cleanForm(): Record<string, any> {
     const EXCLUDED = new Set([
       'site', 'user', 'configuration_histories',
-      'config_filename', 'config_preview',   // champs UI uniquement
+      'config_filename', 'config_preview',
     ]);
     const cleaned = Object.fromEntries(
       Object.entries(this.form).filter(([key, v]) => {
         if (EXCLUDED.has(key) || key.startsWith('__')) return false;
+        // ✅ Ne pas envoyer les mots de passe vides en édition
+        if ((key === 'password' || key === 'enable_password') && v === '' && this.isEdit) {
+          return false;
+        }
         return v !== '' && v !== null && v !== undefined;
       })
     );
