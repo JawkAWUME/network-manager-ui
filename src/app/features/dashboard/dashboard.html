@@ -866,6 +866,13 @@
                             <div style="font-weight:600;">{{ currentViewItem.vlan_service || 'N/A' }}</div>
                         </div>
                         <div>
+                            <div style="font-size:.75rem;color:#6b7280;">Type de connexion</div>
+                            <div style="font-weight:600;">
+                                {{ connectionTypeLabel(currentViewItem.connection_type) }}
+                            </div>
+                        </div>
+
+                        <div>
                             <div style="font-size:.75rem;color:#6b7280;">Utilisateur</div>
                             <div style="font-weight:600;font-family:monospace;">{{ currentViewItem.username || 'N/A' }}</div>
                         </div>
@@ -1130,3 +1137,13 @@
     </div>
     }
     <app-toast></app-toast>
+</div>
+</div>
+</div>
+}
+<app-toast></app-toast>ast>
+</div>
+</div>
+</div>
+}
+<app-toast></app-toast>
