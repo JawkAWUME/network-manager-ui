@@ -66,8 +66,36 @@
                         <input class="form-control" type="text" [(ngModel)]="form['city']" placeholder="ex. Dakar">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Région</label>
+                        <select class="form-control" [(ngModel)]="form['region']">
+                            <option value="">— Sélectionner —</option>
+                            <option value="Dakar">Dakar</option>
+                            <option value="Thiès">Thiès</option>
+                            <option value="Saint-Louis">Saint-Louis</option>
+                            <option value="Diourbel">Diourbel</option>
+                            <option value="Louga">Louga</option>
+                            <option value="Fatick">Fatick</option>
+                            <option value="Kaolack">Kaolack</option>
+                            <option value="Matam">Matam</option>
+                            <option value="Tambacounda">Tambacounda</option>
+                            <option value="Kédougou">Kédougou</option>
+                            <option value="Kolda">Kolda</option>
+                            <option value="Ziguinchor">Ziguinchor</option>
+                            <option value="Kaffrine">Kaffrine</option>
+                            <option value="Sédhiou">Sédhiou</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Pays</label>
-                        <input class="form-control" type="text" [(ngModel)]="form['country']" placeholder="ex. Sénégal">
+                        <input class="form-control" type="text" [(ngModel)]="form['country']" value="Sénégal" placeholder="ex. Sénégal">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Latitude</label>
+                        <input class="form-control" type="number" step="0.000001" [(ngModel)]="form['latitude']" placeholder="ex. 14.693425">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Longitude</label>
+                        <input class="form-control" type="number" step="0.000001" [(ngModel)]="form['longitude']" placeholder="ex. -17.447938">
                     </div>
                 </div>
             </div>
@@ -369,6 +397,15 @@
                         <label class="form-label">VLAN Service</label>
                         <input class="form-control" type="number" [(ngModel)]="form['vlan_service']" min="1" max="4094" placeholder="ex. 200">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Type de connexion</label>
+                        <select class="form-control" [(ngModel)]="form['connection_type']">
+                            <option value="">— Sélectionner —</option>
+                            <option value="fh">🔗 Faisceau Hertzien (FH)</option>
+                            <option value="fo">🌐 Fibre Optique (FO)</option>
+                            <option value="both">🔗🌐 FH + FO</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -511,10 +548,13 @@
             <div class="form-group">
                 <label class="form-label">Statut</label>
                 <select class="form-control" [(ngModel)]="form['status']" style="max-width:300px;">
-            <option value="active">Actif</option>
-            <option value="inactive">Inactif</option>
-            @if (type === 'switch') {
-              <option value="warning">Avertissement</option>
+            <option value="active">✅ Actif</option>
+            <option value="inactive">⛔ Inactif</option>
+            @if (type === 'switch' || type === 'firewall') {
+              <option value="warning">⚠️ Avertissement</option>
+            }
+            @if (type === 'firewall') {
+              <option value="danger">🔴 Critique</option>
             }
           </select>
             </div>
