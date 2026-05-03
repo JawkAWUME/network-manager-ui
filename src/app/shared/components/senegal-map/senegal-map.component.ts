@@ -149,9 +149,8 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   private loadGeoJson(): void {
     const sources = [
-      'https://raw.githubusercontent.com/dreampnx/senegal-geojson/main/senegal_regions.geojson',
-      'https://raw.githubusercontent.com/giulioscibilia/senegal-administrative-boundaries/main/regions.geojson',
-      'assets/geojson/senegal-regions.geojson',
+      'https://raw.githubusercontent.com/codeforafrica/covid19-data/master/geojson/senegal.geojson',
+      'assets/geojson/senegal-regions.geojson'
     ];
 
     this.tryFetch(sources, 0);
@@ -180,8 +179,11 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       style: (f) => this.defaultStyle(f as GeoJSON.Feature),
       onEachFeature: (feature, layer) => this.bindFeatureEvents(feature, layer),
     }).addTo(this.map);
+const bounds = this.geoJsonLayer.getBounds();
 
-    this.map.fitBounds(this.geoJsonLayer.getBounds(), { padding: [24, 24] });
+if (bounds.isValid()) {
+  this.map.fitBounds(bounds, { padding: [24, 24] });
+}
   }
 
   private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
