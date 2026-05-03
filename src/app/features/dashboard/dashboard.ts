@@ -116,20 +116,20 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   pendingChanges = signal<any[]>([]);
 
-loadPendingChanges() {
-  if (this.auth.isAdmin()) {
-    this.api.getPendingChanges().subscribe((res: { data: any; }) => this.pendingChanges.set(res.data));
+  loadPendingChanges() {
+    if (this.auth.isAdmin()) {
+      this.api.getPendingChanges().subscribe(res => this.pendingChanges.set(res.data));
+    }
   }
-}
 
-approveChange(id: number) {
-  this.api.approveChange(id).subscribe(() => this.loadPendingChanges());
-}
+  approveChange(id: number) {
+    this.api.approveChange(id).subscribe(() => this.loadPendingChanges());
+  }
 
-rejectChange(id: number) {
-  const reason = prompt('Motif du rejet (optionnel)');
-  this.api.rejectChange(id, reason || '').subscribe(() => this.loadPendingChanges());
-}
+  rejectChange(id: number) {
+    const reason = prompt('Motif du rejet (optionnel)');
+    this.api.rejectChange(id, reason || '').subscribe(() => this.loadPendingChanges());
+  }
 
   get siteEquipmentData(): { siteName: string; total: number }[] {
     const sites = this.sitesWithCounts;
@@ -144,50 +144,46 @@ rejectChange(id: number) {
 
   get topRoutersByInterfaces(): { name: string; count: number }[] {
     return this.routers()
-      .filter((r: { interfaces_count: number; }) => r.interfaces_count && r.interfaces_count > 0)
-      .sort((a: { interfaces_count: any; }, b: { interfaces_count: any; }) => (b.interfaces_count || 0) - (a.interfaces_count || 0))
+      .filter(r => r.interfaces_count && r.interfaces_count > 0)
+      .sort((a, b) => (b.interfaces_count || 0) - (a.interfaces_count || 0))
       .slice(0, 5)
-      .map((r: { name: any; interfaces_count: any; }) => ({ name: r.name, count: r.interfaces_count || 0 }));
+      .map(r => ({ name: r.name, count: r.interfaces_count || 0 }));
   }
 
   // ------------------------------------------------------------
-  // Filtres et getters (inchangés)
+  // Filtres et getters
   // ------------------------------------------------------------
   get filteredFirewalls(): Firewall[] {
-    return this.firewalls().filter(
-      (      f: { name: any; model: any; ip_nms: any; ip_service: any; site: string; status: string; }) =>
-        (!this.filterFw.search ||
-          `${f.name} ${f.model} ${f.ip_nms} ${f.ip_service} ${f.site}`.toLowerCase().includes(this.filterFw.search.toLowerCase())) &&
-        (!this.filterFw.status || f.status === this.filterFw.status) &&
-        (!this.filterFw.site || f.site === this.filterFw.site),
+    return this.firewalls().filter(f =>
+      (!this.filterFw.search ||
+        `${f.name} ${f.model} ${f.ip_nms} ${f.ip_service} ${f.site}`.toLowerCase().includes(this.filterFw.search.toLowerCase())) &&
+      (!this.filterFw.status || f.status === this.filterFw.status) &&
+      (!this.filterFw.site || f.site === this.filterFw.site)
     );
   }
 
   get filteredRouters(): Router[] {
-    return this.routers().filter(
-      (      r: { name: any; model: any; ip_nms: any; site: string; status: string; }) =>
-        (!this.filterRt.search ||
-          `${r.name} ${r.model} ${r.ip_nms} ${r.site}`.toLowerCase().includes(this.filterRt.search.toLowerCase())) &&
-        (!this.filterRt.status || r.status === this.filterRt.status) &&
-        (!this.filterRt.site || r.site === this.filterRt.site),
+    return this.routers().filter(r =>
+      (!this.filterRt.search ||
+        `${r.name} ${r.model} ${r.ip_nms} ${r.site}`.toLowerCase().includes(this.filterRt.search.toLowerCase())) &&
+      (!this.filterRt.status || r.status === this.filterRt.status) &&
+      (!this.filterRt.site || r.site === this.filterRt.site)
     );
   }
 
   get filteredSwitches(): Switch[] {
-    return this.switches().filter(
-      (      s: { name: any; model: any; ip_nms: any; site: string; status: string; }) =>
-        (!this.filterSw.search ||
-          `${s.name} ${s.model} ${s.ip_nms} ${s.site}`.toLowerCase().includes(this.filterSw.search.toLowerCase())) &&
-        (!this.filterSw.status || s.status === this.filterSw.status) &&
-        (!this.filterSw.site || s.site === this.filterSw.site),
+    return this.switches().filter(s =>
+      (!this.filterSw.search ||
+        `${s.name} ${s.model} ${s.ip_nms} ${s.site}`.toLowerCase().includes(this.filterSw.search.toLowerCase())) &&
+      (!this.filterSw.status || s.status === this.filterSw.status) &&
+      (!this.filterSw.site || s.site === this.filterSw.site)
     );
   }
 
   get filteredSites(): Site[] {
-    return this.sites().filter(
-      (      s: { name: any; city: any; country: any; code: any; }) =>
-        !this.filterSite.search ||
-        `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase()),
+    return this.sites().filter(s =>
+      !this.filterSite.search ||
+      `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase())
     );
   }
 
@@ -197,19 +193,19 @@ rejectChange(id: number) {
     const routers = this.routers();
     const switches = this.switches();
 
-    return sites.map((site: { id: any; }) => ({
-        ...site,
-        firewalls_count: firewalls.filter((fw: { site_id: any; }) => fw.site_id === site.id).length,
-        routers_count: routers.filter((rt: { site_id: any; }) => rt.site_id === site.id).length,
-        switches_count: switches.filter((sw: { site_id: any; }) => sw.site_id === site.id).length,
+    return sites.map(site => ({
+      ...site,
+      firewalls_count: firewalls.filter(fw => fw.site_id === site.id).length,
+      routers_count: routers.filter(rt => rt.site_id === site.id).length,
+      switches_count: switches.filter(sw => sw.site_id === site.id).length,
     }));
   }
 
   get filteredSitesWithCounts(): Site[] {
     const sites = this.sitesWithCounts;
     return sites.filter(s =>
-        !this.filterSite.search ||
-        `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase())
+      !this.filterSite.search ||
+      `${s.name} ${s.city} ${s.country} ${s.code}`.toLowerCase().includes(this.filterSite.search.toLowerCase())
     );
   }
 
@@ -223,10 +219,10 @@ rejectChange(id: number) {
     const list = this.users();
     return {
       total: list.length,
-      active: list.filter((u: { is_active: any; }) => u.is_active).length,
-      admins: list.filter((u: { role: string; }) => u.role === 'admin').length,
-      agents: list.filter((u: { role: string; }) => u.role === 'agent').length,
-      viewers: list.filter((u: { role: string; }) => u.role === 'viewer').length,
+      active: list.filter(u => u.is_active).length,
+      admins: list.filter(u => u.role === 'admin').length,
+      agents: list.filter(u => u.role === 'agent').length,
+      viewers: list.filter(u => u.role === 'viewer').length,
     };
   }
 
@@ -252,13 +248,13 @@ rejectChange(id: number) {
     this.switches.set([]);
     this.sites.set([]);
     this.users.set([]);
-    
+
     forkJoin({
       dashboard: this.api.getDashboard(),
       firewalls: this.api.getFirewalls({ limit: 200 }),
       routers: this.api.getRouters({ limit: 200 }),
       switches: this.api.getSwitches({ limit: 200 }),
-      sites: this.api.getSites({ limit:200 }),
+      sites: this.api.getSites({ limit: 200 }),
       users: this.api.getUsers()
     }).subscribe({
       next: ({ dashboard, firewalls, routers, switches, sites, users }) => {
@@ -307,17 +303,13 @@ rejectChange(id: number) {
     this.modalEdit.set(null);
   }
 
-  // dashboard.component.ts
-onSaved(response?: any): void {
-  this.closeModal();
-  if (response?.pending_id) {
-    // Afficher une notification supplémentaire (toast)
-    // Vous pouvez utiliser votre service de toast ou une simple alerte
-    // Exemple avec votre composant ToastComponent :
-    this.toastService.show('Demande de modification envoyée à l’administrateur.', 'info');
+  onSaved(response?: any): void {
+    this.closeModal();
+    if (response?.pending_id) {
+      this.toastService.show('Demande de modification envoyée à l’administrateur.', 'info');
+    }
+    this.loadAll();
   }
-  this.loadAll(); // Recharge tout pour garantir la cohérence des compteurs
-}
 
   openConfirmDelete(msg: string, action: () => void): void {
     this.confirmMsg = msg;
@@ -401,20 +393,20 @@ onSaved(response?: any): void {
     const k = this.kpis();
     const pieCanvas = document.getElementById('deviceDistributionChart') as HTMLCanvasElement | null;
     if (pieCanvas && k) {
-        this.charts.push(
-            new (window as any).Chart(pieCanvas, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Firewalls', 'Routeurs', 'Switches'],
-                    datasets: [{
-                        data: [k.kpis.firewalls.total, k.kpis.routers.total, k.kpis.switches.total],
-                        backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
-                        borderWidth: 0,
-                    }],
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
-            }),
-        );
+      this.charts.push(
+        new (window as any).Chart(pieCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Firewalls', 'Routeurs', 'Switches'],
+            datasets: [{
+              data: [k.kpis.firewalls.total, k.kpis.routers.total, k.kpis.switches.total],
+              backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
+              borderWidth: 0,
+            }],
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } },
+        }),
+      );
     }
 
     const siteCanvas = document.getElementById('siteEquipmentChart') as HTMLCanvasElement | null;
@@ -482,13 +474,13 @@ onSaved(response?: any): void {
   }
 
   showSiteEquipment(siteId: number, type: 'firewall' | 'router' | 'switch'): void {
-    const site = this.sites().find((s: { id: number; }) => s.id === siteId);
+    const site = this.sites().find(s => s.id === siteId);
     if (!site) return;
 
     let list: any[] = [];
-    if (type === 'firewall') list = this.firewalls().filter((eq: { site_id: number; }) => eq.site_id === siteId);
-    else if (type === 'router') list = this.routers().filter((eq: { site_id: number; }) => eq.site_id === siteId);
-    else list = this.switches().filter((eq: { site_id: number; }) => eq.site_id === siteId);
+    if (type === 'firewall') list = this.firewalls().filter(eq => eq.site_id === siteId);
+    else if (type === 'router') list = this.routers().filter(eq => eq.site_id === siteId);
+    else list = this.switches().filter(eq => eq.site_id === siteId);
 
     this.modalSiteEquipmentList = list;
     this.modalSiteEquipmentType = type;
@@ -500,7 +492,7 @@ onSaved(response?: any): void {
   closeSiteEquipmentModal(): void { this.showSiteEquipmentModal = false; }
 
   configurePorts(switchId: number): void {
-    const sw = this.switches().find((s: { id: number; }) => s.id === switchId);
+    const sw = this.switches().find(s => s.id === switchId);
     if (!sw) return;
     this.modalTitlePorts = `Configuration des ports : ${sw.name}`;
     this.currentSwitchForPorts = sw;
@@ -526,7 +518,7 @@ onSaved(response?: any): void {
   }
 
   updateInterfaces(routerId: number): void {
-    const rt = this.routers().find((r: { id: number; }) => r.id === routerId);
+    const rt = this.routers().find(r => r.id === routerId);
     if (!rt) return;
     this.modalTitleInterfaces = `Configuration des interfaces : ${rt.name}`;
     this.currentRouterForInterfaces = rt;
@@ -552,7 +544,7 @@ onSaved(response?: any): void {
   }
 
   updateSecurityPolicies(firewallId: number): void {
-    const fw = this.firewalls().find((f: { id: number; }) => f.id === firewallId);
+    const fw = this.firewalls().find(f => f.id === firewallId);
     if (!fw) return;
     this.modalTitlePolicies = `Politiques de sécurité : ${fw.name}`;
     this.currentFirewallForPolicies = fw;
@@ -580,12 +572,12 @@ onSaved(response?: any): void {
   connectionTypeLabel(type: string | undefined): string {
     if (!type) return 'N/A';
     const labels: Record<string, string> = {
-        fh: 'Faisceau Hertzien',
-        fo: 'Fibre Optique',
-        both: 'FH + FO',
+      fh: 'Faisceau Hertzien',
+      fo: 'Fibre Optique',
+      both: 'FH + FO',
     };
     return labels[type] || type;
-}
+  }
 
   editUser(user: User): void {
     this.modalEdit.set(user);
@@ -608,10 +600,10 @@ onSaved(response?: any): void {
 
   viewItem(type: string, id: number): void {
     let item: any = null;
-    if (type === 'sites') item = this.sites().find((s: { id: number; }) => s.id === id);
-    else if (type === 'firewalls') item = this.firewalls().find((f: { id: number; }) => f.id === id);
-    else if (type === 'routers') item = this.routers().find((r: { id: number; }) => r.id === id);
-    else if (type === 'switches') item = this.switches().find((s: { id: number; }) => s.id === id);
+    if (type === 'sites') item = this.sites().find(s => s.id === id);
+    else if (type === 'firewalls') item = this.firewalls().find(f => f.id === id);
+    else if (type === 'routers') item = this.routers().find(r => r.id === id);
+    else if (type === 'switches') item = this.switches().find(s => s.id === id);
     if (!item) return;
     this.currentViewItem = item;
     this.currentViewType = type.slice(0, -1);
@@ -666,7 +658,5 @@ onSaved(response?: any): void {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-}
-
-
+  }
 }
