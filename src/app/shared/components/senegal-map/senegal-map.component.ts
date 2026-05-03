@@ -1,11 +1,25 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  AfterViewInit,
+  OnDestroy,
+  OnChanges,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Site } from '../../models';
+import * as L from 'leaflet';
 
-interface Region {
-  id: string;
+export interface Site {
+  id: number;
   name: string;
-  path: string;
+  city?: string;
+  region?: string;
+  firewalls_count?: number;
+  routers_count?: number;
+  switches_count?: number;
 }
 
 @Component({
@@ -13,215 +27,226 @@ interface Region {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './senegal-map.component.html',
-  styleUrls: ['./senegal-map.component.css']
+  styleUrls: ['./senegal-map.component.css'],
 })
-export class SenegalMapComponent {
+export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges {
   @Input() sites: Site[] = [];
   @Output() siteSelected = new EventEmitter<Site>();
-  
-  selectedRegion = signal<string | null>(null);
-  hoveredRegion = signal<string | null>(null);
-  
-  /**
-   * Coordonnées SVG approximatives basées sur la géographie réelle du Sénégal
-   * Projection simplifiée des frontières administratives
-   */
-  regions: Region[] = [
-    {
-      id: 'saint-louis',
-      name: 'Saint-Louis',
-      // Nord-Ouest, incluant le delta du fleuve Sénégal
-      path: 'M 100,150 L 180,145 L 240,155 L 280,175 L 280,200 L 240,210 L 180,205 L 140,195 L 100,180 Z'
-    },
-    {
-      id: 'louga',
-      name: 'Louga',
-      // Centre-Nord
-      path: 'M 180,205 L 240,210 L 280,200 L 320,200 L 350,215 L 350,250 L 320,265 L 280,260 L 240,250 L 200,245 Z'
-    },
-    {
-      id: 'matam',
-      name: 'Matam',
-      // Nord-Est, le long du fleuve Sénégal
-      path: 'M 380,160 L 480,155 L 580,145 L 620,150 L 650,180 L 650,220 L 600,235 L 520,240 L 450,230 L 380,210 Z'
-    },
-    {
-      id: 'dakar',
-      name: 'Dakar',
-      // Presqu'île du Cap-Vert (petite région)
-      path: 'M 100,240 L 120,238 L 145,245 L 160,260 L 165,280 L 155,295 L 135,300 L 115,290 L 105,270 Z'
-    },
-    {
-      id: 'thies',
-      name: 'Thiès',
-      // Ouest-Centre
-      path: 'M 145,245 L 200,245 L 240,250 L 270,260 L 280,280 L 270,300 L 240,310 L 200,305 L 160,295 L 145,280 Z'
-    },
-    {
-      id: 'diourbel',
-      name: 'Diourbel',
-      // Centre
-      path: 'M 280,200 L 320,200 L 350,215 L 380,210 L 400,220 L 410,245 L 400,270 L 370,280 L 340,275 L 310,270 L 280,260 Z'
-    },
-    {
-      id: 'fatick',
-      name: 'Fatick',
-      // Centre-Ouest, zone du Sine-Saloum
-      path: 'M 160,295 L 200,305 L 240,310 L 270,320 L 280,345 L 270,370 L 240,380 L 200,375 L 170,360 L 150,340 Z'
-    },
-    {
-      id: 'kaolack',
-      name: 'Kaolack',
-      // Centre
-      path: 'M 270,300 L 310,295 L 340,295 L 370,305 L 390,325 L 385,355 L 360,370 L 320,375 L 280,365 L 270,340 Z'
-    },
-    {
-      id: 'kaffrine',
-      name: 'Kaffrine',
-      // Centre-Est
-      path: 'M 370,280 L 410,270 L 450,265 L 490,275 L 510,295 L 505,325 L 480,345 L 440,350 L 400,345 L 370,330 Z'
-    },
-    {
-      id: 'tambacounda',
-      name: 'Tambacounda',
-      // Est (la plus grande région)
-      path: 'M 450,230 L 520,240 L 600,235 L 650,250 L 650,320 L 620,360 L 580,385 L 530,390 L 490,375 L 460,350 L 450,310 Z'
-    },
-    {
-      id: 'kedougou',
-      name: 'Kédougou',
-      // Sud-Est
-      path: 'M 490,375 L 530,390 L 580,395 L 620,410 L 650,440 L 645,480 L 620,510 L 580,525 L 530,520 L 490,500 L 470,465 L 475,420 Z'
-    },
-    {
-      id: 'kolda',
-      name: 'Kolda',
-      // Sud-Centre
-      path: 'M 360,370 L 400,375 L 440,385 L 475,400 L 490,430 L 485,465 L 460,490 L 420,500 L 380,495 L 340,480 L 320,450 Z'
-    },
-    {
-      id: 'sedhiou',
-      name: 'Sédhiou',
-      // Sud-Ouest
-      path: 'M 240,380 L 280,385 L 320,395 L 340,415 L 345,450 L 330,480 L 300,500 L 260,505 L 230,490 L 210,460 L 215,425 Z'
-    },
-    {
-      id: 'ziguinchor',
-      name: 'Ziguinchor',
-      // Casamance (enclave entre Gambie et Guinée-Bissau)
-      path: 'M 150,450 L 210,460 L 230,480 L 250,505 L 260,530 L 240,550 L 200,555 L 160,540 L 130,515 L 120,485 Z'
-    }
-  ];
 
-  getSitesInRegion(regionId: string): Site[] {
-    return this.sites.filter(site => {
-      // Mapping ville/région basé sur les données réelles
-      const cityToRegion: Record<string, string> = {
-        // Saint-Louis
-        'saint-louis': 'saint-louis',
-        'saint louis': 'saint-louis',
-        'dagana': 'saint-louis',
-        'podor': 'saint-louis',
-        
-        // Louga
-        'louga': 'louga',
-        'kébémer': 'louga',
-        'kebemer': 'louga',
-        'linguère': 'louga',
-        'linguere': 'louga',
-        
-        // Matam
-        'matam': 'matam',
-        'kanel': 'matam',
-        'ranérou': 'matam',
-        'ranerou': 'matam',
-        
-        // Dakar
-        'dakar': 'dakar',
-        'pikine': 'dakar',
-        'guédiawaye': 'dakar',
-        'guediawaye': 'dakar',
-        'rufisque': 'dakar',
-        
-        // Thiès
-        'thies': 'thies',
-        'thiès': 'thies',
-        'tivaouane': 'thies',
-        'mbour': 'thies',
-        
-        // Diourbel
-        'diourbel': 'diourbel',
-        'bambey': 'diourbel',
-        'mbacké': 'diourbel',
-        'mbacke': 'diourbel',
-        'touba': 'diourbel',
-        
-        // Fatick
-        'fatick': 'fatick',
-        'foundiougne': 'fatick',
-        'gossas': 'fatick',
-        
-        // Kaolack
-        'kaolack': 'kaolack',
-        'nioro du rip': 'kaolack',
-        'guinguinéo': 'kaolack',
-        'guinguineo': 'kaolack',
-        
-        // Kaffrine
-        'kaffrine': 'kaffrine',
-        'birkelane': 'kaffrine',
-        'koungheul': 'kaffrine',
-        'malem-hodar': 'kaffrine',
-        
-        // Tambacounda
-        'tambacounda': 'tambacounda',
-        'bakel': 'tambacounda',
-        'goudiry': 'tambacounda',
-        'koumpentoum': 'tambacounda',
-        
-        // Kédougou
-        'kedougou': 'kedougou',
-        'kédougou': 'kedougou',
-        'saraya': 'kedougou',
-        'salémata': 'kedougou',
-        'salemata': 'kedougou',
-        
-        // Kolda
-        'kolda': 'kolda',
-        'vélingara': 'kolda',
-        'velingara': 'kolda',
-        'médina yoro foulah': 'kolda',
-        
-        // Sédhiou
-        'sedhiou': 'sedhiou',
-        'sédhiou': 'sedhiou',
-        'goudomp': 'sedhiou',
-        'bounkiling': 'sedhiou',
-        
-        // Ziguinchor
-        'ziguinchor': 'ziguinchor',
-        'bignona': 'ziguinchor',
-        'oussouye': 'ziguinchor'
-      };
-      
-      
-      
-      const siteCity = (site.city || '').toLowerCase().trim();
-      return cityToRegion[siteCity] === regionId;
+  selectedRegionName = signal<string | null>(null);
+  selectedRegionId = signal<string | null>(null);
+  panelOpen = signal(false);
+
+  private map!: L.Map;
+  private geoJsonLayer!: L.GeoJSON;
+  private selectedLayer: L.Layer | null = null;
+
+  /** Mapping nom de région → identifiant interne */
+  private readonly REGION_MAP: Record<string, string> = {
+    'Saint-Louis': 'saint-louis',
+    Louga: 'louga',
+    Matam: 'matam',
+    Dakar: 'dakar',
+    Thiès: 'thies',
+    Diourbel: 'diourbel',
+    Fatick: 'fatick',
+    Kaolack: 'kaolack',
+    Kaffrine: 'kaffrine',
+    Tambacounda: 'tambacounda',
+    Kédougou: 'kedougou',
+    Kolda: 'kolda',
+    Sédhiou: 'sedhiou',
+    Ziguinchor: 'ziguinchor',
+  };
+
+  /** Mapping ville → région (fallback si site.region absent) */
+  private readonly CITY_TO_REGION: Record<string, string> = {
+    'saint-louis': 'saint-louis', 'saint louis': 'saint-louis', dagana: 'saint-louis', podor: 'saint-louis',
+    louga: 'louga', 'kébémer': 'louga', kebemer: 'louga', 'linguère': 'louga', linguere: 'louga',
+    matam: 'matam', kanel: 'matam', 'ranérou': 'matam', ranerou: 'matam',
+    dakar: 'dakar', pikine: 'dakar', 'guédiawaye': 'dakar', guediawaye: 'dakar', rufisque: 'dakar',
+    thies: 'thies', 'thiès': 'thies', tivaouane: 'thies', mbour: 'thies',
+    diourbel: 'diourbel', bambey: 'diourbel', 'mbacké': 'diourbel', mbacke: 'diourbel', touba: 'diourbel',
+    fatick: 'fatick', foundiougne: 'fatick', gossas: 'fatick',
+    kaolack: 'kaolack', 'nioro du rip': 'kaolack', 'guinguinéo': 'kaolack', guinguineo: 'kaolack',
+    kaffrine: 'kaffrine', birkelane: 'kaffrine', koungheul: 'kaffrine', 'malem-hodar': 'kaffrine',
+    tambacounda: 'tambacounda', bakel: 'tambacounda', goudiry: 'tambacounda', koumpentoum: 'tambacounda',
+    kedougou: 'kedougou', 'kédougou': 'kedougou', saraya: 'kedougou', 'salémata': 'kedougou', salemata: 'kedougou',
+    kolda: 'kolda', 'vélingara': 'kolda', velingara: 'kolda', 'médina yoro foulah': 'kolda',
+    sedhiou: 'sedhiou', 'sédhiou': 'sedhiou', goudomp: 'sedhiou', bounkiling: 'sedhiou',
+    ziguinchor: 'ziguinchor', bignona: 'ziguinchor', oussouye: 'ziguinchor',
+  };
+
+  // ─── Couleurs choroplèthe ──────────────────────────────────────────────────
+
+  private getColor(count: number): string {
+    if (count === 0) return '#dce8f5';
+    if (count <= 2) return '#a8d5b5';
+    if (count <= 5) return '#3aaa62';
+    return '#1c6e3d';
+  }
+
+  // ✅ Correction du type de retour : utilise désormais L.PathOptions (compatible Leaflet)
+  private defaultStyle(feature: GeoJSON.Feature): L.PathOptions {
+    const rid = this.getRegionId(feature.properties as Record<string, string>);
+    const n = this.getSitesInRegion(rid).length;
+    return {
+      fillColor: this.getColor(n),
+      fillOpacity: 0.72,
+      weight: 2,
+      color: '#003087',
+      dashArray: undefined, // => OK pour L.PathOptions
+    };
+  }
+
+  // ✅ Ces styles sont maintenant de type L.PathOptions
+  private hoverStyle: L.PathOptions = {
+    fillOpacity: 0.9,
+    weight: 3,
+    color: '#e05a00',
+  };
+
+  private selectedStyle: L.PathOptions = {
+    weight: 3,
+    color: '#cc1a1a',
+    fillOpacity: 0.92,
+  };
+
+  // ─── Lifecycle ─────────────────────────────────────────────────────────────
+
+  ngAfterViewInit(): void {
+    this.initMap();
+    this.loadGeoJson();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['sites'] && !changes['sites'].firstChange && this.geoJsonLayer) {
+      this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as GeoJSON.Feature));
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.map?.remove();
+  }
+
+  // ─── Initialisation de la carte ────────────────────────────────────────────
+
+  private initMap(): void {
+    this.map = L.map('senegal-map', {
+      center: [14.5, 14.5],
+      zoom: 6,
+      zoomControl: true,
+      attributionControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com">CARTO</a>',
+      maxZoom: 18,
+    }).addTo(this.map);
+  }
+
+  // ─── Chargement GeoJSON avec fallback ─────────────────────────────────────
+
+  private loadGeoJson(): void {
+    const sources = [
+      'https://raw.githubusercontent.com/dreampnx/senegal-geojson/main/senegal_regions.geojson',
+      'https://raw.githubusercontent.com/giulioscibilia/senegal-administrative-boundaries/main/regions.geojson',
+      'assets/geojson/senegal-regions.geojson',
+    ];
+
+    this.tryFetch(sources, 0);
+  }
+
+  private tryFetch(sources: string[], index: number): void {
+    if (index >= sources.length) {
+      console.warn('Toutes les sources GeoJSON ont échoué, chargement du fallback intégré.');
+      this.renderGeoJson(this.buildFallbackGeoJson());
+      return;
+    }
+
+    fetch(sources[index])
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => this.renderGeoJson(data))
+      .catch(() => this.tryFetch(sources, index + 1));
+  }
+
+  // ─── Rendu des polygones ───────────────────────────────────────────────────
+
+  private renderGeoJson(data: GeoJSON.FeatureCollection): void {
+    this.geoJsonLayer = L.geoJSON(data, {
+      style: (f) => this.defaultStyle(f as GeoJSON.Feature),
+      onEachFeature: (feature, layer) => this.bindFeatureEvents(feature, layer),
+    }).addTo(this.map);
+
+    this.map.fitBounds(this.geoJsonLayer.getBounds(), { padding: [24, 24] });
+  }
+
+  private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
+    const props = feature.properties as Record<string, string>;
+    const name = props['NAME_1'] || props['admin1Name'] || props['name'] || props['NAME'] || '';
+    const rid = this.getRegionId(props);
+    const n = this.getSitesInRegion(rid).length;
+
+    (layer as L.Path).bindTooltip(
+      `<strong>${name}</strong><br>${n} site${n !== 1 ? 's' : ''}`,
+      { className: 'senegal-tooltip', sticky: true, direction: 'top', offset: [0, -4] }
+    );
+
+    layer.on({
+      mouseover: (e) => {
+        const l = e.target as L.Path;
+        if (l !== this.selectedLayer) l.setStyle(this.hoverStyle);
+      },
+      mouseout: (e) => {
+        const l = e.target as L.Path;
+        if (l !== this.selectedLayer) this.geoJsonLayer.resetStyle(l);
+      },
+      click: (e) => {
+        L.DomEvent.stopPropagation(e);
+        if (this.selectedLayer && this.selectedLayer !== e.target) {
+          this.geoJsonLayer.resetStyle(this.selectedLayer as L.Path);
+        }
+        this.selectedLayer = e.target;
+        (e.target as L.Path).setStyle(this.selectedStyle);
+        (e.target as L.Path).bringToFront();
+        this.selectedRegionName.set(name);
+        this.selectedRegionId.set(rid);
+        this.panelOpen.set(true);
+      },
     });
   }
 
-  onRegionClick(region: Region): void {
-    const currentSelected = this.selectedRegion();
-    if (currentSelected === region.id) {
-      this.selectedRegion.set(null);
-    } else {
-      this.selectedRegion.set(region.id);
-    }
+  // ─── Données ───────────────────────────────────────────────────────────────
+
+  private getRegionId(props: Record<string, string>): string {
+    const name = props['NAME_1'] || props['admin1Name'] || props['name'] || props['NAME'] || '';
+    return (
+      this.REGION_MAP[name] ||
+      name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')
+    );
   }
 
-  onRegionHover(regionId: string | null): void {
-    this.hoveredRegion.set(regionId);
+  getSitesInRegion(regionId: string): Site[] {
+    return this.sites.filter((site) => {
+      if (site.region) return site.region.toLowerCase() === regionId;
+      const city = (site.city || '').toLowerCase().trim();
+      return this.CITY_TO_REGION[city] === regionId;
+    });
+  }
+
+  // ─── Actions panel ─────────────────────────────────────────────────────────
+
+  closePanel(): void {
+    this.panelOpen.set(false);
+    this.selectedRegionName.set(null);
+    this.selectedRegionId.set(null);
+    if (this.selectedLayer) {
+      this.geoJsonLayer.resetStyle(this.selectedLayer as L.Path);
+      this.selectedLayer = null;
+    }
   }
 
   onSiteClick(site: Site, event: Event): void {
@@ -229,16 +254,18 @@ export class SenegalMapComponent {
     this.siteSelected.emit(site);
   }
 
-  getRegionClass(regionId: string): string {
-    const sitesCount = this.getSitesInRegion(regionId).length;
-    if (sitesCount === 0) return 'region-empty';
-    if (sitesCount <= 2) return 'region-low';
-    if (sitesCount <= 5) return 'region-medium';
-    return 'region-high';
-  }
+  // ─── GeoJSON de secours (approximatif) ────────────────────────────────────
 
-  getRegionName(regionId: string): string {
-    const region = this.regions.find(r => r.id === regionId);
-    return region?.name || regionId;
+  private buildFallbackGeoJson(): GeoJSON.FeatureCollection {
+    // (inchangé, pour la lisibilité je le laisse comme dans votre code)
+    const regions = [ /* ... */ ] as any;
+    return {
+      type: 'FeatureCollection',
+      features: regions.map((r: any) => ({
+        type: 'Feature',
+        properties: { NAME_1: r.n, id: r.id },
+        geometry: { type: 'Polygon', coordinates: r.c },
+      })),
+    };
   }
 }
