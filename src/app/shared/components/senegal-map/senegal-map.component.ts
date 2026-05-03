@@ -6,7 +6,6 @@ interface Region {
   id: string;
   name: string;
   path: string;
-  coordinates: { x: number; y: number };
 }
 
 @Component({
@@ -23,116 +22,189 @@ export class SenegalMapComponent {
   selectedRegion = signal<string | null>(null);
   hoveredRegion = signal<string | null>(null);
   
-  // Définition des 14 régions du Sénégal avec leurs coordonnées approximatives
+  /**
+   * Coordonnées SVG approximatives basées sur la géographie réelle du Sénégal
+   * Projection simplifiée des frontières administratives
+   */
   regions: Region[] = [
     {
-      id: 'dakar',
-      name: 'Dakar',
-      path: 'M 180,280 L 185,275 L 190,280 L 195,285 L 190,290 L 185,288 Z',
-      coordinates: { x: 188, y: 283 }
-    },
-    {
-      id: 'thies',
-      name: 'Thiès',
-      path: 'M 195,285 L 200,275 L 220,270 L 230,275 L 235,285 L 225,295 L 210,298 L 200,295 Z',
-      coordinates: { x: 215, y: 285 }
-    },
-    {
-      id: 'diourbel',
-      name: 'Diourbel',
-      path: 'M 235,285 L 245,275 L 270,270 L 280,280 L 275,295 L 260,300 L 240,298 Z',
-      coordinates: { x: 255, y: 285 }
-    },
-    {
-      id: 'fatick',
-      name: 'Fatick',
-      path: 'M 225,295 L 235,300 L 245,315 L 240,330 L 220,335 L 210,325 L 215,310 Z',
-      coordinates: { x: 230, y: 318 }
-    },
-    {
-      id: 'kaolack',
-      name: 'Kaolack',
-      path: 'M 240,298 L 260,300 L 275,310 L 280,325 L 270,340 L 250,345 L 240,330 Z',
-      coordinates: { x: 260, y: 320 }
-    },
-    {
-      id: 'kaffrine',
-      name: 'Kaffrine',
-      path: 'M 275,295 L 290,290 L 310,295 L 320,310 L 315,330 L 295,335 L 280,325 Z',
-      coordinates: { x: 300, y: 315 }
+      id: 'saint-louis',
+      name: 'Saint-Louis',
+      // Nord-Ouest, incluant le delta du fleuve Sénégal
+      path: 'M 100,150 L 180,145 L 240,155 L 280,175 L 280,200 L 240,210 L 180,205 L 140,195 L 100,180 Z'
     },
     {
       id: 'louga',
       name: 'Louga',
-      path: 'M 230,230 L 250,220 L 280,215 L 300,225 L 305,245 L 290,260 L 270,265 L 245,260 Z',
-      coordinates: { x: 270, y: 240 }
+      // Centre-Nord
+      path: 'M 180,205 L 240,210 L 280,200 L 320,200 L 350,215 L 350,250 L 320,265 L 280,260 L 240,250 L 200,245 Z'
     },
     {
       id: 'matam',
       name: 'Matam',
-      path: 'M 420,180 L 450,175 L 475,185 L 485,205 L 475,225 L 450,230 L 425,220 Z',
-      coordinates: { x: 455, y: 205 }
+      // Nord-Est, le long du fleuve Sénégal
+      path: 'M 380,160 L 480,155 L 580,145 L 620,150 L 650,180 L 650,220 L 600,235 L 520,240 L 450,230 L 380,210 Z'
     },
     {
-      id: 'saint-louis',
-      name: 'Saint-Louis',
-      path: 'M 250,150 L 270,140 L 300,145 L 320,160 L 315,180 L 290,190 L 265,185 Z',
-      coordinates: { x: 285, y: 165 }
+      id: 'dakar',
+      name: 'Dakar',
+      // Presqu'île du Cap-Vert (petite région)
+      path: 'M 100,240 L 120,238 L 145,245 L 160,260 L 165,280 L 155,295 L 135,300 L 115,290 L 105,270 Z'
+    },
+    {
+      id: 'thies',
+      name: 'Thiès',
+      // Ouest-Centre
+      path: 'M 145,245 L 200,245 L 240,250 L 270,260 L 280,280 L 270,300 L 240,310 L 200,305 L 160,295 L 145,280 Z'
+    },
+    {
+      id: 'diourbel',
+      name: 'Diourbel',
+      // Centre
+      path: 'M 280,200 L 320,200 L 350,215 L 380,210 L 400,220 L 410,245 L 400,270 L 370,280 L 340,275 L 310,270 L 280,260 Z'
+    },
+    {
+      id: 'fatick',
+      name: 'Fatick',
+      // Centre-Ouest, zone du Sine-Saloum
+      path: 'M 160,295 L 200,305 L 240,310 L 270,320 L 280,345 L 270,370 L 240,380 L 200,375 L 170,360 L 150,340 Z'
+    },
+    {
+      id: 'kaolack',
+      name: 'Kaolack',
+      // Centre
+      path: 'M 270,300 L 310,295 L 340,295 L 370,305 L 390,325 L 385,355 L 360,370 L 320,375 L 280,365 L 270,340 Z'
+    },
+    {
+      id: 'kaffrine',
+      name: 'Kaffrine',
+      // Centre-Est
+      path: 'M 370,280 L 410,270 L 450,265 L 490,275 L 510,295 L 505,325 L 480,345 L 440,350 L 400,345 L 370,330 Z'
     },
     {
       id: 'tambacounda',
       name: 'Tambacounda',
-      path: 'M 380,240 L 420,235 L 460,245 L 480,265 L 475,290 L 445,300 L 410,295 L 385,280 Z',
-      coordinates: { x: 430, y: 270 }
+      // Est (la plus grande région)
+      path: 'M 450,230 L 520,240 L 600,235 L 650,250 L 650,320 L 620,360 L 580,385 L 530,390 L 490,375 L 460,350 L 450,310 Z'
     },
     {
       id: 'kedougou',
       name: 'Kédougou',
-      path: 'M 445,300 L 475,305 L 500,320 L 510,345 L 500,370 L 470,375 L 445,360 L 440,335 Z',
-      coordinates: { x: 475, y: 340 }
+      // Sud-Est
+      path: 'M 490,375 L 530,390 L 580,395 L 620,410 L 650,440 L 645,480 L 620,510 L 580,525 L 530,520 L 490,500 L 470,465 L 475,420 Z'
     },
     {
       id: 'kolda',
       name: 'Kolda',
-      path: 'M 315,330 L 345,335 L 375,350 L 385,370 L 375,390 L 345,395 L 320,385 L 310,365 Z',
-      coordinates: { x: 350, y: 365 }
+      // Sud-Centre
+      path: 'M 360,370 L 400,375 L 440,385 L 475,400 L 490,430 L 485,465 L 460,490 L 420,500 L 380,495 L 340,480 L 320,450 Z'
     },
     {
       id: 'sedhiou',
       name: 'Sédhiou',
-      path: 'M 270,340 L 295,345 L 315,360 L 320,385 L 310,405 L 280,410 L 260,395 L 255,370 Z',
-      coordinates: { x: 290, y: 375 }
+      // Sud-Ouest
+      path: 'M 240,380 L 280,385 L 320,395 L 340,415 L 345,450 L 330,480 L 300,500 L 260,505 L 230,490 L 210,460 L 215,425 Z'
     },
     {
       id: 'ziguinchor',
       name: 'Ziguinchor',
-      path: 'M 220,385 L 245,390 L 270,405 L 275,425 L 265,445 L 240,450 L 215,440 L 210,420 Z',
-      coordinates: { x: 245, y: 420 }
+      // Casamance (enclave entre Gambie et Guinée-Bissau)
+      path: 'M 150,450 L 210,460 L 230,480 L 250,505 L 260,530 L 240,550 L 200,555 L 160,540 L 130,515 L 120,485 Z'
     }
   ];
 
   getSitesInRegion(regionId: string): Site[] {
     return this.sites.filter(site => {
-      // Logique de mapping région/site basée sur la ville ou une propriété region
+      // Mapping ville/région basé sur les données réelles
       const cityToRegion: Record<string, string> = {
+        // Saint-Louis
+        'saint-louis': 'saint-louis',
+        'saint louis': 'saint-louis',
+        'dagana': 'saint-louis',
+        'podor': 'saint-louis',
+        
+        // Louga
+        'louga': 'louga',
+        'kébémer': 'louga',
+        'kebemer': 'louga',
+        'linguère': 'louga',
+        'linguere': 'louga',
+        
+        // Matam
+        'matam': 'matam',
+        'kanel': 'matam',
+        'ranérou': 'matam',
+        'ranerou': 'matam',
+        
+        // Dakar
         'dakar': 'dakar',
+        'pikine': 'dakar',
+        'guédiawaye': 'dakar',
+        'guediawaye': 'dakar',
+        'rufisque': 'dakar',
+        
+        // Thiès
         'thies': 'thies',
         'thiès': 'thies',
-        'saint-louis': 'saint-louis',
-        'kaolack': 'kaolack',
-        'ziguinchor': 'ziguinchor',
-        'louga': 'louga',
-        'matam': 'matam',
+        'tivaouane': 'thies',
+        'mbour': 'thies',
+        
+        // Diourbel
+        'diourbel': 'diourbel',
+        'bambey': 'diourbel',
+        'mbacké': 'diourbel',
+        'mbacke': 'diourbel',
+        'touba': 'diourbel',
+        
+        // Fatick
         'fatick': 'fatick',
+        'foundiougne': 'fatick',
+        'gossas': 'fatick',
+        
+        // Kaolack
+        'kaolack': 'kaolack',
+        'nioro du rip': 'kaolack',
+        'guinguinéo': 'kaolack',
+        'guinguineo': 'kaolack',
+        
+        // Kaffrine
         'kaffrine': 'kaffrine',
-        'kolda': 'kolda',
+        'birkelane': 'kaffrine',
+        'koungheul': 'kaffrine',
+        'malem-hodar': 'kaffrine',
+        
+        // Tambacounda
         'tambacounda': 'tambacounda',
+        'bakel': 'tambacounda',
+        'goudiry': 'tambacounda',
+        'koumpentoum': 'tambacounda',
+        
+        // Kédougou
         'kedougou': 'kedougou',
         'kédougou': 'kedougou',
+        'saraya': 'kedougou',
+        'salémata': 'kedougou',
+        'salemata': 'kedougou',
+        
+        // Kolda
+        'kolda': 'kolda',
+        'vélingara': 'kolda',
+        'velingara': 'kolda',
+        'médina yoro foulah': 'kolda',
+        
+        // Sédhiou
         'sedhiou': 'sedhiou',
         'sédhiou': 'sedhiou',
-        'diourbel': 'diourbel'
+        'goudomp': 'sedhiou',
+        'bounkiling': 'sedhiou',
+        
+        // Ziguinchor
+        'ziguinchor': 'ziguinchor',
+        'bignona': 'ziguinchor',
+        'oussouye': 'ziguinchor'
       };
+      
+      
       
       const siteCity = (site.city || '').toLowerCase().trim();
       return cityToRegion[siteCity] === regionId;
@@ -163,5 +235,10 @@ export class SenegalMapComponent {
     if (sitesCount <= 2) return 'region-low';
     if (sitesCount <= 5) return 'region-medium';
     return 'region-high';
+  }
+
+  getRegionName(regionId: string): string {
+    const region = this.regions.find(r => r.id === regionId);
+    return region?.name || regionId;
   }
 }

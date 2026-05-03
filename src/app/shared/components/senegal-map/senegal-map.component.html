@@ -24,68 +24,307 @@
     </div>
 
     <div class="map-wrapper">
-        <svg viewBox="0 0 600 500" class="senegal-map">
-      <!-- Fond de carte -->
-      <rect width="600" height="500" fill="#E4EFF7" opacity="0.3"/>
-      
-      <!-- Régions -->
-      @for (region of regions; track region.id) {
-        <g class="region-group">
-          <!-- Région clickable -->
-          <path
-            [attr.d]="region.path"
-            [class]="'region ' + getRegionClass(region.id)"
-            [class.selected]="selectedRegion() === region.id"
-            [class.hovered]="hoveredRegion() === region.id"
-            (click)="onRegionClick(region)"
-            (mouseenter)="onRegionHover(region.id)"
-            (mouseleave)="onRegionHover(null)"
-          />
-          
-          <!-- Nom de la région -->
-          <text
-            [attr.x]="region.coordinates.x"
-            [attr.y]="region.coordinates.y"
-            class="region-label"
-            text-anchor="middle"
-            pointer-events="none"
-          >
-            {{ region.name }}
-          </text>
-          
-          <!-- Badge compteur de sites -->
-          @if (getSitesInRegion(region.id).length > 0) {
-            <circle
-              [attr.cx]="region.coordinates.x + 35"
-              [attr.cy]="region.coordinates.y - 10"
-              r="12"
-              class="site-badge"
-              pointer-events="none"
-            />
-            <text
-              [attr.x]="region.coordinates.x + 35"
-              [attr.y]="region.coordinates.y - 7"
-              class="site-count"
-              text-anchor="middle"
-              pointer-events="none"
-            >
-              {{ getSitesInRegion(region.id).length }}
-            </text>
-          }
-        </g>
-      }
-    </svg>
+        <svg viewBox="0 0 800 650" class="senegal-map" xmlns="http://www.w3.org/2000/svg">
+            <!-- Fond océan Atlantique -->
+            <rect width="800" height="650" fill="#D6E9F5" opacity="0.4"/>
+            
+            <!-- Frontières des pays voisins (contexte) -->
+            <g class="neighboring-countries" opacity="0.15">
+                <!-- Mauritanie (Nord) -->
+                <path d="M 100,50 L 700,50 L 700,150 L 100,150 Z" fill="#E8E8E8" stroke="#999" stroke-width="0.5"/>
+                <!-- Mali (Est) -->
+                <path d="M 650,150 L 780,150 L 780,500 L 650,500 Z" fill="#E8E8E8" stroke="#999" stroke-width="0.5"/>
+                <!-- Guinée (Sud-Est) -->
+                <path d="M 500,520 L 700,520 L 700,630 L 500,630 Z" fill="#E8E8E8" stroke="#999" stroke-width="0.5"/>
+                <!-- Guinée-Bissau (Sud) -->
+                <path d="M 200,520 L 400,520 L 400,630 L 200,630 Z" fill="#E8E8E8" stroke="#999" stroke-width="0.5"/>
+            </g>
 
-        <!-- Panneau latéral des sites de la région sélectionnée -->
+            <!-- Groupe de régions -->
+            <g id="senegal-regions">
+                
+                <!-- Saint-Louis (Nord-Ouest) -->
+                <g class="region-group">
+                    <path
+                        id="region-saint-louis"
+                        [attr.d]="regions[0].path"
+                        [class]="'region ' + getRegionClass('saint-louis')"
+                        [class.selected]="selectedRegion() === 'saint-louis'"
+                        [class.hovered]="hoveredRegion() === 'saint-louis'"
+                        (click)="onRegionClick(regions[0])"
+                        (mouseenter)="onRegionHover('saint-louis')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="220" y="130" class="region-label" text-anchor="middle">Saint-Louis</text>
+                    @if (getSitesInRegion('saint-louis').length > 0) {
+                        <circle cx="255" cy="120" r="14" class="site-badge"/>
+                        <text x="255" y="125" class="site-count" text-anchor="middle">{{ getSitesInRegion('saint-louis').length }}</text>
+                    }
+                </g>
+
+                <!-- Louga (Centre-Nord) -->
+                <g class="region-group">
+                    <path
+                        id="region-louga"
+                        [attr.d]="regions[1].path"
+                        [class]="'region ' + getRegionClass('louga')"
+                        [class.selected]="selectedRegion() === 'louga'"
+                        [class.hovered]="hoveredRegion() === 'louga'"
+                        (click)="onRegionClick(regions[1])"
+                        (mouseenter)="onRegionHover('louga')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="280" y="200" class="region-label" text-anchor="middle">Louga</text>
+                    @if (getSitesInRegion('louga').length > 0) {
+                        <circle cx="310" cy="190" r="14" class="site-badge"/>
+                        <text x="310" y="195" class="site-count" text-anchor="middle">{{ getSitesInRegion('louga').length }}</text>
+                    }
+                </g>
+
+                <!-- Matam (Nord-Est) -->
+                <g class="region-group">
+                    <path
+                        id="region-matam"
+                        [attr.d]="regions[2].path"
+                        [class]="'region ' + getRegionClass('matam')"
+                        [class.selected]="selectedRegion() === 'matam'"
+                        [class.hovered]="hoveredRegion() === 'matam'"
+                        (click)="onRegionClick(regions[2])"
+                        (mouseenter)="onRegionHover('matam')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="570" y="150" class="region-label" text-anchor="middle">Matam</text>
+                    @if (getSitesInRegion('matam').length > 0) {
+                        <circle cx="600" cy="140" r="14" class="site-badge"/>
+                        <text x="600" y="145" class="site-count" text-anchor="middle">{{ getSitesInRegion('matam').length }}</text>
+                    }
+                </g>
+
+                <!-- Dakar (Presqu'île du Cap-Vert) -->
+                <g class="region-group">
+                    <path
+                        id="region-dakar"
+                        [attr.d]="regions[3].path"
+                        [class]="'region ' + getRegionClass('dakar')"
+                        [class.selected]="selectedRegion() === 'dakar'"
+                        [class.hovered]="hoveredRegion() === 'dakar'"
+                        (click)="onRegionClick(regions[3])"
+                        (mouseenter)="onRegionHover('dakar')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="130" y="275" class="region-label" text-anchor="middle" font-weight="900">Dakar</text>
+                    @if (getSitesInRegion('dakar').length > 0) {
+                        <circle cx="165" cy="265" r="14" class="site-badge"/>
+                        <text x="165" y="270" class="site-count" text-anchor="middle">{{ getSitesInRegion('dakar').length }}</text>
+                    }
+                </g>
+
+                <!-- Thiès -->
+                <g class="region-group">
+                    <path
+                        id="region-thies"
+                        [attr.d]="regions[4].path"
+                        [class]="'region ' + getRegionClass('thies')"
+                        [class.selected]="selectedRegion() === 'thies'"
+                        [class.hovered]="hoveredRegion() === 'thies'"
+                        (click)="onRegionClick(regions[4])"
+                        (mouseenter)="onRegionHover('thies')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="230" y="270" class="region-label" text-anchor="middle">Thiès</text>
+                    @if (getSitesInRegion('thies').length > 0) {
+                        <circle cx="260" cy="260" r="14" class="site-badge"/>
+                        <text x="260" y="265" class="site-count" text-anchor="middle">{{ getSitesInRegion('thies').length }}</text>
+                    }
+                </g>
+
+                <!-- Diourbel -->
+                <g class="region-group">
+                    <path
+                        id="region-diourbel"
+                        [attr.d]="regions[5].path"
+                        [class]="'region ' + getRegionClass('diourbel')"
+                        [class.selected]="selectedRegion() === 'diourbel'"
+                        [class.hovered]="hoveredRegion() === 'diourbel'"
+                        (click)="onRegionClick(regions[5])"
+                        (mouseenter)="onRegionHover('diourbel')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="330" y="250" class="region-label" text-anchor="middle">Diourbel</text>
+                    @if (getSitesInRegion('diourbel').length > 0) {
+                        <circle cx="365" cy="240" r="14" class="site-badge"/>
+                        <text x="365" y="245" class="site-count" text-anchor="middle">{{ getSitesInRegion('diourbel').length }}</text>
+                    }
+                </g>
+
+                <!-- Fatick -->
+                <g class="region-group">
+                    <path
+                        id="region-fatick"
+                        [attr.d]="regions[6].path"
+                        [class]="'region ' + getRegionClass('fatick')"
+                        [class.selected]="selectedRegion() === 'fatick'"
+                        [class.hovered]="hoveredRegion() === 'fatick'"
+                        (click)="onRegionClick(regions[6])"
+                        (mouseenter)="onRegionHover('fatick')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="250" y="330" class="region-label" text-anchor="middle">Fatick</text>
+                    @if (getSitesInRegion('fatick').length > 0) {
+                        <circle cx="280" cy="320" r="14" class="site-badge"/>
+                        <text x="280" y="325" class="site-count" text-anchor="middle">{{ getSitesInRegion('fatick').length }}</text>
+                    }
+                </g>
+
+                <!-- Kaolack -->
+                <g class="region-group">
+                    <path
+                        id="region-kaolack"
+                        [attr.d]="regions[7].path"
+                        [class]="'region ' + getRegionClass('kaolack')"
+                        [class.selected]="selectedRegion() === 'kaolack'"
+                        [class.hovered]="hoveredRegion() === 'kaolack'"
+                        (click)="onRegionClick(regions[7])"
+                        (mouseenter)="onRegionHover('kaolack')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="340" y="315" class="region-label" text-anchor="middle">Kaolack</text>
+                    @if (getSitesInRegion('kaolack').length > 0) {
+                        <circle cx="375" cy="305" r="14" class="site-badge"/>
+                        <text x="375" y="310" class="site-count" text-anchor="middle">{{ getSitesInRegion('kaolack').length }}</text>
+                    }
+                </g>
+
+                <!-- Kaffrine -->
+                <g class="region-group">
+                    <path
+                        id="region-kaffrine"
+                        [attr.d]="regions[8].path"
+                        [class]="'region ' + getRegionClass('kaffrine')"
+                        [class.selected]="selectedRegion() === 'kaffrine'"
+                        [class.hovered]="hoveredRegion() === 'kaffrine'"
+                        (click)="onRegionClick(regions[8])"
+                        (mouseenter)="onRegionHover('kaffrine')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="420" y="285" class="region-label" text-anchor="middle">Kaffrine</text>
+                    @if (getSitesInRegion('kaffrine').length > 0) {
+                        <circle cx="455" cy="275" r="14" class="site-badge"/>
+                        <text x="455" y="280" class="site-count" text-anchor="middle">{{ getSitesInRegion('kaffrine').length }}</text>
+                    }
+                </g>
+
+                <!-- Tambacounda (Est) -->
+                <g class="region-group">
+                    <path
+                        id="region-tambacounda"
+                        [attr.d]="regions[9].path"
+                        [class]="'region ' + getRegionClass('tambacounda')"
+                        [class.selected]="selectedRegion() === 'tambacounda'"
+                        [class.hovered]="hoveredRegion() === 'tambacounda'"
+                        (click)="onRegionClick(regions[9])"
+                        (mouseenter)="onRegionHover('tambacounda')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="540" y="300" class="region-label" text-anchor="middle">Tambacounda</text>
+                    @if (getSitesInRegion('tambacounda').length > 0) {
+                        <circle cx="585" cy="290" r="14" class="site-badge"/>
+                        <text x="585" y="295" class="site-count" text-anchor="middle">{{ getSitesInRegion('tambacounda').length }}</text>
+                    }
+                </g>
+
+                <!-- Kédougou (Sud-Est) -->
+                <g class="region-group">
+                    <path
+                        id="region-kedougou"
+                        [attr.d]="regions[10].path"
+                        [class]="'region ' + getRegionClass('kedougou')"
+                        [class.selected]="selectedRegion() === 'kedougou'"
+                        [class.hovered]="hoveredRegion() === 'kedougou'"
+                        (click)="onRegionClick(regions[10])"
+                        (mouseenter)="onRegionHover('kedougou')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="580" y="440" class="region-label" text-anchor="middle">Kédougou</text>
+                    @if (getSitesInRegion('kedougou').length > 0) {
+                        <circle cx="615" cy="430" r="14" class="site-badge"/>
+                        <text x="615" y="435" class="site-count" text-anchor="middle">{{ getSitesInRegion('kedougou').length }}</text>
+                    }
+                </g>
+
+                <!-- Kolda (Sud-Centre) -->
+                <g class="region-group">
+                    <path
+                        id="region-kolda"
+                        [attr.d]="regions[11].path"
+                        [class]="'region ' + getRegionClass('kolda')"
+                        [class.selected]="selectedRegion() === 'kolda'"
+                        [class.hovered]="hoveredRegion() === 'kolda'"
+                        (click)="onRegionClick(regions[11])"
+                        (mouseenter)="onRegionHover('kolda')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="420" y="420" class="region-label" text-anchor="middle">Kolda</text>
+                    @if (getSitesInRegion('kolda').length > 0) {
+                        <circle cx="450" cy="410" r="14" class="site-badge"/>
+                        <text x="450" y="415" class="site-count" text-anchor="middle">{{ getSitesInRegion('kolda').length }}</text>
+                    }
+                </g>
+
+                <!-- Sédhiou -->
+                <g class="region-group">
+                    <path
+                        id="region-sedhiou"
+                        [attr.d]="regions[12].path"
+                        [class]="'region ' + getRegionClass('sedhiou')"
+                        [class.selected]="selectedRegion() === 'sedhiou'"
+                        [class.hovered]="hoveredRegion() === 'sedhiou'"
+                        (click)="onRegionClick(regions[12])"
+                        (mouseenter)="onRegionHover('sedhiou')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="300" y="430" class="region-label" text-anchor="middle">Sédhiou</text>
+                    @if (getSitesInRegion('sedhiou').length > 0) {
+                        <circle cx="330" cy="420" r="14" class="site-badge"/>
+                        <text x="330" y="425" class="site-count" text-anchor="middle">{{ getSitesInRegion('sedhiou').length }}</text>
+                    }
+                </g>
+
+                <!-- Ziguinchor (Casamance) -->
+                <g class="region-group">
+                    <path
+                        id="region-ziguinchor"
+                        [attr.d]="regions[13].path"
+                        [class]="'region ' + getRegionClass('ziguinchor')"
+                        [class.selected]="selectedRegion() === 'ziguinchor'"
+                        [class.hovered]="hoveredRegion() === 'ziguinchor'"
+                        (click)="onRegionClick(regions[13])"
+                        (mouseenter)="onRegionHover('ziguinchor')"
+                        (mouseleave)="onRegionHover(null)"
+                    />
+                    <text x="250" y="515" class="region-label" text-anchor="middle">Ziguinchor</text>
+                    @if (getSitesInRegion('ziguinchor').length > 0) {
+                        <circle cx="285" cy="505" r="14" class="site-badge"/>
+                        <text x="285" y="510" class="site-count" text-anchor="middle">{{ getSitesInRegion('ziguinchor').length }}</text>
+                    }
+                </g>
+            </g>
+
+            <!-- Frontière nationale du Sénégal -->
+            <path d="M 100,150 L 180,150 L 180,200 L 320,200 L 380,180 L 480,160 L 620,140 L 650,180 L 650,250 L 620,320 L 650,380 L 650,470 L 580,520 L 480,520 L 380,490 L 280,510 L 200,480 L 150,380 L 120,300 L 100,240 Z" 
+                  fill="none" stroke="#003087" stroke-width="3" stroke-linejoin="round"/>
+        </svg>
+
+        <!-- Panneau latéral des sites -->
         @if (selectedRegion()) {
         <div class="sites-panel" @fadeIn>
             <div class="panel-header">
                 <h4>
-                    <i class="fas fa-building"></i> Sites - {{ regions.find(r => r.id === selectedRegion())?.name }}
+                    <i class="fas fa-building"></i> Sites - {{ getRegionName(selectedRegion()!) }}
                 </h4>
                 <button class="btn-close" (click)="selectedRegion.set(null)">
-            <i class="fas fa-times"></i>
-          </button>
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="sites-list">
@@ -101,17 +340,17 @@
                         </div>
                         <div class="site-stats">
                             <span class="stat-item" title="Firewalls">
-                    <i class="fas fa-fire"></i>
-                    {{ site.firewalls_count || 0 }}
-                  </span>
+                                <i class="fas fa-fire"></i>
+                                {{ site.firewalls_count || 0 }}
+                            </span>
                             <span class="stat-item" title="Routeurs">
-                    <i class="fas fa-route"></i>
-                    {{ site.routers_count || 0 }}
-                  </span>
+                                <i class="fas fa-route"></i>
+                                {{ site.routers_count || 0 }}
+                            </span>
                             <span class="stat-item" title="Switchs">
-                    <i class="fas fa-exchange-alt"></i>
-                    {{ site.switches_count || 0 }}
-                  </span>
+                                <i class="fas fa-exchange-alt"></i>
+                                {{ site.switches_count || 0 }}
+                            </span>
                         </div>
                     </div>
                     <i class="fas fa-chevron-right site-arrow"></i>
