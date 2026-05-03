@@ -1,0 +1,129 @@
+<div class="map-container">
+    <div class="map-header">
+        <h3>
+            <i class="fas fa-map-marked-alt"></i> Carte des Sites - Sénégal
+        </h3>
+        <div class="map-legend">
+            <div class="legend-item">
+                <span class="legend-color region-empty"></span>
+                <span>Aucun site</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color region-low"></span>
+                <span>1-2 sites</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color region-medium"></span>
+                <span>3-5 sites</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color region-high"></span>
+                <span>6+ sites</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-wrapper">
+        <svg viewBox="0 0 600 500" class="senegal-map">
+      <!-- Fond de carte -->
+      <rect width="600" height="500" fill="#E4EFF7" opacity="0.3"/>
+      
+      <!-- Régions -->
+      @for (region of regions; track region.id) {
+        <g class="region-group">
+          <!-- Région clickable -->
+          <path
+            [attr.d]="region.path"
+            [class]="'region ' + getRegionClass(region.id)"
+            [class.selected]="selectedRegion() === region.id"
+            [class.hovered]="hoveredRegion() === region.id"
+            (click)="onRegionClick(region)"
+            (mouseenter)="onRegionHover(region.id)"
+            (mouseleave)="onRegionHover(null)"
+          />
+          
+          <!-- Nom de la région -->
+          <text
+            [attr.x]="region.coordinates.x"
+            [attr.y]="region.coordinates.y"
+            class="region-label"
+            text-anchor="middle"
+            pointer-events="none"
+          >
+            {{ region.name }}
+          </text>
+          
+          <!-- Badge compteur de sites -->
+          @if (getSitesInRegion(region.id).length > 0) {
+            <circle
+              [attr.cx]="region.coordinates.x + 35"
+              [attr.cy]="region.coordinates.y - 10"
+              r="12"
+              class="site-badge"
+              pointer-events="none"
+            />
+            <text
+              [attr.x]="region.coordinates.x + 35"
+              [attr.y]="region.coordinates.y - 7"
+              class="site-count"
+              text-anchor="middle"
+              pointer-events="none"
+            >
+              {{ getSitesInRegion(region.id).length }}
+            </text>
+          }
+        </g>
+      }
+    </svg>
+
+        <!-- Panneau latéral des sites de la région sélectionnée -->
+        @if (selectedRegion()) {
+        <div class="sites-panel" @fadeIn>
+            <div class="panel-header">
+                <h4>
+                    <i class="fas fa-building"></i> Sites - {{ regions.find(r => r.id === selectedRegion())?.name }}
+                </h4>
+                <button class="btn-close" (click)="selectedRegion.set(null)">
+            <i class="fas fa-times"></i>
+          </button>
+            </div>
+
+            <div class="sites-list">
+                @for (site of getSitesInRegion(selectedRegion()!); track site.id) {
+                <div class="site-card" (click)="onSiteClick(site, $event)">
+                    <div class="site-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="site-info">
+                        <div class="site-name">{{ site.name }}</div>
+                        <div class="site-address">
+                            <i class="fas fa-location-dot"></i> {{ site.city || 'N/A' }}
+                        </div>
+                        <div class="site-stats">
+                            <span class="stat-item" title="Firewalls">
+                    <i class="fas fa-fire"></i>
+                    {{ site.firewalls_count || 0 }}
+                  </span>
+                            <span class="stat-item" title="Routeurs">
+                    <i class="fas fa-route"></i>
+                    {{ site.routers_count || 0 }}
+                  </span>
+                            <span class="stat-item" title="Switchs">
+                    <i class="fas fa-exchange-alt"></i>
+                    {{ site.switches_count || 0 }}
+                  </span>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right site-arrow"></i>
+                </div>
+                } @empty {
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Aucun site dans cette région</p>
+                </div>
+                }
+            </div>
+        </div>
+        }
+    </div>
+</div>

@@ -18,13 +18,14 @@ import {
   User,
   PendingChange
 } from '../../shared/models';
+import { SenegalMapComponent } from '../../shared/components/senegal-map/senegal-map.component';
 
 type Tab = 'dashboard' | 'firewalls' | 'routers' | 'switches' | 'sites' | 'users' | 'profile' | 'moderations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, EquipmentModalComponent, ConfirmModalComponent, ToastComponent],
+  imports: [CommonModule, FormsModule, EquipmentModalComponent, ConfirmModalComponent, ToastComponent, SenegalMapComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })

@@ -156,6 +156,12 @@
                 </div>
         </section>
 
+
+        <section class="map-section fade-in">
+            <app-senegal-map [sites]="sitesWithCounts" (siteSelected)="viewItem('sites', $event.id)">
+            </app-senegal-map>
+        </section>
+
         <section class="charts-section">
             <div class="chart-card">
                 <div class="chart-header">
@@ -1136,4 +1142,5 @@
         </div>
     </div>
     }
+
     <app-toast></app-toast>
