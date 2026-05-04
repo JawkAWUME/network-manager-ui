@@ -5,6 +5,18 @@
     overflow: hidden;
 }
 
+.map-body {
+    display: flex;
+    height: 500px;
+    /* hauteur fixe pour l'ensemble */
+}
+
+.leaflet-map {
+    flex: 1;
+    min-height: 0;
+    /* important pour flex */
+}
+
 .map-header {
     background: linear-gradient(135deg, var(--header-bg), var(--header-dark));
     color: white;
