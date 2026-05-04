@@ -137,6 +137,8 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     this.map = L.map('senegal-map', {
       center: [14.5, 14.5],
       zoom: 6,
+      maxBounds: L.latLngBounds([10.5, -18], [17, -10.5]),
+    maxBoundsViscosity: 0.85,
     });
 
     L.tileLayer(
@@ -201,9 +203,10 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
   }
 
-  getSitesInRegion(regionId: string): Site[] {
-    return this.sitesByRegion.get(this.normalize(regionId)) || [];
-  }
+ getSitesInRegion(regionId: string | null): Site[] {
+  if (!regionId) return [];                    // <-- FIX
+  return this.sitesByRegion.get(this.normalize(regionId)) ?? [];
+}
 
   // ─────────────────────────────────────────────
   // EVENTS MAP
