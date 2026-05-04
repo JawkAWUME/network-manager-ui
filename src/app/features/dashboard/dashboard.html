@@ -158,7 +158,7 @@
 
 
         <section class="map-section fade-in">
-            <app-senegal-map [sites]="sitesWithCounts" (siteSelected)="viewItem('sites', $event.id)">
+            <app-senegal-map [sites]="filteredSitesWithCounts" (siteSelected)="viewItem('sites', $event.id)">
             </app-senegal-map>
         </section>
 
