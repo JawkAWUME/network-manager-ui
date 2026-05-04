@@ -61,12 +61,15 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // NORMALISATION
   // ─────────────────────────────
   private normalize(value: string): string {
-    return (value || '')
-      .toLowerCase()
-      .trim()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-  }
+  return (value || '')
+    .toLowerCase()
+    .trim()
+    // fix encodage cassé fréquent (é, è, â mal encodés)
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '-');
+}
 
   // ─────────────────────────────
   // REGIONS
@@ -246,20 +249,25 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private sitesByRegion = new Map<string, Site[]>();
 
   private rebuildIndex(): void {
-    this.sitesByRegion.clear();
+  this.sitesByRegion.clear();
 
-    for (const site of this.sites) {
-      const region = this.extractRegion(site);
+  for (const site of this.sites) {
+    const region = this.extractRegion(site);
 
-      if (!this.sitesByRegion.has(region)) {
-        this.sitesByRegion.set(region, []);
-      }
-
-      this.sitesByRegion.get(region)!.push(site);
+    if (!region || region.trim() === '') {
+      this.warn('Site without valid region:', site);
+      continue;
     }
 
-    this.log('Index built:', this.sitesByRegion);
+    if (!this.sitesByRegion.has(region)) {
+      this.sitesByRegion.set(region, []);
+    }
+
+    this.sitesByRegion.get(region)!.push(site);
   }
+
+  this.log('Index built:', this.sitesByRegion);
+}
 
   getSitesInRegion(regionId: string | null): Site[] {
     if (!regionId) return [];
