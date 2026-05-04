@@ -25,7 +25,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   @Output() siteSelected = new EventEmitter<Site>();
 
   // ─────────────────────────────
-  // UI STATE (DEBUG PIPELINE)
+  // UI STATE
   // ─────────────────────────────
   loadingGeoJson = signal(false);
   geoJsonStep = signal<string>('idle');
@@ -41,67 +41,15 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private map!: L.Map;
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer: L.Layer | null = null;
-  private debugLabelsLayer = L.layerGroup();
-
-  // ─────────────────────────────
-  // DEBUG MODE
-  // ─────────────────────────────
-  private readonly DEBUG = true;
-  private readonly DEBUG_OVERLAY = true;
-
-  private log(...args: any[]): void {
-    if (this.DEBUG) console.log('[MAP]', ...args);
-  }
-
-  private warn(...args: any[]): void {
-    if (this.DEBUG) console.warn('[MAP]', ...args);
-  }
-
-  // ─────────────────────────────
-  // NORMALISATION
-  // ─────────────────────────────
-  private normalize(value: string): string {
-  return (value || '')
-    .toLowerCase()
-    .trim()
-    .normalize('NFD')
-    // fix encodage cassé fréquent (é, è, â mal encodés)
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');;
-}
-
-  // ─────────────────────────────
-  // REGIONS
-  // ─────────────────────────────
-  private readonly REGION_ALIASES: Record<string, string> = {
-    dakar: 'dakar',
-    thies: 'thies',
-    'thiès': 'thies',
-    'saint louis': 'saint-louis',
-    'saint-louis': 'saint-louis',
-    louga: 'louga',
-    matam: 'matam',
-    diourbel: 'diourbel',
-    fatick: 'fatick',
-    kaolack: 'kaolack',
-    kaffrine: 'kaffrine',
-    tambacounda: 'tambacounda',
-    kedougou: 'kedougou',
-    kolda: 'kolda',
-    sedhiou: 'sedhiou',
-    ziguinchor: 'ziguinchor',
-  };
 
   // ─────────────────────────────
   // COLORS
   // ─────────────────────────────
   private getColor(count: number): string {
-    if (count === 0) return '#dce8f5';
-    if (count <= 2) return '#a8d5b5';
-    if (count <= 5) return '#3aaa62';
-    return '#1c6e3d';
+    if (count === 0) return '#f0f4f8';
+    if (count <= 2) return '#b2dfdb';
+    if (count <= 5) return '#4db6ac';
+    return '#00796b';
   }
 
   private hoverStyle: L.PathOptions = {
@@ -129,13 +77,9 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['sites']) {
+    if (changes['sites'] && this.geoJsonLayer) {
       this.rebuildIndex();
-
-      if (this.geoJsonLayer) {
-        this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as any));
-        this.renderDebugOverlay();
-      }
+      this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as any));
     }
   }
 
@@ -144,118 +88,95 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // ─────────────────────────────
   private initMap(): void {
     this.map = L.map('senegal-map', {
-      center: [14.5, 14.5],
+      center: [14.5, -14.5],
       zoom: 6,
       maxBounds: L.latLngBounds([10.5, -18], [17, -10.5]),
       maxBoundsViscosity: 0.85,
     });
 
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'
+      'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
+      { attribution: '&copy; OpenStreetMap contributors' }
     ).addTo(this.map);
-
-    this.createDebugPanel();
   }
 
   // ─────────────────────────────
-  // LOAD GEOJSON (PIPELINE VISUEL)
+  // LOAD GEOJSON
   // ─────────────────────────────
-  private loadGeoJson(): void {
-    this.loadingGeoJson.set(true);
-    this.geoJsonStep.set('📥 Téléchargement GeoJSON...');
-    this.geoJsonError.set(null);
+  private async loadGeoJson(): Promise<void> {
+    try {
+      this.loadingGeoJson.set(true);
+      this.geoJsonStep.set('Chargement GeoJSON...');
 
-    this.log('Start GeoJSON loading');
+      const response = await fetch('assets/geojson/senegal-regions.geojson');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    fetch('assets/geojson/senegal-regions.geojson')
-      .then((r) => {
-        this.geoJsonStep.set('🧾 Parsing JSON...');
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        this.geoJsonStep.set('🗺️ Rendering layers...');
-        this.renderGeoJson(data);
-      })
-      .catch((err) => {
-        this.geoJsonStep.set('❌ Error loading GeoJSON');
-        this.geoJsonError.set(err.message);
-        this.warn(err);
-      })
-      .finally(() => {
-        this.loadingGeoJson.set(false);
-        this.geoJsonStep.set('✅ Done');
-      });
+      const data = await response.json();
+      this.renderGeoJson(data);
+    } catch (err: any) {
+      this.geoJsonError.set(err.message);
+    } finally {
+      this.loadingGeoJson.set(false);
+    }
   }
 
   // ─────────────────────────────
   // RENDER GEOJSON
   // ─────────────────────────────
   private renderGeoJson(data: GeoJSON.FeatureCollection): void {
-    this.geoJsonStep.set('🧩 Creating layers...');
-    this.log('Rendering GeoJSON');
-
     this.geoJsonLayer = L.geoJSON(data, {
       style: (f) => this.defaultStyle(f as any),
-      onEachFeature: (feature, layer) =>
-        this.bindFeatureEvents(feature, layer),
+      onEachFeature: (feature, layer) => this.bindFeatureEvents(feature, layer),
     }).addTo(this.map);
 
-    this.geoJsonStep.set('📐 Computing bounds...');
     const bounds = this.geoJsonLayer.getBounds();
-
     if (bounds.isValid()) {
-      this.map.fitBounds(bounds);
+      this.map.fitBounds(bounds, { padding: [20, 20] });
     }
 
-    this.geoJsonStep.set('🔁 Indexing sites...');
     this.rebuildIndex();
-
-    this.geoJsonStep.set('🔥 Debug overlay...');
-    this.renderDebugOverlay();
-
-    this.geoJsonStep.set('🧪 Checking mismatches...');
-    this.detectMismatches();
-
-    this.geoJsonStep.set('✅ GeoJSON ready');
   }
 
   // ─────────────────────────────
   // REGION LOGIC
   // ─────────────────────────────
-  private getRegionId(props: Record<string, any>): string {
-  const raw =
-    props['adm1_name'] || // ✅ correspond à ton GeoJSON
-    props['NAME_1'] ||
-    props['admin1Name'] ||
-    '';
-  const norm = this.normalize(raw);
-  return this.REGION_ALIASES[norm] || norm.replace(/\s+/g, '-');
-}
+  private normalize(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
 
+  private getRegionId(props: Record<string, any>): string {
+    const raw = props['adm1_name'] || props['NAME_1'] || '';
+    const norm = this.normalize(raw);
+    return norm;
+  }
 
   private extractRegion(site: Site): string {
-  const raw = site.city || site.address || '';
-  const norm = this.normalize(raw);
+    const raw = site.city || site.address || '';
+    const norm = this.normalize(raw);
 
-  // Mapping direct basé sur city/address
-  if (norm.includes('dakar')) return 'dakar';
-  if (norm.includes('thies')) return 'thies';
-  if (norm.includes('diourbel')) return 'diourbel';
-  if (norm.includes('fatick')) return 'fatick';
-  if (norm.includes('kaffrine')) return 'kaffrine';
-  if (norm.includes('kaolack')) return 'kaolack';
-  if (norm.includes('louga')) return 'louga';
-  if (norm.includes('matam')) return 'matam';
-  if (norm.includes('kedougou')) return 'kedougou';
-  if (norm.includes('kolda')) return 'kolda';
-  if (norm.includes('sedhiou')) return 'sedhiou';
-  if (norm.includes('ziguinchor')) return 'ziguinchor';
-  if (norm.includes('saint-louis')) return 'saint-louis';
+    if (norm.includes('dakar')) return 'dakar';
+    if (norm.includes('thies')) return 'thies';
+    if (norm.includes('diourbel')) return 'diourbel';
+    if (norm.includes('fatick')) return 'fatick';
+    if (norm.includes('kaffrine')) return 'kaffrine';
+    if (norm.includes('kaolack')) return 'kaolack';
+    if (norm.includes('louga')) return 'louga';
+    if (norm.includes('matam')) return 'matam';
+    if (norm.includes('kedougou')) return 'kedougou';
+    if (norm.includes('kolda')) return 'kolda';
+    if (norm.includes('sedhiou')) return 'sedhiou';
+    if (norm.includes('ziguinchor')) return 'ziguinchor';
+    if (norm.includes('saint-louis')) return 'saint-louis';
 
-  return this.REGION_ALIASES[norm] || norm;
-}
-
+    return norm;
+  }
 
   // ─────────────────────────────
   // INDEX
@@ -263,25 +184,16 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private sitesByRegion = new Map<string, Site[]>();
 
   private rebuildIndex(): void {
-  this.sitesByRegion.clear();
-
-  for (const site of this.sites) {
-    const region = this.extractRegion(site);
-
-    if (!region || region.trim() === '') {
-      this.warn('Site without valid region:', site);
-      continue;
+    this.sitesByRegion.clear();
+    for (const site of this.sites) {
+      const region = this.extractRegion(site);
+      if (!region) continue;
+      if (!this.sitesByRegion.has(region)) {
+        this.sitesByRegion.set(region, []);
+      }
+      this.sitesByRegion.get(region)!.push(site);
     }
-
-    if (!this.sitesByRegion.has(region)) {
-      this.sitesByRegion.set(region, []);
-    }
-
-    this.sitesByRegion.get(region)!.push(site);
   }
-
-  this.log('Index built:', this.sitesByRegion);
-}
 
   getSitesInRegion(regionId: string | null): Site[] {
     if (!regionId) return [];
@@ -294,7 +206,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private defaultStyle(feature: GeoJSON.Feature): L.PathOptions {
     const rid = this.getRegionId(feature.properties as any);
     const count = this.getSitesInRegion(rid).length;
-
     return {
       fillColor: this.getColor(count),
       fillOpacity: 0.72,
@@ -308,24 +219,17 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // ─────────────────────────────
   private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
     const props = feature.properties as any;
-    const name = props['NAME_1'] || '';
+    const name = props['adm1_name'] || props['NAME_1'] || '';
     const rid = this.getRegionId(props);
 
     (layer as L.Path).bindTooltip(name, { sticky: true });
 
     layer.on({
-      mouseover: (e) =>
-        (e.target as L.Path).setStyle(this.hoverStyle),
-
-      mouseout: (e) =>
-        this.geoJsonLayer.resetStyle(e.target),
-
+      mouseover: (e) => (e.target as L.Path).setStyle(this.hoverStyle),
+      mouseout: (e) => this.geoJsonLayer.resetStyle(e.target),
       click: (e) => {
         this.selectedLayer = e.target;
-
-        (e.target as L.Path).setStyle(this.selectedStyle);
-        (e.target as L.Path).bringToFront();
-
+        (e.target as L.Path).setStyle(this.selectedStyle).bringToFront();
         this.selectedRegionName.set(name);
         this.selectedRegionId.set(rid);
         this.panelOpen.set(true);
@@ -334,94 +238,10 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─────────────────────────────
-  // DEBUG OVERLAY
-  // ─────────────────────────────
-  private renderDebugOverlay(): void {
-    if (!this.DEBUG_OVERLAY) return;
-
-    this.debugLabelsLayer.clearLayers();
-
-    this.geoJsonLayer.eachLayer((layer: any) => {
-      const props = layer.feature?.properties;
-      if (!props) return;
-
-      const rid = this.getRegionId(props);
-      const count = this.getSitesInRegion(rid).length;
-
-      const center = layer.getBounds().getCenter();
-
-      const marker = L.marker(center, {
-        icon: L.divIcon({
-          className: '',
-          html: `
-            <div style="background:#000;color:#0f0;padding:4px 6px;font-size:11px;">
-              ${rid}: ${count}
-            </div>
-          `,
-        }),
-      });
-
-      this.debugLabelsLayer.addLayer(marker);
-    });
-
-    this.debugLabelsLayer.addTo(this.map);
-  }
-
-  // ─────────────────────────────
-  // DEBUG PANEL
-  // ─────────────────────────────
-  private createDebugPanel(): void {
-    const control = new L.Control({ position: 'bottomright' });
-
-    control.onAdd = () => {
-      const div = L.DomUtil.create('div');
-
-      div.innerHTML = `
-        <div style="background:#000;color:#0f0;padding:10px;font-size:12px;">
-          <b>DEBUG MAP</b><br/>
-          Sites: ${this.sites.length}<br/>
-          Regions: ${this.sitesByRegion.size}<br/>
-          Step: ${this.geoJsonStep()}
-        </div>
-      `;
-
-      return div;
-    };
-
-    control.addTo(this.map);
-  }
-
-  // ─────────────────────────────
-  // MISMATCH CHECK
-  // ─────────────────────────────
-  private detectMismatches(): void {
-    const geoRegions = new Set<string>();
-
-    this.geoJsonLayer.eachLayer((layer: any) => {
-      const props = layer.feature?.properties;
-      if (!props) return;
-
-      geoRegions.add(this.getRegionId(props));
-    });
-
-    const backend = new Set(this.sitesByRegion.keys());
-
-    const missingInBackend = [...geoRegions].filter(r => !backend.has(r));
-    const missingInGeo = [...backend].filter(r => !geoRegions.has(r));
-    this.log("GeoRégions", geoRegions)
-    this.log("Backend Régions", backend)
-    this.warn('Mismatch:', {
-      missingInBackend,
-      missingInGeo,
-    });
-  }
-
-  // ─────────────────────────────
   // PANEL ACTIONS
   // ─────────────────────────────
   closePanel(): void {
     this.panelOpen.set(false);
-
     if (this.selectedLayer) {
       this.geoJsonLayer.resetStyle(this.selectedLayer as L.Path);
       this.selectedLayer = null;
@@ -431,12 +251,5 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   onSiteClick(site: Site, event: Event): void {
     event.stopPropagation();
     this.siteSelected.emit(site);
-  }
-
-  // ─────────────────────────────
-  // FALLBACK
-  // ─────────────────────────────
-  private buildFallbackGeoJson(): GeoJSON.FeatureCollection {
-    return { type: 'FeatureCollection', features: [] };
   }
 }
