@@ -235,15 +235,27 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
 
 
   private extractRegion(site: Site): string {
-    const raw =
-      (site as any).region ||
-      site.city ||
-      site.address ||
-      '';
+  const raw = site.city || site.address || '';
+  const norm = this.normalize(raw);
 
-    const norm = this.normalize(raw);
-    return this.REGION_ALIASES[norm] || norm;
-  }
+  // Mapping direct basé sur city/address
+  if (norm.includes('dakar')) return 'dakar';
+  if (norm.includes('thies')) return 'thies';
+  if (norm.includes('diourbel')) return 'diourbel';
+  if (norm.includes('fatick')) return 'fatick';
+  if (norm.includes('kaffrine')) return 'kaffrine';
+  if (norm.includes('kaolack')) return 'kaolack';
+  if (norm.includes('louga')) return 'louga';
+  if (norm.includes('matam')) return 'matam';
+  if (norm.includes('kedougou')) return 'kedougou';
+  if (norm.includes('kolda')) return 'kolda';
+  if (norm.includes('sedhiou')) return 'sedhiou';
+  if (norm.includes('ziguinchor')) return 'ziguinchor';
+  if (norm.includes('saint-louis')) return 'saint-louis';
+
+  return this.REGION_ALIASES[norm] || norm;
+}
+
 
   // ─────────────────────────────
   // INDEX
