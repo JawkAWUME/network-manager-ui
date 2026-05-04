@@ -69,7 +69,7 @@
 .senegal-map {
     flex: 1;
     max-width: 650px;
-    height: auto;
+    height: 500px;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
 }
 
