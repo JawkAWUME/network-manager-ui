@@ -146,15 +146,12 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─── Chargement GeoJSON avec fallback ─────────────────────────────────────
-
-  private loadGeoJson(): void {
-    const sources = [
-      'https://raw.githubusercontent.com/codeforafrica/covid19-data/master/geojson/senegal.geojson',
-      'assets/geojson/senegal-regions.geojson'
-    ];
-
-    this.tryFetch(sources, 0);
-  }
+private loadGeoJson(): void {
+  fetch('assets/geojson/senegal-regions.geojson')
+    .then(r => r.json())
+    .then(data => this.renderGeoJson(data))
+    .catch(() => this.renderGeoJson(this.buildFallbackGeoJson()));
+}
 
   private tryFetch(sources: string[], index: number): void {
     if (index >= sources.length) {
@@ -224,12 +221,9 @@ if (bounds.isValid()) {
   // ─── Données ───────────────────────────────────────────────────────────────
 
   private getRegionId(props: Record<string, string>): string {
-    const name = props['NAME_1'] || props['admin1Name'] || props['name'] || props['NAME'] || '';
-    return (
-      this.REGION_MAP[name] ||
-      name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')
-    );
-  }
+  const name = props['NAME_1'] || props['admin1Name'] || props['region'] || '';
+  return this.REGION_MAP[name] || name.toLowerCase().replace(/\s+/g, '-');
+}
 
   getSitesInRegion(regionId: string): Site[] {
     return this.sites.filter((site) => {
