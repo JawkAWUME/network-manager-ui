@@ -12,16 +12,7 @@ import {
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 
-export interface Site {
-  id: number;
-  name: string;
-  city?: string;
-  address?: string;
-  region?: string;
-  firewalls_count?: number;
-  routers_count?: number;
-  switches_count?: number;
-}
+import { Site } from '../../models';
 
 @Component({
   selector: 'app-senegal-map',
@@ -188,26 +179,25 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private sitesByRegion = new Map<string, Site[]>();
 
   private rebuildIndex(): void {
-    this.sitesByRegion.clear();
+  this.sitesByRegion.clear();
 
-    for (const site of this.sites) {
-      const raw = site.region || site.city || site.address || '';
-      const norm = this.normalize(raw);
-      const region = this.REGION_ALIASES[norm] || norm;
+  for (const site of this.sites) {
+    const region = this.extractRegion(site);
 
-      if (!this.sitesByRegion.has(region)) {
-        this.sitesByRegion.set(region, []);
-      }
-
-      this.sitesByRegion.get(region)!.push(site);
+    if (!this.sitesByRegion.has(region)) {
+      this.sitesByRegion.set(region, []);
     }
-  }
 
- getSitesInRegion(regionId: string | null): Site[] {
-  if (!regionId) return [];                    // <-- FIX
-  return this.sitesByRegion.get(this.normalize(regionId)) ?? [];
+    this.sitesByRegion.get(region)!.push(site);
+  }
 }
 
+ getSitesInRegion(regionId: string | null): Site[] {
+  if (!regionId) return [];
+
+  const norm = this.normalize(regionId);
+  return this.sitesByRegion.get(norm) ?? [];
+}
   // ─────────────────────────────────────────────
   // EVENTS MAP
   // ─────────────────────────────────────────────
@@ -252,6 +242,18 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     event.stopPropagation();
     this.siteSelected.emit(site);
   }
+
+  private extractRegion(site: Site): string {
+  const raw =
+    (site as any).region ||   // safe fallback si un jour backend l’ajoute
+    site.city ||
+    site.address ||
+    '';
+
+  const norm = this.normalize(raw);
+
+  return this.REGION_ALIASES[norm] || norm;
+}
 
   // ─────────────────────────────────────────────
   // FALLBACK GEOJSON
