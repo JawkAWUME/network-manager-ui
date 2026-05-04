@@ -24,10 +24,20 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   @Input() sites: Site[] = [];
   @Output() siteSelected = new EventEmitter<Site>();
 
+  // ─────────────────────────────
+  // UI STATE (DEBUG PIPELINE)
+  // ─────────────────────────────
+  loadingGeoJson = signal(false);
+  geoJsonStep = signal<string>('idle');
+  geoJsonError = signal<string | null>(null);
+
   selectedRegionName = signal<string | null>(null);
   selectedRegionId = signal<string | null>(null);
   panelOpen = signal(false);
 
+  // ─────────────────────────────
+  // MAP
+  // ─────────────────────────────
   private map!: L.Map;
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer: L.Layer | null = null;
@@ -64,7 +74,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private readonly REGION_ALIASES: Record<string, string> = {
     dakar: 'dakar',
     thies: 'thies',
-    thiès: 'thies',
+    'thiès': 'thies',
     'saint louis': 'saint-louis',
     'saint-louis': 'saint-louis',
     louga: 'louga',
@@ -81,7 +91,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   };
 
   // ─────────────────────────────
-  // COULEURS
+  // COLORS
   // ─────────────────────────────
   private getColor(count: number): string {
     if (count === 0) return '#dce8f5';
@@ -103,7 +113,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   };
 
   // ─────────────────────────────
-  // INIT
+  // LIFECYCLE
   // ─────────────────────────────
   ngAfterViewInit(): void {
     this.initMap();
@@ -126,7 +136,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─────────────────────────────
-  // MAP
+  // MAP INIT
   // ─────────────────────────────
   private initMap(): void {
     this.map = L.map('senegal-map', {
@@ -144,17 +154,42 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─────────────────────────────
-  // GEOJSON
+  // LOAD GEOJSON (PIPELINE VISUEL)
   // ─────────────────────────────
   private loadGeoJson(): void {
+    this.loadingGeoJson.set(true);
+    this.geoJsonStep.set('📥 Téléchargement GeoJSON...');
+    this.geoJsonError.set(null);
+
+    this.log('Start GeoJSON loading');
+
     fetch('assets/geojson/senegal-regions.geojson')
-      .then((r) => r.json())
-      .then((data) => this.renderGeoJson(data))
-      .catch(() => this.renderGeoJson({ type: 'FeatureCollection', features: [] }));
+      .then((r) => {
+        this.geoJsonStep.set('🧾 Parsing JSON...');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        this.geoJsonStep.set('🗺️ Rendering layers...');
+        this.renderGeoJson(data);
+      })
+      .catch((err) => {
+        this.geoJsonStep.set('❌ Error loading GeoJSON');
+        this.geoJsonError.set(err.message);
+        this.warn(err);
+      })
+      .finally(() => {
+        this.loadingGeoJson.set(false);
+        this.geoJsonStep.set('✅ Done');
+      });
   }
 
+  // ─────────────────────────────
+  // RENDER GEOJSON
+  // ─────────────────────────────
   private renderGeoJson(data: GeoJSON.FeatureCollection): void {
-    this.log('GeoJSON loaded:', data.features.length);
+    this.geoJsonStep.set('🧩 Creating layers...');
+    this.log('Rendering GeoJSON');
 
     this.geoJsonLayer = L.geoJSON(data, {
       style: (f) => this.defaultStyle(f as any),
@@ -162,11 +197,23 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
         this.bindFeatureEvents(feature, layer),
     }).addTo(this.map);
 
+    this.geoJsonStep.set('📐 Computing bounds...');
     const bounds = this.geoJsonLayer.getBounds();
-    if (bounds.isValid()) this.map.fitBounds(bounds);
 
+    if (bounds.isValid()) {
+      this.map.fitBounds(bounds);
+    }
+
+    this.geoJsonStep.set('🔁 Indexing sites...');
+    this.rebuildIndex();
+
+    this.geoJsonStep.set('🔥 Debug overlay...');
     this.renderDebugOverlay();
+
+    this.geoJsonStep.set('🧪 Checking mismatches...');
     this.detectMismatches();
+
+    this.geoJsonStep.set('✅ GeoJSON ready');
   }
 
   // ─────────────────────────────
@@ -176,7 +223,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     const raw =
       props['NAME_1'] ||
       props['admin1Name'] ||
-      props['region'] ||
       '';
 
     const norm = this.normalize(raw);
@@ -212,7 +258,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.sitesByRegion.get(region)!.push(site);
     }
 
-    this.log('Index:', this.sitesByRegion);
+    this.log('Index built:', this.sitesByRegion);
   }
 
   getSitesInRegion(regionId: string | null): Site[] {
@@ -240,7 +286,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // ─────────────────────────────
   private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
     const props = feature.properties as any;
-    const name = props['NAME_1'] || props['admin1Name'] || '';
+    const name = props['NAME_1'] || '';
     const rid = this.getRegionId(props);
 
     (layer as L.Path).bindTooltip(name, { sticky: true });
@@ -266,7 +312,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─────────────────────────────
-  // OVERLAY DEBUG
+  // DEBUG OVERLAY
   // ─────────────────────────────
   private renderDebugOverlay(): void {
     if (!this.DEBUG_OVERLAY) return;
@@ -286,8 +332,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
         icon: L.divIcon({
           className: '',
           html: `
-            <div style="background:#111;color:#0f0;padding:4px 6px;
-            border-radius:6px;font-size:11px;">
+            <div style="background:#000;color:#0f0;padding:4px 6px;font-size:11px;">
               ${rid}: ${count}
             </div>
           `,
@@ -304,8 +349,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // DEBUG PANEL
   // ─────────────────────────────
   private createDebugPanel(): void {
-    if (!this.DEBUG) return;
-
     const control = new L.Control({ position: 'bottomright' });
 
     control.onAdd = () => {
@@ -315,7 +358,8 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
         <div style="background:#000;color:#0f0;padding:10px;font-size:12px;">
           <b>DEBUG MAP</b><br/>
           Sites: ${this.sites.length}<br/>
-          Regions: ${this.sitesByRegion.size}
+          Regions: ${this.sitesByRegion.size}<br/>
+          Step: ${this.geoJsonStep()}
         </div>
       `;
 
@@ -326,7 +370,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   // ─────────────────────────────
-  // MISMATCH DETECTOR
+  // MISMATCH CHECK
   // ─────────────────────────────
   private detectMismatches(): void {
     const geoRegions = new Set<string>();
@@ -338,16 +382,19 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       geoRegions.add(this.getRegionId(props));
     });
 
-    const backendRegions = new Set(this.sitesByRegion.keys());
+    const backend = new Set(this.sitesByRegion.keys());
 
-    const missingInBackend = [...geoRegions].filter(r => !backendRegions.has(r));
-    const missingInGeo = [...backendRegions].filter(r => !geoRegions.has(r));
+    const missingInBackend = [...geoRegions].filter(r => !backend.has(r));
+    const missingInGeo = [...backend].filter(r => !geoRegions.has(r));
 
-    this.warn('Mismatch:', { missingInBackend, missingInGeo });
+    this.warn('Mismatch:', {
+      missingInBackend,
+      missingInGeo,
+    });
   }
 
   // ─────────────────────────────
-  // PANEL
+  // PANEL ACTIONS
   // ─────────────────────────────
   closePanel(): void {
     this.panelOpen.set(false);
