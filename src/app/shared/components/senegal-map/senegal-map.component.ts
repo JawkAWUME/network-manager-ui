@@ -64,11 +64,12 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   return (value || '')
     .toLowerCase()
     .trim()
-    // fix encodage cassé fréquent (é, è, â mal encodés)
-    .replace(/[^a-zA-Z0-9\s-]/g, '')
     .normalize('NFD')
+    // fix encodage cassé fréquent (é, è, â mal encodés)
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-');
+    .replace(/[^a-zA-Z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');;
 }
 
   // ─────────────────────────────
@@ -222,15 +223,16 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // ─────────────────────────────
   // REGION LOGIC
   // ─────────────────────────────
-  private getRegionId(props: Record<string, string>): string {
-    const raw =
-      props['NAME_1'] ||
-      props['admin1Name'] ||
-      '';
+  private getRegionId(props: Record<string, any>): string {
+  const raw =
+    props['adm1_name'] || // ✅ correspond à ton GeoJSON
+    props['NAME_1'] ||
+    props['admin1Name'] ||
+    '';
+  const norm = this.normalize(raw);
+  return this.REGION_ALIASES[norm] || norm.replace(/\s+/g, '-');
+}
 
-    const norm = this.normalize(raw);
-    return this.REGION_ALIASES[norm] || norm.replace(/\s+/g, '-');
-  }
 
   private extractRegion(site: Site): string {
     const raw =
