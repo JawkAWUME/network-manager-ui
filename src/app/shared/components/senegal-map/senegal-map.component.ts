@@ -394,7 +394,8 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
 
     const missingInBackend = [...geoRegions].filter(r => !backend.has(r));
     const missingInGeo = [...backend].filter(r => !geoRegions.has(r));
-
+    this.log("GeoRégions", geoRegions)
+    this.log("Backend Régions", backend)
     this.warn('Mismatch:', {
       missingInBackend,
       missingInGeo,
