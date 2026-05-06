@@ -341,7 +341,8 @@
                                     <div class="action-buttons">
                                         <button class="btn btn-outline btn-sm btn-icon" title="Voir le détail" (click)="viewItem('firewalls', fw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('firewall', fw)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Politiques de sécurité" (click)="updateSecurityPolicies(fw.id)"><i class="fas fa-shield-alt"></i></button> } @if (auth.isAdmin()) {
+                                        <button class="btn btn-outline btn-sm btn-icon" title="Politiques de sécurité" (click)="updateSecurityPolicies(fw.id)"><i class="fas fa-shield-alt"></i></button> <button class="btn btn-outline btn-sm btn-icon" title="Terminal SSH"
+                                            (click)="openSshTerminal('firewall', fw)"><i class="fas fa-terminal"></i></button>} @if (auth.isAdmin()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteFirewall(fw)"><i class="fas fa-trash"></i></button> }
                                     </div>
                                 </td>
@@ -414,7 +415,8 @@
                                     <div class="action-buttons">
                                         <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('routers', rt.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('router', rt)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Configuration interfaces" (click)="updateInterfaces(rt.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
+                                        <button class="btn btn-outline btn-sm btn-icon" title="Configuration interfaces" (click)="updateInterfaces(rt.id)"><i class="fas fa-cog"></i></button>
+                                        <button class="btn btn-outline btn-sm btn-icon" title="Terminal SSH" (click)="openSshTerminal('router', rt)"><i class="fas fa-terminal"></i></button> } @if (auth.isAdmin()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteRouter(rt)"><i class="fas fa-trash"></i></button> }
                                     </div>
                                 </td>
@@ -487,7 +489,8 @@
                                     <div class="action-buttons">
                                         <button class="btn btn-outline btn-sm btn-icon" title="Voir" (click)="viewItem('switches', sw.id)"><i class="fas fa-eye"></i></button> @if (auth.canEdit()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Modifier" (click)="openEdit('switch', sw)"><i class="fas fa-edit"></i></button>
-                                        <button class="btn btn-outline btn-sm btn-icon" title="Configurer ports" (click)="configurePorts(sw.id)"><i class="fas fa-cog"></i></button> } @if (auth.isAdmin()) {
+                                        <button class="btn btn-outline btn-sm btn-icon" title="Configurer ports" (click)="configurePorts(sw.id)"><i class="fas fa-cog"></i></button>
+                                        <button class="btn btn-outline btn-sm btn-icon" title="Terminal SSH" (click)="openSshTerminal('switch', sw)"><i class="fas fa-terminal"></i></button> } @if (auth.isAdmin()) {
                                         <button class="btn btn-outline btn-sm btn-icon" title="Supprimer" style="color:var(--danger-color);" (click)="deleteSwitch(sw)"><i class="fas fa-trash"></i></button> }
                                     </div>
                                 </td>
@@ -1141,6 +1144,9 @@
             </div>
         </div>
     </div>
+    } @if (sshTarget) {
+    <app-ssh-terminal [target]="sshTarget" (close)="closeSshTerminal()">
+    </app-ssh-terminal>
     }
 
     <app-toast></app-toast>

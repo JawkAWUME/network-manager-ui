@@ -19,17 +19,37 @@ import {
   PendingChange
 } from '../../shared/models';
 import { SenegalMapComponent } from '../../shared/components/senegal-map/senegal-map.component';
+import { SshTarget, SshTerminalComponent } from '../../ssh-terminal/ssh-terminal';
 
 type Tab = 'dashboard' | 'firewalls' | 'routers' | 'switches' | 'sites' | 'users' | 'profile' | 'moderations';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, EquipmentModalComponent, ConfirmModalComponent, ToastComponent, SenegalMapComponent],
+  imports: [CommonModule, FormsModule, EquipmentModalComponent, ConfirmModalComponent, ToastComponent, SenegalMapComponent, SshTerminalComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  
+sshTarget: SshTarget | null = null;
+
+openSshTerminal(type: 'firewall' | 'router' | 'switch', item: any) {
+  this.sshTarget = {
+    id:       item.id,
+    name:     item.name,
+    type,
+    ip_nms:   item.ip_nms   || '',
+    username: item.username || '',
+    password: item.password || '',
+  };
+}
+
+closeSshTerminal() {
+  this.sshTarget = null;
+}
+
   private api = inject(ApiService);
   public auth = inject(AuthService);
   private router = inject(AngularRouter);
