@@ -167,3 +167,32 @@
     color: #003087;
     font-size: 1rem;
 }
+
+
+/* Marqueur de site */
+
+.site-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.marker-pin {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #003087, #001f5c);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+}
+
+.marker-count {
+    transform: rotate(45deg);
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+}

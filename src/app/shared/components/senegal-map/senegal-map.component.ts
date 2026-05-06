@@ -30,7 +30,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   loadingGeoJson = signal(false);
   geoJsonStep = signal<string>('idle');
   geoJsonError = signal<string | null>(null);
-
   selectedRegionName = signal<string | null>(null);
   selectedRegionId = signal<string | null>(null);
   panelOpen = signal(false);
@@ -41,6 +40,8 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   private map!: L.Map;
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer: L.Layer | null = null;
+
+  private sitesMarkersLayer = L.featureGroup();
 
   // ─────────────────────────────
   // COLORS
@@ -81,6 +82,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       this.rebuildIndex();
       this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as any));
     }
+    this.updateSiteMarkers();
   }
 
   // ─────────────────────────────
@@ -98,8 +100,50 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
       { attribution: '&copy; OpenStreetMap contributors' }
     ).addTo(this.map);
+
+    this.sitesMarkersLayer.addTo(this.map);
   }
 
+  private updateSiteMarkers(): void {
+    this.sitesMarkersLayer.clearLayers();
+
+    for (const site of this.sites) {
+      if (!site.latitude || !site.longitude) continue;
+
+      const totalEquipments = (site.firewalls_count ?? 0)
+                            + (site.routers_count ?? 0)
+                            + (site.switches_count ?? 0);
+
+      // Créer un icône personnalisé avec le nombre d'équipements
+      const icon = L.divIcon({
+        className: 'site-marker',
+        html: `<div class="marker-pin">
+                 <span class="marker-count">${totalEquipments}</span>
+               </div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 34],
+        popupAnchor: [0, -34],
+      });
+
+      const marker = L.marker([site.latitude, site.longitude], { icon })
+        .bindTooltip(site.name, { direction: 'top', offset: [0, -25] });
+
+      // Au clic, on émet l'événement comme pour le panneau latéral
+      marker.on('click', () => {
+        this.siteSelected.emit(site);
+      });
+
+      this.sitesMarkersLayer.addLayer(marker);
+    }
+
+    // Ajuster les bornes si nécessaire (optionnel)
+    if (this.sitesMarkersLayer.getLayers().length > 0) {
+      const bounds = this.sitesMarkersLayer.getBounds();
+      if (bounds.isValid() && !this.map.getBounds().contains(bounds)) {
+        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+      }
+    }
+  }
   // ─────────────────────────────
   // LOAD GEOJSON
   // ─────────────────────────────
