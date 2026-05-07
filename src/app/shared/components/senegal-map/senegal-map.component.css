@@ -350,6 +350,21 @@
     margin: 0;
 }
 
+.region-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+    pointer-events: none;
+    /* pour ne pas gêner les clics sur la région */
+}
+
 
 /* =========================================================
    RESPONSIVE

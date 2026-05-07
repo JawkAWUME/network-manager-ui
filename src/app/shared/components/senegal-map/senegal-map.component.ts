@@ -240,7 +240,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     const name  = props['adm1_name'] || props['NAME_1'] || props['name'] || '';
     const rid   = this.getRegionId(props);
 
-    (layer as L.Path).bindTooltip(name, { sticky: true, opacity: 1 });
+    (layer as L.Path).bindTooltip(name, { permanent : true, opacity: 1 , direction: 'center', className: 'region-label'}, );
 
     layer.on({
       mouseover: e => {
