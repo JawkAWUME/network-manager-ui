@@ -3,16 +3,16 @@
     <!-- ── En-tête ── -->
     <div class="map-header">
         <h3>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
         <circle cx="12" cy="10" r="3"/>
       </svg> Carte des Sites — Sénégal
         </h3>
         <div class="map-legend">
             <div class="legend-item"><span class="legend-swatch empty"></span><span>Aucun site</span></div>
-            <div class="legend-item"><span class="legend-swatch low"></span><span>1–2 sites</span></div>
-            <div class="legend-item"><span class="legend-swatch medium"></span><span>3–5 sites</span></div>
-            <div class="legend-item"><span class="legend-swatch high"></span><span>6+ sites</span></div>
+            <div class="legend-item"><span class="legend-swatch low"></span><span>1–2</span></div>
+            <div class="legend-item"><span class="legend-swatch medium"></span><span>3–5</span></div>
+            <div class="legend-item"><span class="legend-swatch high"></span><span>6+</span></div>
         </div>
     </div>
 
@@ -22,36 +22,68 @@
         <!-- Conteneur Leaflet -->
         <div id="senegal-map" class="leaflet-map"></div>
 
-        <!-- Panneau latéral des sites -->
+        <!-- Panneau latéral -->
         <div class="sites-panel" [class.open]="panelOpen()">
 
             <div class="panel-header">
-                <span class="panel-title">
-          {{ selectedRegionName() }}
-          <span class="panel-count">
-            {{ getSitesInRegion(selectedRegionId()!).length }} site{{ getSitesInRegion(selectedRegionId()!).length !== 1 ? 's' : '' }}
+                <div class="panel-title-block">
+                    <span class="panel-region-name">{{ selectedRegionName() }}</span>
+                    <span class="panel-count">
+            {{ getSitesInRegion(selectedRegionId()).length }}
+            site{{ getSitesInRegion(selectedRegionId()).length !== 1 ? 's' : '' }}
           </span>
-                </span>
-                <button class="btn-close" (click)="closePanel()" aria-label="Fermer">✕</button>
+                </div>
+                <button class="btn-close" (click)="closePanel()" aria-label="Fermer">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M1 1l12 12M13 1L1 13"/>
+          </svg>
+        </button>
             </div>
 
             <div class="sites-list">
-                @for (site of getSitesInRegion(selectedRegionId()!); track site.id) {
+                @for (site of getSitesInRegion(selectedRegionId()); track site.id) {
                 <div class="site-card" (click)="onSiteClick(site, $event)">
-                    <div class="site-icon">🏢</div>
+                    <div class="site-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+                    </div>
                     <div class="site-info">
                         <div class="site-name">{{ site.name }}</div>
                         <div class="site-city">{{ site.city || 'N/A' }}</div>
                         <div class="site-badges">
-                            <span class="badge fw">{{ site.firewalls_count ?? 0 }} FW</span>
-                            <span class="badge rt">{{ site.routers_count ?? 0 }} RT</span>
-                            <span class="badge sw">{{ site.switches_count ?? 0 }} SW</span>
+                            <span class="badge fw">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                  </svg>
+                  {{ site.firewalls_count ?? 0 }} FW
+                </span>
+                            <span class="badge rt">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                  </svg>
+                  {{ site.routers_count ?? 0 }} RT
+                </span>
+                            <span class="badge sw">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="17 1 21 5 17 9"/>
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                  </svg>
+                  {{ site.switches_count ?? 0 }} SW
+                </span>
                         </div>
                     </div>
-                    <span class="site-arrow">➔</span>
+                    <svg class="site-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
                 </div>
                 } @empty {
                 <div class="empty-state">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="7" width="20" height="14" rx="2"/>
+              <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
                     <p>Aucun site dans cette région</p>
                 </div>
                 }
@@ -59,4 +91,5 @@
 
         </div>
     </div>
+
 </div>

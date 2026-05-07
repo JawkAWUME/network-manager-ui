@@ -1,444 +1,388 @@
+/* =========================================================
+   CONTAINER
+========================================================= */
+
 .map-container {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    background: var(--color-background-primary, #fff);
+    border-radius: var(--border-radius-lg, 12px);
+    border: 1px solid var(--border-color, #e2e8f0);
     overflow: hidden;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    box-shadow: var(--card-shadow, 0 2px 12px rgba(0, 0, 0, 0.08));
 }
 
+
+/* =========================================================
+   HEADER
+========================================================= */
+
 .map-header {
-    background: linear-gradient(135deg, #003087, #001f5c);
+    background: linear-gradient(135deg, var(--header-bg, #003087) 0%, var(--header-dark, #001a4d) 100%);
     color: white;
-    padding: 18px 24px;
+    padding: 16px 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
 }
 
 .map-header h3 {
     margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    letter-spacing: 0.2px;
 }
+
+
+/* =========================================================
+   LEGEND
+========================================================= */
 
 .map-legend {
     display: flex;
     gap: 16px;
+    flex-wrap: wrap;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.85rem;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.88);
 }
 
 .legend-swatch {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .legend-swatch.empty {
-    background: #f0f4f8;
+    background: #dce8f5;
 }
 
 .legend-swatch.low {
-    background: #b2dfdb;
+    background: #22c55e;
 }
 
 .legend-swatch.medium {
-    background: #4db6ac;
+    background: #f59e0b;
 }
 
 .legend-swatch.high {
-    background: #00796b;
+    background: #ef4444;
 }
+
+
+/* =========================================================
+   BODY
+========================================================= */
 
 .map-body {
     display: flex;
-    height: 500px;
+    height: 560px;
+    position: relative;
+    overflow: hidden;
 }
+
+
+/* =========================================================
+   LEAFLET MAP
+========================================================= */
 
 .leaflet-map {
     flex: 1;
+    min-width: 0;
+    background: #0d1b2e;
 }
 
+
+/* Leaflet tooltip override */
+
+.leaflet-tooltip {
+    background: rgba(2, 10, 28, 0.94) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-tooltip::before {
+    display: none !important;
+}
+
+
+/* =========================================================
+   SIDE PANEL — fermé par défaut, slide-in à l'ouverture
+========================================================= */
+
 .sites-panel {
-    width: 320px;
-    background: #fafafa;
-    border-left: 1px solid #e0e0e0;
-    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.05);
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 310px;
+    background: var(--color-background-primary, #fff);
+    border-left: 1px solid var(--border-color, #e2e8f0);
+    display: flex;
+    flex-direction: column;
     transform: translateX(100%);
-    transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 900;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.12);
 }
 
 .sites-panel.open {
     transform: translateX(0);
 }
 
+
+/* =========================================================
+   PANEL HEADER
+========================================================= */
+
 .panel-header {
-    background: #003087;
+    background: linear-gradient(135deg, var(--header-bg, #003087), var(--header-dark, #001a4d));
     color: white;
-    padding: 14px 20px;
+    padding: 14px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.panel-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.panel-region-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: white;
+}
+
+.panel-count {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.65);
+    font-weight: 400;
 }
 
 .btn-close {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
-.sites-list {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-}
-
-.site-card {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    border: 1px solid #ddd;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.site-card:hover {
-    border-color: #003087;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-}
-
-.site-icon {
-    width: 40px;
-    height: 40px;
-    background: #003087;
-    color: white;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.18s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+    transform: rotate(90deg);
+}
+
+
+/* =========================================================
+   SITES LIST
+========================================================= */
+
+.sites-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sites-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sites-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sites-list::-webkit-scrollbar-thumb {
+    background: var(--border-color, #e2e8f0);
+    border-radius: 2px;
+}
+
+
+/* =========================================================
+   SITE CARD
+========================================================= */
+
+.site-card {
+    background: var(--color-background-primary, #fff);
+    border-radius: 10px;
+    padding: 11px 12px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.site-card:hover {
+    border-color: var(--primary-color, #003087);
+    box-shadow: 0 3px 12px rgba(0, 48, 135, 0.1);
+    transform: translateX(3px);
+}
+
+.site-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-color, #003087), #1a56b8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.site-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .site-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #222;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--text-color, #1e293b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
 }
 
 .site-city {
-    font-size: 0.8rem;
-    color: #666;
+    font-size: 0.74rem;
+    color: var(--text-light, #64748b);
+    margin-bottom: 6px;
 }
 
 .site-badges {
     display: flex;
-    gap: 8px;
-    font-size: 0.75rem;
+    gap: 5px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
 }
 
 .badge.fw {
-    color: #d32f2f;
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
 }
 
 .badge.rt {
-    color: #1976d2;
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
 }
 
 .badge.sw {
-    color: #388e3c;
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
 }
 
 .site-arrow {
-    color: #003087;
-    font-size: 1rem;
+    color: var(--primary-color, #003087);
+    opacity: 0.5;
+    transition: opacity 0.18s, transform 0.18s;
+    flex-shrink: 0;
+}
+
+.site-card:hover .site-arrow {
+    opacity: 1;
+    transform: translateX(3px);
 }
 
 
 /* =========================================================
-   MARQUEURS LEAFLET PREMIUM — STABLES AU ZOOM
+   EMPTY STATE
 ========================================================= */
 
-
-/* =========================================================
-   NETWORK TELECOM MARKERS — STYLE SENUM / NOC
-========================================================= */
-
-.site-marker {
-    background: transparent !important;
-    border: none !important;
-}
-
-
-/* =========================================================
-   CONTAINER
-========================================================= */
-
-.marker-wrapper {
-    position: relative;
-    width: 54px;
-    height: 54px;
+.empty-state {
+    flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 10px;
+    padding: 40px 20px;
+    color: var(--text-light, #94a3b8);
+    text-align: center;
+}
+
+.empty-state svg {
+    opacity: 0.25;
+}
+
+.empty-state p {
+    font-size: 0.85rem;
+    margin: 0;
 }
 
 
 /* =========================================================
-   OUTER PULSE RING
+   RESPONSIVE
 ========================================================= */
 
-.marker-ring {
-    position: absolute;
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    border: 2px solid rgba(0, 180, 255, 0.4);
-    animation: radarPulse 2.6s infinite;
-    box-shadow: 0 0 10px rgba(0, 180, 255, 0.4), 0 0 22px rgba(0, 180, 255, 0.25);
-}
-
-
-/* =========================================================
-   SECOND RING
-========================================================= */
-
-.marker-ring-2 {
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px dashed rgba(255, 255, 255, 0.28);
-    animation: rotateRing 8s linear infinite;
-}
-
-
-/* =========================================================
-   CORE
-========================================================= */
-
-.marker-core {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient( circle at 30% 30%, #6be7ff, #0078ff 45%, #002b80 100%);
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 10px rgba(0, 140, 255, 0.9), 0 0 22px rgba(0, 140, 255, 0.65), 0 0 40px rgba(0, 140, 255, 0.35);
-    z-index: 10;
-}
-
-
-/* =========================================================
-   CENTER DOT
-========================================================= */
-
-.marker-core::before {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: white;
-    box-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 255, 255, 0.7);
-}
-
-
-/* =========================================================
-   EQUIPMENT COUNT
-========================================================= */
-
-.marker-count {
-    position: absolute;
-    bottom: -6px;
-    right: -8px;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 6px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient( 135deg, #001f5c, #003ea8);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 800;
-    font-family: 'Inter', sans-serif;
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 10px rgba(0, 82, 255, 0.5);
-    z-index: 15;
-}
-
-
-/* =========================================================
-   SIGNAL DOTS
-========================================================= */
-
-.signal-dot {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #6be7ff;
-    box-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
-    animation: blinkDot 1.8s infinite alternate;
-}
-
-.signal-dot.dot-1 {
-    top: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.signal-dot.dot-2 {
-    right: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-.signal-dot.dot-3 {
-    bottom: 4px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.signal-dot.dot-4 {
-    left: 4px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-
-/* =========================================================
-   STATUS COLORS
-========================================================= */
-
-
-/* LOW */
-
-.marker-wrapper.low .marker-core {
-    background: radial-gradient(circle, #6eff8d, #10b941 60%, #0b6d28);
-    box-shadow: 0 0 12px rgba(16, 185, 65, 0.9), 0 0 28px rgba(16, 185, 65, 0.45);
-}
-
-.marker-wrapper.low .marker-ring {
-    border-color: rgba(16, 185, 65, 0.45);
-}
-
-
-/* MEDIUM */
-
-.marker-wrapper.medium .marker-core {
-    background: radial-gradient(circle, #ffe27a, #ffb300 60%, #cc7a00);
-    box-shadow: 0 0 12px rgba(255, 179, 0, 0.9), 0 0 28px rgba(255, 179, 0, 0.45);
-}
-
-.marker-wrapper.medium .marker-ring {
-    border-color: rgba(255, 179, 0, 0.45);
-}
-
-
-/* HIGH */
-
-.marker-wrapper.high .marker-core {
-    background: radial-gradient(circle, #ff8f8f, #ff2d2d 60%, #8f0000);
-    box-shadow: 0 0 12px rgba(255, 45, 45, 0.95), 0 0 30px rgba(255, 45, 45, 0.5);
-}
-
-.marker-wrapper.high .marker-ring {
-    border-color: rgba(255, 45, 45, 0.5);
-}
-
-
-/* =========================================================
-   HOVER
-========================================================= */
-
-.site-marker:hover .marker-core {
-    filter: brightness(1.15);
-}
-
-.site-marker:hover .marker-ring {
-    animation-duration: 1.4s;
-}
-
-
-/* =========================================================
-   ANIMATIONS
-========================================================= */
-
-@keyframes radarPulse {
-    0% {
-        transform: scale(0.82);
-        opacity: 0.8;
+@media (max-width: 992px) {
+    .map-body {
+        height: auto;
+        flex-direction: column;
     }
-    70% {
-        transform: scale(1.25);
-        opacity: 0;
+    .leaflet-map {
+        height: 420px;
     }
-    100% {
-        transform: scale(1.25);
-        opacity: 0;
+    .sites-panel {
+        position: relative;
+        width: 100%;
+        transform: none;
+        border-left: none;
+        border-top: 1px solid var(--border-color, #e2e8f0);
+        box-shadow: none;
+        max-height: 360px;
+    }
+    .map-header {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 
-@keyframes rotateRing {
-    from {
-        transform: rotate(0deg);
+@media (max-width: 640px) {
+    .map-legend {
+        gap: 10px;
     }
-    to {
-        transform: rotate(360deg);
+    .legend-item {
+        font-size: 0.72rem;
     }
-}
-
-@keyframes blinkDot {
-    from {
-        opacity: 0.35;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-
-/* =========================================================
-   TOOLTIP
-========================================================= */
-
-.leaflet-tooltip {
-    background: rgba(3, 10, 30, 0.96);
-    color: #ffffff;
-    border: 1px solid rgba(0, 180, 255, 0.3);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    box-shadow: 0 0 16px rgba(0, 140, 255, 0.25);
-}
-
-
-/* =========================================================
-   FIX LEAFLET POSITIONING
-========================================================= */
-
-.leaflet-marker-icon.site-marker {
-    will-change: auto !important;
-    transform-origin: center bottom !important;
 }

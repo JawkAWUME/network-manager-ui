@@ -20,511 +20,471 @@ import { Site } from '../../models';
   templateUrl: './senegal-map.component.html',
   styleUrls: ['./senegal-map.component.css'],
 })
-export class SenegalMapComponent
-  implements AfterViewInit, OnDestroy, OnChanges
-{
+export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges {
+
   @Input() sites: Site[] = [];
   @Output() siteSelected = new EventEmitter<Site>();
 
-  // ─────────────────────────────────────────────
-  // UI STATE
-  // ─────────────────────────────────────────────
-  loadingGeoJson = signal(false);
-  geoJsonStep = signal<string>('idle');
-  geoJsonError = signal<string | null>(null);
-
+  // ── UI signals ─────────────────────────────────────────────
   selectedRegionName = signal<string | null>(null);
-  selectedRegionId = signal<string | null>(null);
+  selectedRegionId   = signal<string | null>(null);
+  panelOpen          = signal(false);
 
-  panelOpen = signal(false);
-
+  // ── Leaflet internals ──────────────────────────────────────
   private map!: L.Map;
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer: L.Layer | null = null;
-
-  private sitesMarkersLayer = L.featureGroup();
+  private markersLayer = L.featureGroup();
   private mapReady = false;
 
+  // ── Index region → sites ───────────────────────────────────
   private sitesByRegion = new Map<string, Site[]>();
 
-  // ─────────────────────────────────────────────
-  // REGION COLORS
-  // ─────────────────────────────────────────────
-  private getColor(count: number): string {
-    if (count === 0) return '#f0f4f8';
-    if (count <= 2) return '#64ffda';
-    if (count <= 5) return '#00bcd4';
-    return '#00e676';
-  }
-
-  private hoverStyle: L.PathOptions = {
-    fillOpacity: 0.9,
-    weight: 3,
-    color: '#ff9800',
-  };
-
-  private selectedStyle: L.PathOptions = {
-    weight: 3,
-    color: '#ff1744',
-    fillOpacity: 0.92,
-  };
-
-  // ─────────────────────────────────────────────
+  // =========================================================
   // LIFECYCLE
-  // ─────────────────────────────────────────────
+  // =========================================================
   ngAfterViewInit(): void {
     this.initMap();
     this.loadGeoJson();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['sites']) {
+      this.rebuildIndex();
+      if (this.geoJsonLayer) {
+        this.geoJsonLayer.setStyle(f => this.defaultStyle(f as any));
+      }
+      this.updateMarkers();
+    }
   }
 
   ngOnDestroy(): void {
     this.map?.remove();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['sites']) {
-      console.log(
-        '[DEBUG] sites input changed:',
-        this.sites.length
-      );
-
-      if (this.geoJsonLayer) {
-        this.rebuildIndex();
-        this.geoJsonLayer.setStyle((f) =>
-          this.defaultStyle(f as any)
-        );
-      }
-
-      this.updateSiteMarkers();
-    }
-  }
-
-  // ─────────────────────────────────────────────
+  // =========================================================
   // MAP INIT
-  // ─────────────────────────────────────────────
+  // =========================================================
   private initMap(): void {
     this.map = L.map('senegal-map', {
       center: [14.5, -14.5],
       zoom: 7,
       minZoom: 6,
       maxZoom: 14,
-
       zoomControl: true,
-
-      maxBounds: L.latLngBounds(
-        [10.5, -18],
-        [17, -10.5]
-      ),
-
+      maxBounds: L.latLngBounds([10.5, -18], [17, -10.5]),
       maxBoundsViscosity: 1.0,
     });
 
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      {
-        attribution: '&copy; OpenStreetMap contributors',
-      }
+      'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',
+      { attribution: '&copy; OpenStreetMap contributors &copy; CARTO' }
     ).addTo(this.map);
 
-    this.sitesMarkersLayer.addTo(this.map);
-
+    this.markersLayer.addTo(this.map);
     this.mapReady = true;
-
-    console.log('[DEBUG] map initialized');
-
-    this.updateSiteMarkers();
   }
 
-  // ─────────────────────────────────────────────
-  // SITE MARKERS
-  // ─────────────────────────────────────────────
-  private updateSiteMarkers(): void {
-    if (!this.mapReady) {
-      console.warn(
-        '[DEBUG] map not ready yet'
-      );
-      return;
-    }
-
-    this.sitesMarkersLayer.clearLayers();
-
-    let placed = 0;
-    let missingCoords = 0;
-
-    for (const site of this.sites) {
-      if (!site.latitude || !site.longitude) {
-        missingCoords++;
-        console.warn(
-          '[DEBUG] missing coords:',
-          site.name
-        );
-        continue;
-      }
-
-      const totalEquipments =
-        (site.firewalls_count ?? 0) +
-        (site.routers_count ?? 0) +
-        (site.switches_count ?? 0);
-
-      const markerLevel =
-        totalEquipments >= 6
-          ? 'high'
-          : totalEquipments >= 3
-          ? 'medium'
-          : 'low';
-
-      const markerHtml = `
-        <div class="network-marker ${markerLevel}">
-
-          <div class="marker-pulse"></div>
-
-          <div class="marker-core">
-
-            <div class="marker-ring"></div>
-
-            <div class="marker-inner">
-              <span class="marker-count">
-                ${totalEquipments}
-              </span>
-            </div>
-
-          </div>
-
-          <div class="marker-label">
-            ${site.name}
-          </div>
-
-          <div class="marker-line"></div>
-
-        </div>
-      `;
-
-      const icon = L.divIcon({
-        className: 'site-marker-wrapper',
-
-        html: markerHtml,
-
-        iconSize: [90, 90],
-
-        // IMPORTANT :
-        // ancre fixe => le marqueur reste EXACTEMENT
-        // sur ses coordonnées même en zoom out
-        iconAnchor: [45, 78],
-
-        popupAnchor: [0, -75],
-      });
-
-      const marker = L.marker(
-        [site.latitude, site.longitude],
-        {
-          icon,
-
-          // évite certains déplacements visuels
-          riseOnHover: true,
-
-          // optimisation zoom
-          bubblingMouseEvents: false,
-        }
-      );
-
-      marker.bindTooltip(site.name, {
-        direction: 'top',
-        offset: [0, -70],
-      });
-
-      marker.on('click', () => {
-        console.log(
-          '[DEBUG] marker clicked:',
-          site.name
-        );
-
-        this.siteSelected.emit(site);
-      });
-
-      this.sitesMarkersLayer.addLayer(marker);
-
-      placed++;
-    }
-
-    console.log(`
-      [DEBUG] markers placed:
-      ${placed}
-      / missing coords:
-      ${missingCoords}
-    `);
-
-    if (placed > 0) {
-      const bounds =
-        this.sitesMarkersLayer.getBounds();
-
-      if (
-        bounds.isValid() &&
-        !this.map.getBounds().contains(bounds)
-      ) {
-        this.map.fitBounds(bounds, {
-          padding: [50, 50],
-          maxZoom: 10,
-        });
-      }
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // LOAD GEOJSON
-  // ─────────────────────────────────────────────
+  // =========================================================
+  // GEOJSON
+  // =========================================================
   private async loadGeoJson(): Promise<void> {
     try {
-      this.loadingGeoJson.set(true);
+      const res = await fetch('assets/geojson/senegal-regions.geojson');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-      this.geoJsonStep.set(
-        'Chargement GeoJSON...'
-      );
-
-      const response = await fetch(
-        'assets/geojson/senegal-regions.geojson'
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `HTTP ${response.status}`
-        );
+      // Debug : log la première feature pour voir les propriétés
+      if (data.features?.length) {
+        console.log('[MAP] GeoJSON props sample:', data.features[0].properties);
       }
-
-      const data = await response.json();
 
       this.renderGeoJson(data);
     } catch (err: any) {
-      this.geoJsonError.set(err.message);
-    } finally {
-      this.loadingGeoJson.set(false);
+      console.error('[MAP] GeoJSON load error:', err.message);
     }
   }
 
-  // ─────────────────────────────────────────────
-  // RENDER GEOJSON
-  // ─────────────────────────────────────────────
-  private renderGeoJson(
-    data: GeoJSON.FeatureCollection
-  ): void {
+  private renderGeoJson(data: GeoJSON.FeatureCollection): void {
     this.geoJsonLayer = L.geoJSON(data, {
-      style: (f) =>
-        this.defaultStyle(f as any),
-
-      onEachFeature: (feature, layer) =>
-        this.bindFeatureEvents(
-          feature,
-          layer
-        ),
+      style: f => this.defaultStyle(f as any),
+      onEachFeature: (feature, layer) => this.bindFeatureEvents(feature, layer),
     }).addTo(this.map);
 
-    const bounds =
-      this.geoJsonLayer.getBounds();
-
+    const bounds = this.geoJsonLayer.getBounds();
     if (bounds.isValid()) {
-      this.map.fitBounds(bounds, {
-        padding: [20, 20],
-      });
+      this.map.fitBounds(bounds, { padding: [20, 20] });
     }
 
     this.rebuildIndex();
-
-    this.updateSiteMarkers();
+    this.geoJsonLayer.setStyle(f => this.defaultStyle(f as any));
+    this.updateMarkers();
   }
 
-  // ─────────────────────────────────────────────
-  // REGION NORMALIZATION
-  // ─────────────────────────────────────────────
+  // =========================================================
+  // NORMALISATION
+  // =========================================================
   private normalize(value: string): string {
     return (value || '')
       .toLowerCase()
       .trim()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9\s-]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
   }
 
-  private getRegionId(
-    props: Record<string, any>
-  ): string {
+  private getRegionId(props: Record<string, any>): string {
+    // Adapte selon ce que ton GeoJSON retourne réellement
     const raw =
       props['adm1_name'] ||
-      props['NAME_1'] ||
+      props['NAME_1']    ||
+      props['name']      ||
+      props['NAME']      ||
       '';
-
+    if (!raw) console.warn('[MAP] GeoJSON feature has no name prop:', props);
     return this.normalize(raw);
   }
 
-  // ─────────────────────────────────────────────
-  // REGION DETECTION
-  // ─────────────────────────────────────────────
-  private extractRegion(site: Site): string {
-    const raw =
-      site.city ||
-      site.address ||
-      '';
-
+  private extractRegionFromSite(site: Site): string {
+    // Priorité : champ region > city > address
+    const raw = (site as any).region || site.city || site.address || '';
     const norm = this.normalize(raw);
 
-    if (norm.includes('dakar')) return 'dakar';
-    if (norm.includes('thies')) return 'thies';
-    if (norm.includes('diourbel')) return 'diourbel';
-    if (norm.includes('fatick')) return 'fatick';
-    if (norm.includes('kaffrine')) return 'kaffrine';
-    if (norm.includes('kaolack')) return 'kaolack';
-    if (norm.includes('louga')) return 'louga';
-    if (norm.includes('matam')) return 'matam';
-    if (norm.includes('kedougou')) return 'kedougou';
-    if (norm.includes('kolda')) return 'kolda';
-    if (norm.includes('sedhiou')) return 'sedhiou';
-    if (norm.includes('ziguinchor'))
-      return 'ziguinchor';
+    // Table de correspondance explicite pour absorber les variations d'encodage
+    const ALIASES: Record<string, string> = {
+      dakar:          'dakar',
+      thies:          'thies',
+      'saint-louis':  'saint-louis',
+      'saint-louis-':  'saint-louis',
+      louga:          'louga',
+      matam:          'matam',
+      diourbel:       'diourbel',
+      fatick:         'fatick',
+      kaolack:        'kaolack',
+      kaffrine:       'kaffrine',
+      tambacounda:    'tambacounda',
+      kedougou:       'kedougou',
+      kolda:          'kolda',
+      sedhiou:        'sedhiou',
+      ziguinchor:     'ziguinchor',
+    };
 
-    if (norm.includes('saint-louis'))
-      return 'saint-louis';
-
+    // Cherche si norm contient une clé connue
+    for (const [key, canonical] of Object.entries(ALIASES)) {
+      if (norm.includes(key)) return canonical;
+    }
     return norm;
   }
 
-  // ─────────────────────────────────────────────
-  // REGION INDEX
-  // ─────────────────────────────────────────────
+  // =========================================================
+  // INDEX
+  // =========================================================
   private rebuildIndex(): void {
     this.sitesByRegion.clear();
-
     for (const site of this.sites) {
-      const region =
-        this.extractRegion(site);
-
+      const region = this.extractRegionFromSite(site);
       if (!region) continue;
-
-      if (
-        !this.sitesByRegion.has(region)
-      ) {
-        this.sitesByRegion.set(
-          region,
-          []
-        );
+      if (!this.sitesByRegion.has(region)) {
+        this.sitesByRegion.set(region, []);
       }
-
-      this.sitesByRegion
-        .get(region)!
-        .push(site);
+      this.sitesByRegion.get(region)!.push(site);
     }
+    console.log('[MAP] index:', this.sitesByRegion);
   }
 
-  getSitesInRegion(
-    regionId: string | null
-  ): Site[] {
+  getSitesInRegion(regionId: string | null): Site[] {
     if (!regionId) return [];
-
-    return (
-      this.sitesByRegion.get(
-        this.normalize(regionId)
-      ) ?? []
-    );
+    return this.sitesByRegion.get(this.normalize(regionId)) ?? [];
   }
 
-  // ─────────────────────────────────────────────
-  // REGION STYLE
-  // ─────────────────────────────────────────────
-  private defaultStyle(
-    feature: GeoJSON.Feature
-  ): L.PathOptions {
-    const rid = this.getRegionId(
-      feature.properties as any
-    );
+  // =========================================================
+  // STYLE RÉGIONS
+  // =========================================================
+  private getRegionColor(count: number): string {
+    if (count === 0) return '#1d2d44';
+    if (count <= 2) return '#166534';
+    if (count <= 5) return '#b45309';
+    return '#991b1b';
+  }
 
-    const count =
-      this.getSitesInRegion(rid).length;
-
+  private defaultStyle(feature: GeoJSON.Feature): L.PathOptions {
+    const rid   = this.getRegionId(feature.properties as any);
+    const count = this.getSitesInRegion(rid).length;
     return {
-      fillColor: this.getColor(count),
-
-      fillOpacity: 0.55,
-
-      weight: 2,
-
-      color: '#00bcd4',
+      fillColor:   this.getRegionColor(count),
+      fillOpacity: 0.6,
+      weight:      1.5,
+      color:       '#3b82f6',
     };
   }
 
-  // ─────────────────────────────────────────────
-  // REGION EVENTS
-  // ─────────────────────────────────────────────
-  private bindFeatureEvents(
-    feature: GeoJSON.Feature,
-    layer: L.Layer
-  ): void {
+  private hoverStyle: L.PathOptions = {
+    fillOpacity: 0.85,
+    weight:      2.5,
+    color:       '#f97316',
+  };
+
+  private selectedStyle: L.PathOptions = {
+    fillOpacity: 0.9,
+    weight:      2.5,
+    color:       '#ef4444',
+  };
+
+  // =========================================================
+  // EVENTS RÉGIONS
+  // =========================================================
+  private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
     const props = feature.properties as any;
+    const name  = props['adm1_name'] || props['NAME_1'] || props['name'] || '';
+    const rid   = this.getRegionId(props);
 
-    const name =
-      props['adm1_name'] ||
-      props['NAME_1'] ||
-      '';
-
-    const rid =
-      this.getRegionId(props);
-
-    (layer as L.Path).bindTooltip(
-      name,
-      {
-        sticky: true,
-      }
-    );
+    (layer as L.Path).bindTooltip(name, { sticky: true, opacity: 1 });
 
     layer.on({
-      mouseover: (e) => {
-        (e.target as L.Path)
-          .setStyle(this.hoverStyle);
+      mouseover: e => {
+        if (this.selectedLayer !== e.target) {
+          (e.target as L.Path).setStyle(this.hoverStyle);
+        }
       },
-
-      mouseout: (e) => {
-        this.geoJsonLayer.resetStyle(
-          e.target
-        );
+      mouseout: e => {
+        if (this.selectedLayer !== e.target) {
+          this.geoJsonLayer.resetStyle(e.target);
+        }
       },
-
-      click: (e) => {
+      click: e => {
+        // Remettre l'ancien sélectionné
+        if (this.selectedLayer && this.selectedLayer !== e.target) {
+          this.geoJsonLayer.resetStyle(this.selectedLayer as L.Path);
+        }
         this.selectedLayer = e.target;
+        (e.target as L.Path).setStyle(this.selectedStyle).bringToFront();
 
-        (e.target as L.Path)
-          .setStyle(this.selectedStyle)
-          .bringToFront();
-
-        this.selectedRegionName.set(
-          name
-        );
-
+        this.selectedRegionName.set(name);
         this.selectedRegionId.set(rid);
-
         this.panelOpen.set(true);
       },
     });
   }
 
-  // ─────────────────────────────────────────────
-  // PANEL
-  // ─────────────────────────────────────────────
+  // =========================================================
+  // MARQUEURS SITES — ancrage précis via iconSize:[0,0]
+  // =========================================================
+  private updateMarkers(): void {
+    if (!this.mapReady) return;
+    this.markersLayer.clearLayers();
+
+    let placed = 0;
+
+    for (const site of this.sites) {
+      if (!site.latitude || !site.longitude) continue;
+
+      const fw    = site.firewalls_count ?? 0;
+      const rt    = site.routers_count   ?? 0;
+      const sw    = site.switches_count  ?? 0;
+      const total = fw + rt + sw;
+
+      const dotColor =
+        total >= 6 ? '#ef4444' :
+        total >= 3 ? '#f59e0b' :
+        total >  0 ? '#22c55e' : '#64748b';
+
+      const label = site.name.length > 15
+        ? site.name.slice(0, 13) + '…'
+        : site.name;
+
+      /*
+       * PRINCIPE D'ANCRAGE :
+       * iconSize:   [0, 0]   → le "boîte" Leaflet est de taille 0
+       * iconAnchor: [0, 20]  → décale de 20px vers le bas
+       *                         = le point GPS = bas de la tige
+       * Tout le visuel déborde en position:absolute
+       * depuis ce point d'ancrage virtuel.
+       */
+      const icon = L.divIcon({
+        className: '',
+        html: this.buildMarkerHtml(label, fw, rt, sw, dotColor),
+        iconSize:   [0, 0],
+        iconAnchor: [0, 20],
+        popupAnchor: [0, -70],
+      });
+
+      const marker = L.marker([site.latitude, site.longitude], {
+        icon,
+        riseOnHover: true,
+        bubblingMouseEvents: false,
+      });
+
+      marker.bindTooltip(site.name, {
+        direction: 'top',
+        offset: [0, -75],
+        opacity: 1,
+      });
+
+      marker.on('click', () => this.siteSelected.emit(site));
+
+      this.markersLayer.addLayer(marker);
+      placed++;
+    }
+
+    console.log(`[MAP] markers placed: ${placed}`);
+
+    // Zoom sur les marqueurs si hors vue
+    if (placed > 0) {
+      const bounds = this.markersLayer.getBounds();
+      if (bounds.isValid() && !this.map.getBounds().contains(bounds)) {
+        this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 11 });
+      }
+    }
+  }
+
+  /*
+   * MARQUEUR — tout le CSS est INLINE.
+   * Les styles du composant Angular (.css) ne s'appliquent PAS
+   * aux divIcon Leaflet (hors shadow DOM du composant).
+   */
+  private buildMarkerHtml(
+    label: string,
+    fw: number, rt: number, sw: number,
+    dotColor: string
+  ): string {
+    return `
+      <div style="position:relative;width:0;height:0;pointer-events:none">
+
+        <!-- ── Tige verticale ── -->
+        <div style="
+          position:absolute;
+          left:-1px;
+          top:0;
+          width:2px;
+          height:20px;
+          background:#1e40af;
+          border-radius:0 0 1px 1px;
+        "></div>
+
+        <!-- ── Point d'ancrage GPS (exactement aux coords Leaflet) ── -->
+        <div style="
+          position:absolute;
+          left:-5px;
+          top:16px;
+          width:10px;
+          height:10px;
+          background:#1e40af;
+          border:2px solid #fff;
+          border-radius:50%;
+          box-shadow:0 0 0 3px rgba(30,64,175,0.25);
+        "></div>
+
+        <!-- ── Bulle principale (s'ouvre vers le haut) ── -->
+        <div style="
+          position:absolute;
+          left:-62px;
+          top:-62px;
+          width:124px;
+          background:#0f1f3d;
+          border:1px solid rgba(59,130,246,0.5);
+          border-radius:10px;
+          padding:7px 9px 6px;
+          pointer-events:auto;
+          cursor:pointer;
+          box-shadow:0 4px 16px rgba(0,0,0,0.45);
+        ">
+
+          <!-- Indicateur de densité (coin haut-droit) -->
+          <div style="
+            position:absolute;
+            top:-5px;
+            right:-5px;
+            width:11px;
+            height:11px;
+            background:${dotColor};
+            border:2px solid #0f1f3d;
+            border-radius:50%;
+          "></div>
+
+          <!-- Flèche pointant vers la tige -->
+          <div style="
+            position:absolute;
+            bottom:-6px;
+            left:50%;
+            transform:translateX(-50%);
+            width:0;
+            height:0;
+            border-left:6px solid transparent;
+            border-right:6px solid transparent;
+            border-top:6px solid rgba(59,130,246,0.5);
+          "></div>
+          <div style="
+            position:absolute;
+            bottom:-5px;
+            left:50%;
+            transform:translateX(-50%);
+            width:0;
+            height:0;
+            border-left:5px solid transparent;
+            border-right:5px solid transparent;
+            border-top:5px solid #0f1f3d;
+          "></div>
+
+          <!-- Nom du site -->
+          <div style="
+            font-size:9.5px;
+            font-weight:700;
+            color:#f1f5f9;
+            text-align:center;
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            font-family:system-ui,-apple-system,sans-serif;
+            margin-bottom:4px;
+          ">${label}</div>
+
+          <!-- Badges équipements -->
+          <div style="display:flex;justify-content:center;gap:4px">
+            <span style="
+              font-size:8px;font-weight:700;
+              padding:1px 5px;border-radius:3px;
+              background:rgba(239,68,68,0.2);
+              color:#fca5a5;
+              font-family:system-ui,-apple-system,sans-serif;
+            ">${fw} FW</span>
+            <span style="
+              font-size:8px;font-weight:700;
+              padding:1px 5px;border-radius:3px;
+              background:rgba(59,130,246,0.2);
+              color:#93c5fd;
+              font-family:system-ui,-apple-system,sans-serif;
+            ">${rt} RT</span>
+            <span style="
+              font-size:8px;font-weight:700;
+              padding:1px 5px;border-radius:3px;
+              background:rgba(34,197,94,0.2);
+              color:#86efac;
+              font-family:system-ui,-apple-system,sans-serif;
+            ">${sw} SW</span>
+          </div>
+
+        </div>
+      </div>
+    `;
+  }
+
+  // =========================================================
+  // PANEL ACTIONS
+  // =========================================================
   closePanel(): void {
     this.panelOpen.set(false);
-
+    this.selectedRegionName.set(null);
+    this.selectedRegionId.set(null);
     if (this.selectedLayer) {
-      this.geoJsonLayer.resetStyle(
-        this.selectedLayer as L.Path
-      );
-
+      this.geoJsonLayer.resetStyle(this.selectedLayer as L.Path);
       this.selectedLayer = null;
     }
   }
 
-  onSiteClick(
-    site: Site,
-    event: Event
-  ): void {
+  onSiteClick(site: Site, event: Event): void {
     event.stopPropagation();
-
     this.siteSelected.emit(site);
   }
 }
