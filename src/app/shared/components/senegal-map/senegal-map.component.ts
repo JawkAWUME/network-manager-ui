@@ -179,6 +179,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
 
     this.rebuildIndex();
+    this.updateSiteMarkers();
   }
 
   // ─────────────────────────────
