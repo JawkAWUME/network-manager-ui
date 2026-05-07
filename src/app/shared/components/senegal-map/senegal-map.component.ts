@@ -24,9 +24,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   @Input() sites: Site[] = [];
   @Output() siteSelected = new EventEmitter<Site>();
 
-  // ─────────────────────────────
-  // UI STATE
-  // ─────────────────────────────
+  // UI state
   loadingGeoJson = signal(false);
   geoJsonStep = signal<string>('idle');
   geoJsonError = signal<string | null>(null);
@@ -34,18 +32,13 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   selectedRegionId = signal<string | null>(null);
   panelOpen = signal(false);
 
-  // ─────────────────────────────
-  // MAP
-  // ─────────────────────────────
   private map!: L.Map;
   private geoJsonLayer!: L.GeoJSON;
   private selectedLayer: L.Layer | null = null;
-
   private sitesMarkersLayer = L.featureGroup();
+  private mapReady = false; // ← indicateur de disponibilité de la carte
 
-  // ─────────────────────────────
-  // COLORS
-  // ─────────────────────────────
+  // Styles
   private getColor(count: number): string {
     if (count === 0) return '#f0f4f8';
     if (count <= 2) return '#b2dfdb';
@@ -65,9 +58,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     fillOpacity: 0.92,
   };
 
-  // ─────────────────────────────
-  // LIFECYCLE
-  // ─────────────────────────────
   ngAfterViewInit(): void {
     this.initMap();
     this.loadGeoJson();
@@ -78,16 +68,18 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['sites'] && this.geoJsonLayer) {
-      this.rebuildIndex();
-      this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as any));
+    if (changes['sites']) {
+      console.log('[DEBUG] sites input changed, length =', this.sites.length);
+      // Reconstruire l'index des régions et rafraîchir le style
+      if (this.geoJsonLayer) {
+        this.rebuildIndex();
+        this.geoJsonLayer.setStyle((f) => this.defaultStyle(f as any));
+      }
+      // Toujours tenter la mise à jour des marqueurs
+      this.updateSiteMarkers();
     }
-    this.updateSiteMarkers();
   }
 
-  // ─────────────────────────────
-  // MAP INIT
-  // ─────────────────────────────
   private initMap(): void {
     this.map = L.map('senegal-map', {
       center: [14.5, -14.5],
@@ -102,19 +94,36 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     ).addTo(this.map);
 
     this.sitesMarkersLayer.addTo(this.map);
+    this.mapReady = true;
+    console.log('[DEBUG] map initialized');
+    // Si des sites sont déjà arrivés, on les affiche tout de suite
+    this.updateSiteMarkers();
   }
 
+  // ── Marqueurs de sites ─────────────────────────────
   private updateSiteMarkers(): void {
+    if (!this.mapReady) {
+      console.warn('[DEBUG] map not ready yet, markers update postponed');
+      return;
+    }
+
+    console.log('[DEBUG] updating markers, total sites in input:', this.sites.length);
     this.sitesMarkersLayer.clearLayers();
+    let placed = 0;
+    let missingCoords = 0;
 
     for (const site of this.sites) {
-      if (!site.latitude || !site.longitude) continue;
+      if (!site.latitude || !site.longitude) {
+        missingCoords++;
+        console.warn('[DEBUG] missing coords for site', site.name);
+        continue;
+      }
 
-      const totalEquipments = (site.firewalls_count ?? 0)
-                            + (site.routers_count ?? 0)
-                            + (site.switches_count ?? 0);
+      const totalEquipments =
+        (site.firewalls_count ?? 0) +
+        (site.routers_count ?? 0) +
+        (site.switches_count ?? 0);
 
-      // Créer un icône personnalisé avec le nombre d'équipements
       const icon = L.divIcon({
         className: 'site-marker',
         html: `<div class="marker-pin">
@@ -128,25 +137,28 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       const marker = L.marker([site.latitude, site.longitude], { icon })
         .bindTooltip(site.name, { direction: 'top', offset: [0, -25] });
 
-      // Au clic, on émet l'événement comme pour le panneau latéral
       marker.on('click', () => {
+        console.log('[DEBUG] marker clicked -> siteSelected emit', site);
         this.siteSelected.emit(site);
       });
 
       this.sitesMarkersLayer.addLayer(marker);
+      placed++;
     }
 
-    // Ajuster les bornes si nécessaire (optionnel)
-    if (this.sitesMarkersLayer.getLayers().length > 0) {
+    console.log(`[DEBUG] markers placed: ${placed} / missing coords: ${missingCoords}`);
+
+    if (placed > 0) {
       const bounds = this.sitesMarkersLayer.getBounds();
       if (bounds.isValid() && !this.map.getBounds().contains(bounds)) {
         this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
       }
+    } else {
+      console.warn('[DEBUG] no markers added – check Site.latitude / Site.longitude in API response');
     }
   }
-  // ─────────────────────────────
-  // LOAD GEOJSON
-  // ─────────────────────────────
+
+  // ── GeoJSON loading ─────────────────────────────
   private async loadGeoJson(): Promise<void> {
     try {
       this.loadingGeoJson.set(true);
@@ -164,9 +176,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
   }
 
-  // ─────────────────────────────
-  // RENDER GEOJSON
-  // ─────────────────────────────
   private renderGeoJson(data: GeoJSON.FeatureCollection): void {
     this.geoJsonLayer = L.geoJSON(data, {
       style: (f) => this.defaultStyle(f as any),
@@ -179,12 +188,11 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     }
 
     this.rebuildIndex();
+    // Mise à jour des marqueurs après le chargement du GeoJSON
     this.updateSiteMarkers();
   }
 
-  // ─────────────────────────────
-  // REGION LOGIC
-  // ─────────────────────────────
+  // ── Region logic ─────────────────────────────────
   private normalize(value: string): string {
     return (value || '')
       .toLowerCase()
@@ -198,8 +206,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   private getRegionId(props: Record<string, any>): string {
     const raw = props['adm1_name'] || props['NAME_1'] || '';
-    const norm = this.normalize(raw);
-    return norm;
+    return this.normalize(raw);
   }
 
   private extractRegion(site: Site): string {
@@ -223,9 +230,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     return norm;
   }
 
-  // ─────────────────────────────
-  // INDEX
-  // ─────────────────────────────
   private sitesByRegion = new Map<string, Site[]>();
 
   private rebuildIndex(): void {
@@ -245,9 +249,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     return this.sitesByRegion.get(this.normalize(regionId)) ?? [];
   }
 
-  // ─────────────────────────────
-  // STYLE
-  // ─────────────────────────────
+  // ── GeoJSON styles & events ─────────────────────
   private defaultStyle(feature: GeoJSON.Feature): L.PathOptions {
     const rid = this.getRegionId(feature.properties as any);
     const count = this.getSitesInRegion(rid).length;
@@ -259,9 +261,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     };
   }
 
-  // ─────────────────────────────
-  // EVENTS
-  // ─────────────────────────────
   private bindFeatureEvents(feature: GeoJSON.Feature, layer: L.Layer): void {
     const props = feature.properties as any;
     const name = props['adm1_name'] || props['NAME_1'] || '';
@@ -282,9 +281,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     });
   }
 
-  // ─────────────────────────────
-  // PANEL ACTIONS
-  // ─────────────────────────────
+  // ── Panel actions ───────────────────────────────
   closePanel(): void {
     this.panelOpen.set(false);
     if (this.selectedLayer) {
