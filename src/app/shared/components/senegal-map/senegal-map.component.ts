@@ -271,7 +271,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // =========================================================
   // MARQUEURS SITES — ancrage précis via iconSize:[0,0]
   // =========================================================
- private updateMarkers(): void {
+private updateMarkers(): void {
   if (!this.mapReady) return;
   this.markersLayer.clearLayers();
 
@@ -285,76 +285,126 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     const sw    = site.switches_count  ?? 0;
     const total = fw + rt + sw;
 
-    // Petit point marqueur (taille zéro pour l'icône, on met juste un cercle coloré)
+    // Couleur du point selon densité
     const dotColor =
       total >= 6 ? '#ef4444' :
       total >= 3 ? '#f59e0b' :
       total >  0 ? '#22c55e' : '#64748b';
 
-    const iconHtml = `
-      <div style="
+    // ---- Icône simple : juste un point rond ----
+    const markerIcon = L.divIcon({
+      className: '',
+      html: `<div style="
         width: 14px;
         height: 14px;
         background: ${dotColor};
         border: 2px solid #fff;
         border-radius: 50%;
         box-shadow: 0 0 0 3px rgba(0,0,0,0.25);
-      "></div>`;
-
-    const icon = L.divIcon({
-      className: '',
-      html: iconHtml,
+      "></div>`,
       iconSize:   [14, 14],
       iconAnchor: [7, 7],
       popupAnchor: [0, -10],
     });
 
     const marker = L.marker([site.latitude, site.longitude], {
-      icon,
+      icon: markerIcon,
       riseOnHover: true,
       bubblingMouseEvents: false,
     });
 
-    // Popup détaillé (le panneau du site)
-    const popupContent = `
+    // ---- Popup : réplique de l’ancienne bulle (sans tige ni point) ----
+    const popupHtml = `
       <div style="
         background: #0f1f3d;
         border: 1px solid rgba(59,130,246,0.5);
         border-radius: 10px;
-        padding: 8px 10px;
+        padding: 7px 9px 6px;
         font-family: system-ui, -apple-system, sans-serif;
         color: #f1f5f9;
-        min-width: 130px;
-        max-width: 180px;
+        position: relative;
+        min-width: 124px;
       ">
+        <!-- Indicateur de densité (coin haut-droit) -->
+        <div style="
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          width: 11px;
+          height: 11px;
+          background: ${dotColor};
+          border: 2px solid #0f1f3d;
+          border-radius: 50%;
+        "></div>
+
+        <!-- Flèche (pointe vers le bas, pour le popup) -->
+        <div style="
+          position: absolute;
+          bottom: -6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 6px solid transparent;
+          border-right: 6px solid transparent;
+          border-top: 6px solid rgba(59,130,246,0.5);
+        "></div>
+        <div style="
+          position: absolute;
+          bottom: -5px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 5px solid #0f1f3d;
+        "></div>
+
+        <!-- Nom du site -->
         <div style="
           font-size: 9.5px;
           font-weight: 700;
           text-align: center;
-          margin-bottom: 4px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          margin-bottom: 4px;
         ">${site.name}</div>
-        <div style="display:flex; justify-content:center; gap:4px;">
-          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
-                       background:rgba(239,68,68,0.2); color:#fca5a5;">${fw} FW</span>
-          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
-                       background:rgba(59,130,246,0.2); color:#93c5fd;">${rt} RT</span>
-          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
-                       background:rgba(34,197,94,0.2); color:#86efac;">${sw} SW</span>
+
+        <!-- Badges équipements -->
+        <div style="display: flex; justify-content: center; gap: 4px;">
+          <span style="
+            font-size: 8px; font-weight: 700;
+            padding: 1px 5px; border-radius: 3px;
+            background: rgba(239,68,68,0.2);
+            color: #fca5a5;
+          ">${fw} FW</span>
+          <span style="
+            font-size: 8px; font-weight: 700;
+            padding: 1px 5px; border-radius: 3px;
+            background: rgba(59,130,246,0.2);
+            color: #93c5fd;
+          ">${rt} RT</span>
+          <span style="
+            font-size: 8px; font-weight: 700;
+            padding: 1px 5px; border-radius: 3px;
+            background: rgba(34,197,94,0.2);
+            color: #86efac;
+          ">${sw} SW</span>
         </div>
       </div>
     `;
 
-    marker.bindPopup(popupContent, {
+    // On bind le popup
+    marker.bindPopup(popupHtml, {
       closeButton: false,
       autoClose: true,
-      className: 'site-popup',
+      className: 'site-popup',        // tu peux ajouter des styles pour enlever les marges par défaut
+      offset: L.point(0, -6),         // petit ajustement vertical si nécessaire
     });
 
-    // Quand on clique sur le marqueur, on émet l'événement siteSelected
-    // (le popup s'ouvre automatiquement grâce à bindPopup, donc on garde l'émission)
+    // Émission au clic (pour la modale du dashboard)
     marker.on('click', () => this.siteSelected.emit(site));
 
     this.markersLayer.addLayer(marker);
