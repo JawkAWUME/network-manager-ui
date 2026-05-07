@@ -125,58 +125,58 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // NORMALISATION
   // =========================================================
   private normalize(value: string): string {
-    return (value || '')
-      .toLowerCase()
-      .trim()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-  }
+  return (value || '')
+    .toLowerCase()
+    .trim()
+    // Remplacer les tirets non standards (insécable, tiret cadratin, etc.) par un tiret standard
+    .replace(/[\u2010-\u2015\u2212\u2011]/g, '-')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
 
   private getRegionId(props: Record<string, any>): string {
-    // Adapte selon ce que ton GeoJSON retourne réellement
-    const raw =
-      props['adm1_name'] ||
-      props['NAME_1']    ||
-      props['name']      ||
-      props['NAME']      ||
-      '';
-    if (!raw) console.warn('[MAP] GeoJSON feature has no name prop:', props);
-    return this.normalize(raw);
+  const raw =
+    props['adm1_name'] ||
+    props['NAME_1']    ||
+    props['name']      ||
+    props['NAME']      ||
+    '';
+  const norm = this.normalize(raw);
+  if (norm.includes('saint')) console.log('[MAP] GeoJSON region normalized:', raw, '→', norm);
+  return norm;
+}
+
+ private extractRegionFromSite(site: Site): string {
+  const raw = (site as any).region || site.city || site.address || '';
+  const norm = this.normalize(raw);
+
+  const ALIASES: Record<string, string> = {
+    dakar:          'dakar',
+    thies:          'thies',
+    'saint-louis':  'saint-louis',
+    'saint-louis-':  'saint-louis',
+    saintlouis:     'saint-louis',   // ← ajout pour gérer le tiret insécable supprimé
+    louga:          'louga',
+    matam:          'matam',
+    diourbel:       'diourbel',
+    fatick:         'fatick',
+    kaolack:        'kaolack',
+    kaffrine:       'kaffrine',
+    tambacounda:    'tambacounda',
+    kedougou:       'kedougou',
+    kolda:          'kolda',
+    sedhiou:        'sedhiou',
+    ziguinchor:     'ziguinchor',
+  };
+
+  for (const [key, canonical] of Object.entries(ALIASES)) {
+    if (norm.includes(key)) return canonical;
   }
-
-  private extractRegionFromSite(site: Site): string {
-    // Priorité : champ region > city > address
-    const raw = (site as any).region || site.city || site.address || '';
-    const norm = this.normalize(raw);
-
-    // Table de correspondance explicite pour absorber les variations d'encodage
-    const ALIASES: Record<string, string> = {
-      dakar:          'dakar',
-      thies:          'thies',
-      'saint-louis':  'saint-louis',
-      'saint-louis-':  'saint-louis',
-      louga:          'louga',
-      matam:          'matam',
-      diourbel:       'diourbel',
-      fatick:         'fatick',
-      kaolack:        'kaolack',
-      kaffrine:       'kaffrine',
-      tambacounda:    'tambacounda',
-      kedougou:       'kedougou',
-      kolda:          'kolda',
-      sedhiou:        'sedhiou',
-      ziguinchor:     'ziguinchor',
-    };
-
-    // Cherche si norm contient une clé connue
-    for (const [key, canonical] of Object.entries(ALIASES)) {
-      if (norm.includes(key)) return canonical;
-    }
-    return norm;
-  }
+  return norm;
+}
 
   // =========================================================
   // INDEX
@@ -240,7 +240,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     const name  = props['adm1_name'] || props['NAME_1'] || props['name'] || '';
     const rid   = this.getRegionId(props);
 
-    (layer as L.Path).bindTooltip(name, { permanent : true, opacity: 1 , direction: 'center', className: 'region-label'}, );
+    (layer as L.Path).bindTooltip(name, { permanent: true, opacity: 1 , direction: 'center', className: 'region-label'}, );
 
     layer.on({
       mouseover: e => {
