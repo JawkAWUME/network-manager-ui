@@ -271,204 +271,105 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // =========================================================
   // MARQUEURS SITES — ancrage précis via iconSize:[0,0]
   // =========================================================
-  private updateMarkers(): void {
-    if (!this.mapReady) return;
-    this.markersLayer.clearLayers();
+ private updateMarkers(): void {
+  if (!this.mapReady) return;
+  this.markersLayer.clearLayers();
 
-    let placed = 0;
+  let placed = 0;
 
-    for (const site of this.sites) {
-      if (!site.latitude || !site.longitude) continue;
+  for (const site of this.sites) {
+    if (!site.latitude || !site.longitude) continue;
 
-      const fw    = site.firewalls_count ?? 0;
-      const rt    = site.routers_count   ?? 0;
-      const sw    = site.switches_count  ?? 0;
-      const total = fw + rt + sw;
+    const fw    = site.firewalls_count ?? 0;
+    const rt    = site.routers_count   ?? 0;
+    const sw    = site.switches_count  ?? 0;
+    const total = fw + rt + sw;
 
-      const dotColor =
-        total >= 6 ? '#ef4444' :
-        total >= 3 ? '#f59e0b' :
-        total >  0 ? '#22c55e' : '#64748b';
+    // Petit point marqueur (taille zéro pour l'icône, on met juste un cercle coloré)
+    const dotColor =
+      total >= 6 ? '#ef4444' :
+      total >= 3 ? '#f59e0b' :
+      total >  0 ? '#22c55e' : '#64748b';
 
-      const label = site.name.length > 15
-        ? site.name.slice(0, 13) + '…'
-        : site.name;
+    const iconHtml = `
+      <div style="
+        width: 14px;
+        height: 14px;
+        background: ${dotColor};
+        border: 2px solid #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.25);
+      "></div>`;
 
-      /*
-       * PRINCIPE D'ANCRAGE :
-       * iconSize:   [0, 0]   → le "boîte" Leaflet est de taille 0
-       * iconAnchor: [0, 20]  → décale de 20px vers le bas
-       *                         = le point GPS = bas de la tige
-       * Tout le visuel déborde en position:absolute
-       * depuis ce point d'ancrage virtuel.
-       */
-      const icon = L.divIcon({
-        className: '',
-        html: this.buildMarkerHtml(label, fw, rt, sw, dotColor),
-        iconSize:   [0, 0],
-        iconAnchor: [0, 20],
-        popupAnchor: [0, -70],
-      });
+    const icon = L.divIcon({
+      className: '',
+      html: iconHtml,
+      iconSize:   [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -10],
+    });
 
-      const marker = L.marker([site.latitude, site.longitude], {
-        icon,
-        riseOnHover: true,
-        bubblingMouseEvents: false,
-      });
+    const marker = L.marker([site.latitude, site.longitude], {
+      icon,
+      riseOnHover: true,
+      bubblingMouseEvents: false,
+    });
 
-      marker.bindTooltip(site.name, {
-        direction: 'top',
-        offset: [0, -75],
-        opacity: 1,
-      });
+    // Popup détaillé (le panneau du site)
+    const popupContent = `
+      <div style="
+        background: #0f1f3d;
+        border: 1px solid rgba(59,130,246,0.5);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #f1f5f9;
+        min-width: 130px;
+        max-width: 180px;
+      ">
+        <div style="
+          font-size: 9.5px;
+          font-weight: 700;
+          text-align: center;
+          margin-bottom: 4px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        ">${site.name}</div>
+        <div style="display:flex; justify-content:center; gap:4px;">
+          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
+                       background:rgba(239,68,68,0.2); color:#fca5a5;">${fw} FW</span>
+          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
+                       background:rgba(59,130,246,0.2); color:#93c5fd;">${rt} RT</span>
+          <span style="font-size:8px; padding:1px 5px; border-radius:3px;
+                       background:rgba(34,197,94,0.2); color:#86efac;">${sw} SW</span>
+        </div>
+      </div>
+    `;
 
-      marker.on('click', () => this.siteSelected.emit(site));
+    marker.bindPopup(popupContent, {
+      closeButton: false,
+      autoClose: true,
+      className: 'site-popup',
+    });
 
-      this.markersLayer.addLayer(marker);
-      placed++;
-    }
+    // Quand on clique sur le marqueur, on émet l'événement siteSelected
+    // (le popup s'ouvre automatiquement grâce à bindPopup, donc on garde l'émission)
+    marker.on('click', () => this.siteSelected.emit(site));
 
-    console.log(`[MAP] markers placed: ${placed}`);
-
-    // Zoom sur les marqueurs si hors vue
-    if (placed > 0) {
-      const bounds = this.markersLayer.getBounds();
-      if (bounds.isValid() && !this.map.getBounds().contains(bounds)) {
-        this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 11 });
-      }
-    }
+    this.markersLayer.addLayer(marker);
+    placed++;
   }
+
+  console.log(`[MAP] markers placed: ${placed}`);
+}
 
   /*
    * MARQUEUR — tout le CSS est INLINE.
    * Les styles du composant Angular (.css) ne s'appliquent PAS
    * aux divIcon Leaflet (hors shadow DOM du composant).
    */
-  private buildMarkerHtml(
-    label: string,
-    fw: number, rt: number, sw: number,
-    dotColor: string
-  ): string {
-    return `
-      <div style="position:relative;width:0;height:0;pointer-events:none">
-
-        <!-- ── Tige verticale ── -->
-        <div style="
-          position:absolute;
-          left:-1px;
-          top:0;
-          width:2px;
-          height:20px;
-          background:#1e40af;
-          border-radius:0 0 1px 1px;
-        "></div>
-
-        <!-- ── Point d'ancrage GPS (exactement aux coords Leaflet) ── -->
-        <div style="
-          position:absolute;
-          left:-5px;
-          top:16px;
-          width:10px;
-          height:10px;
-          background:#1e40af;
-          border:2px solid #fff;
-          border-radius:50%;
-          box-shadow:0 0 0 3px rgba(30,64,175,0.25);
-        "></div>
-
-        <!-- ── Bulle principale (s'ouvre vers le haut) ── -->
-        <div style="
-          position:absolute;
-          left:-62px;
-          top:-62px;
-          width:124px;
-          background:#0f1f3d;
-          border:1px solid rgba(59,130,246,0.5);
-          border-radius:10px;
-          padding:7px 9px 6px;
-          pointer-events:auto;
-          cursor:pointer;
-          box-shadow:0 4px 16px rgba(0,0,0,0.45);
-        ">
-
-          <!-- Indicateur de densité (coin haut-droit) -->
-          <div style="
-            position:absolute;
-            top:-5px;
-            right:-5px;
-            width:11px;
-            height:11px;
-            background:${dotColor};
-            border:2px solid #0f1f3d;
-            border-radius:50%;
-          "></div>
-
-          <!-- Flèche pointant vers la tige -->
-          <div style="
-            position:absolute;
-            bottom:-6px;
-            left:50%;
-            transform:translateX(-50%);
-            width:0;
-            height:0;
-            border-left:6px solid transparent;
-            border-right:6px solid transparent;
-            border-top:6px solid rgba(59,130,246,0.5);
-          "></div>
-          <div style="
-            position:absolute;
-            bottom:-5px;
-            left:50%;
-            transform:translateX(-50%);
-            width:0;
-            height:0;
-            border-left:5px solid transparent;
-            border-right:5px solid transparent;
-            border-top:5px solid #0f1f3d;
-          "></div>
-
-          <!-- Nom du site -->
-          <div style="
-            font-size:9.5px;
-            font-weight:700;
-            color:#f1f5f9;
-            text-align:center;
-            white-space:nowrap;
-            overflow:hidden;
-            text-overflow:ellipsis;
-            font-family:system-ui,-apple-system,sans-serif;
-            margin-bottom:4px;
-          ">${label}</div>
-
-          <!-- Badges équipements -->
-          <div style="display:flex;justify-content:center;gap:4px">
-            <span style="
-              font-size:8px;font-weight:700;
-              padding:1px 5px;border-radius:3px;
-              background:rgba(239,68,68,0.2);
-              color:#fca5a5;
-              font-family:system-ui,-apple-system,sans-serif;
-            ">${fw} FW</span>
-            <span style="
-              font-size:8px;font-weight:700;
-              padding:1px 5px;border-radius:3px;
-              background:rgba(59,130,246,0.2);
-              color:#93c5fd;
-              font-family:system-ui,-apple-system,sans-serif;
-            ">${rt} RT</span>
-            <span style="
-              font-size:8px;font-weight:700;
-              padding:1px 5px;border-radius:3px;
-              background:rgba(34,197,94,0.2);
-              color:#86efac;
-              font-family:system-ui,-apple-system,sans-serif;
-            ">${sw} SW</span>
-          </div>
-
-        </div>
-      </div>
-    `;
-  }
+  
 
   // =========================================================
   // PANEL ACTIONS
