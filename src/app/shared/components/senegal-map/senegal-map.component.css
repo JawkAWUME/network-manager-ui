@@ -173,167 +173,272 @@
    MARQUEURS LEAFLET PREMIUM — STABLES AU ZOOM
 ========================================================= */
 
+
+/* =========================================================
+   NETWORK TELECOM MARKERS — STYLE SENUM / NOC
+========================================================= */
+
 .site-marker {
     background: transparent !important;
     border: none !important;
-    pointer-events: auto;
 }
 
 
-/* ─────────────────────────────────────────────
-   Conteneur principal du pin
-───────────────────────────────────────────── */
+/* =========================================================
+   CONTAINER
+========================================================= */
 
-.marker-pin {
+.marker-wrapper {
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 54px;
+    height: 54px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-    background: linear-gradient( 145deg, #0052cc 0%, #003087 45%, #001f5c 100%);
-    border: 3px solid rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 48, 135, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.25);
-    transition: box-shadow 0.25s ease, filter 0.25s ease;
-    overflow: hidden;
-    backdrop-filter: blur(4px);
 }
 
 
-/* ─────────────────────────────────────────────
-   Reflet premium
-───────────────────────────────────────────── */
+/* =========================================================
+   OUTER PULSE RING
+========================================================= */
 
-.marker-pin::before {
+.marker-ring {
+    position: absolute;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 180, 255, 0.4);
+    animation: radarPulse 2.6s infinite;
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.4), 0 0 22px rgba(0, 180, 255, 0.25);
+}
+
+
+/* =========================================================
+   SECOND RING
+========================================================= */
+
+.marker-ring-2 {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.28);
+    animation: rotateRing 8s linear infinite;
+}
+
+
+/* =========================================================
+   CORE
+========================================================= */
+
+.marker-core {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient( circle at 30% 30%, #6be7ff, #0078ff 45%, #002b80 100%);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(0, 140, 255, 0.9), 0 0 22px rgba(0, 140, 255, 0.65), 0 0 40px rgba(0, 140, 255, 0.35);
+    z-index: 10;
+}
+
+
+/* =========================================================
+   CENTER DOT
+========================================================= */
+
+.marker-core::before {
     content: '';
     position: absolute;
-    top: 4px;
-    left: 6px;
-    width: 70%;
-    height: 38%;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: linear-gradient( to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
-    transform: rotate(12deg);
-    pointer-events: none;
+    background: white;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 255, 255, 0.7);
 }
 
 
-/* ─────────────────────────────────────────────
-   Halo externe
-───────────────────────────────────────────── */
-
-.marker-pin::after {
-    content: '';
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    background: radial-gradient( circle, rgba(0, 82, 204, 0.28) 0%, rgba(0, 82, 204, 0.12) 45%, transparent 75%);
-    z-index: -1;
-    animation: markerPulse 2.8s infinite ease-in-out;
-}
-
-
-/* ─────────────────────────────────────────────
-   Nombre d’équipements
-───────────────────────────────────────────── */
+/* =========================================================
+   EQUIPMENT COUNT
+========================================================= */
 
 .marker-count {
-    position: relative;
-    transform: rotate(45deg);
-    color: #ffffff;
-    font-family: 'Inter', sans-serif;
+    position: absolute;
+    bottom: -6px;
+    right: -8px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient( 135deg, #001f5c, #003ea8);
+    color: white;
+    font-size: 0.72rem;
     font-weight: 800;
-    font-size: 0.92rem;
-    letter-spacing: -0.02em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-    z-index: 2;
-    user-select: none;
+    font-family: 'Inter', sans-serif;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(0, 82, 255, 0.5);
+    z-index: 15;
 }
 
 
-/* ─────────────────────────────────────────────
-   Hover élégant
-───────────────────────────────────────────── */
+/* =========================================================
+   SIGNAL DOTS
+========================================================= */
 
-.site-marker:hover .marker-pin {
-    filter: brightness(1.08);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32), 0 10px 30px rgba(0, 82, 204, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.35);
+.signal-dot {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #6be7ff;
+    box-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
+    animation: blinkDot 1.8s infinite alternate;
+}
+
+.signal-dot.dot-1 {
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.signal-dot.dot-2 {
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.signal-dot.dot-3 {
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.signal-dot.dot-4 {
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 
-/* ─────────────────────────────────────────────
-   Couleurs selon criticité
-───────────────────────────────────────────── */
+/* =========================================================
+   STATUS COLORS
+========================================================= */
 
-.marker-pin.low {
-    background: linear-gradient( 145deg, #2e7d32, #1b5e20);
+
+/* LOW */
+
+.marker-wrapper.low .marker-core {
+    background: radial-gradient(circle, #6eff8d, #10b941 60%, #0b6d28);
+    box-shadow: 0 0 12px rgba(16, 185, 65, 0.9), 0 0 28px rgba(16, 185, 65, 0.45);
 }
 
-.marker-pin.medium {
-    background: linear-gradient( 145deg, #f9a825, #f57f17);
-}
-
-.marker-pin.high {
-    background: linear-gradient( 145deg, #d32f2f, #8e0000);
+.marker-wrapper.low .marker-ring {
+    border-color: rgba(16, 185, 65, 0.45);
 }
 
 
-/* ─────────────────────────────────────────────
-   Animation du halo
-───────────────────────────────────────────── */
+/* MEDIUM */
 
-@keyframes markerPulse {
+.marker-wrapper.medium .marker-core {
+    background: radial-gradient(circle, #ffe27a, #ffb300 60%, #cc7a00);
+    box-shadow: 0 0 12px rgba(255, 179, 0, 0.9), 0 0 28px rgba(255, 179, 0, 0.45);
+}
+
+.marker-wrapper.medium .marker-ring {
+    border-color: rgba(255, 179, 0, 0.45);
+}
+
+
+/* HIGH */
+
+.marker-wrapper.high .marker-core {
+    background: radial-gradient(circle, #ff8f8f, #ff2d2d 60%, #8f0000);
+    box-shadow: 0 0 12px rgba(255, 45, 45, 0.95), 0 0 30px rgba(255, 45, 45, 0.5);
+}
+
+.marker-wrapper.high .marker-ring {
+    border-color: rgba(255, 45, 45, 0.5);
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+.site-marker:hover .marker-core {
+    filter: brightness(1.15);
+}
+
+.site-marker:hover .marker-ring {
+    animation-duration: 1.4s;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes radarPulse {
     0% {
-        transform: scale(0.92);
-        opacity: 0.7;
+        transform: scale(0.82);
+        opacity: 0.8;
     }
-    50% {
-        transform: scale(1.08);
-        opacity: 1;
+    70% {
+        transform: scale(1.25);
+        opacity: 0;
     }
     100% {
-        transform: scale(0.92);
-        opacity: 0.7;
+        transform: scale(1.25);
+        opacity: 0;
+    }
+}
+
+@keyframes rotateRing {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes blinkDot {
+    from {
+        opacity: 0.35;
+    }
+    to {
+        opacity: 1;
     }
 }
 
 
-/* ─────────────────────────────────────────────
-   Compatibilité Leaflet
-───────────────────────────────────────────── */
-
-.leaflet-marker-icon.site-marker {
-    will-change: transform;
-}
-
-.leaflet-marker-pane {
-    z-index: 600;
-}
+/* =========================================================
+   TOOLTIP
+========================================================= */
 
 .leaflet-tooltip {
+    background: rgba(3, 10, 30, 0.96);
+    color: #ffffff;
+    border: 1px solid rgba(0, 180, 255, 0.3);
     border-radius: 10px;
-    padding: 8px 12px;
-    border: none;
-    background: rgba(0, 31, 92, 0.95);
-    color: white;
+    padding: 10px 14px;
     font-size: 0.82rem;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 16px rgba(0, 140, 255, 0.25);
 }
 
 
-/* ─────────────────────────────────────────────
-   Responsive
-───────────────────────────────────────────── */
+/* =========================================================
+   FIX LEAFLET POSITIONING
+========================================================= */
 
-@media (max-width: 768px) {
-    .marker-pin {
-        width: 40px;
-        height: 40px;
-    }
-    .marker-count {
-        font-size: 0.78rem;
-    }
+.leaflet-marker-icon.site-marker {
+    will-change: auto !important;
+    transform-origin: center bottom !important;
 }
