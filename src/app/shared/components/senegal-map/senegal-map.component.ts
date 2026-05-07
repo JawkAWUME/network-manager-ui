@@ -134,9 +134,25 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
         popupAnchor: [0, -34],
       });
 
-      const marker = L.marker([site.latitude, site.longitude], { icon })
-        .bindTooltip(site.name, { direction: 'top', offset: [0, -25] });
-
+     const marker = L.marker([site.latitude, site.longitude], {
+  icon: L.divIcon({
+    className: 'site-marker',
+    html: `
+      <div class="marker-pin ${
+        totalEquipments >= 6
+          ? 'high'
+          : totalEquipments >= 3
+          ? 'medium'
+          : 'low'
+      }">
+        <span class="marker-count">${totalEquipments}</span>
+      </div>
+    `,
+    iconSize: [48, 48],
+    iconAnchor: [24, 42],
+    popupAnchor: [0, -42],
+  }),
+});
       marker.on('click', () => {
         console.log('[DEBUG] marker clicked -> siteSelected emit', site);
         this.siteSelected.emit(site);

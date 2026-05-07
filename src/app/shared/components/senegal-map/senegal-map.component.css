@@ -169,30 +169,171 @@
 }
 
 
-/* Marqueur de site */
+/* =========================================================
+   MARQUEURS LEAFLET PREMIUM — STABLES AU ZOOM
+========================================================= */
 
 .site-marker {
     background: transparent !important;
     border: none !important;
+    pointer-events: auto;
 }
 
+
+/* ─────────────────────────────────────────────
+   Conteneur principal du pin
+───────────────────────────────────────────── */
+
 .marker-pin {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, #003087, #001f5c);
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
+    position: relative;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    border: 2px solid white;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: linear-gradient( 145deg, #0052cc 0%, #003087 45%, #001f5c 100%);
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 48, 135, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+    transition: box-shadow 0.25s ease, filter 0.25s ease;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
 }
 
+
+/* ─────────────────────────────────────────────
+   Reflet premium
+───────────────────────────────────────────── */
+
+.marker-pin::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    width: 70%;
+    height: 38%;
+    border-radius: 50%;
+    background: linear-gradient( to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0));
+    transform: rotate(12deg);
+    pointer-events: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   Halo externe
+───────────────────────────────────────────── */
+
+.marker-pin::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient( circle, rgba(0, 82, 204, 0.28) 0%, rgba(0, 82, 204, 0.12) 45%, transparent 75%);
+    z-index: -1;
+    animation: markerPulse 2.8s infinite ease-in-out;
+}
+
+
+/* ─────────────────────────────────────────────
+   Nombre d’équipements
+───────────────────────────────────────────── */
+
 .marker-count {
+    position: relative;
     transform: rotate(45deg);
-    color: white;
-    font-weight: 700;
-    font-size: 0.8rem;
+    color: #ffffff;
     font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.92rem;
+    letter-spacing: -0.02em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+    user-select: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   Hover élégant
+───────────────────────────────────────────── */
+
+.site-marker:hover .marker-pin {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.32), 0 10px 30px rgba(0, 82, 204, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.35);
+}
+
+
+/* ─────────────────────────────────────────────
+   Couleurs selon criticité
+───────────────────────────────────────────── */
+
+.marker-pin.low {
+    background: linear-gradient( 145deg, #2e7d32, #1b5e20);
+}
+
+.marker-pin.medium {
+    background: linear-gradient( 145deg, #f9a825, #f57f17);
+}
+
+.marker-pin.high {
+    background: linear-gradient( 145deg, #d32f2f, #8e0000);
+}
+
+
+/* ─────────────────────────────────────────────
+   Animation du halo
+───────────────────────────────────────────── */
+
+@keyframes markerPulse {
+    0% {
+        transform: scale(0.92);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.92);
+        opacity: 0.7;
+    }
+}
+
+
+/* ─────────────────────────────────────────────
+   Compatibilité Leaflet
+───────────────────────────────────────────── */
+
+.leaflet-marker-icon.site-marker {
+    will-change: transform;
+}
+
+.leaflet-marker-pane {
+    z-index: 600;
+}
+
+.leaflet-tooltip {
+    border-radius: 10px;
+    padding: 8px 12px;
+    border: none;
+    background: rgba(0, 31, 92, 0.95);
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+
+/* ─────────────────────────────────────────────
+   Responsive
+───────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+    .marker-pin {
+        width: 40px;
+        height: 40px;
+    }
+    .marker-count {
+        font-size: 0.78rem;
+    }
 }
