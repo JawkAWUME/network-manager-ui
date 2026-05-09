@@ -23,7 +23,7 @@ export interface Site {
   description?: string; status?: string; capacity?: number; notes?: string;
   latitude?: number; longitude?: number;
   firewalls_count?: number; routers_count?: number; switches_count?: number;
-  created_at?: string; updated_at?: string;
+  created_at?: string; updated_at?: string; connection_type?: string;
 }
 
 // ── Firewall ──────────────────────────────────────────────────────────
