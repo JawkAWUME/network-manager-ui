@@ -379,7 +379,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
   // =========================================================
   // MARQUEURS
   // =========================================================
-  private updateMarkers(): void {
+private updateMarkers(): void {
   if (!this.mapReady) return;
   this.markersLayer.clearLayers();
 
@@ -393,18 +393,22 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
     const sw    = site.switches_count  ?? 0;
     const total = fw + rt + sw;
 
-    const dotColor =
+    // Couleur pour l'indicateur de densité dans le popup (inchangée)
+    const densityColor =
       total >= 6 ? '#ef4444' :
       total >= 3 ? '#f59e0b' :
       total >  0 ? '#22c55e' : '#64748b';
 
-    // ---- Icône simple : un point rond ----
+    // Tous les marqueurs sont en vert fixe
+    const markerColor = '#22c55e';
+
+    // Icône simple : un point rond vert
     const markerIcon = L.divIcon({
       className: '',
       html: `<div style="
         width: 14px;
         height: 14px;
-        background: ${dotColor};
+        background: ${markerColor};
         border: 2px solid #fff;
         border-radius: 50%;
         box-shadow: 0 0 0 3px rgba(0,0,0,0.25);
@@ -420,7 +424,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
       bubblingMouseEvents: false,
     });
 
-    // ---- Popup (le panneau qui s'ouvre au clic) ----
+    // Popup : l'indicateur de densité garde sa couleur d'origine
     const popupHtml = `
       <div style="
         background: #0f1f3d;
@@ -438,7 +442,7 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
           right: -5px;
           width: 11px;
           height: 11px;
-          background: ${dotColor};
+          background: ${densityColor};
           border: 2px solid #0f1f3d;
           border-radius: 50%;
         "></div>
@@ -510,7 +514,6 @@ export class SenegalMapComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   console.log(`[MAP] markers placed: ${placed}`);
 }
-
   /** CSS inline obligatoire — les divIcon sont hors du scope Angular */
   // private buildMarkerHtml(
   //   name: string,
