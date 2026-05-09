@@ -803,6 +803,7 @@
                         <div><strong>Contact technique :</strong> {{ currentViewItem.technical_contact || '—' }}</div>
                         <div><strong>Email technique :</strong> {{ currentViewItem.technical_email || '—' }}</div>
                         <div><strong>Téléphone :</strong> {{ currentViewItem.phone || '—' }}</div>
+                        <div><strong>Type de connexion :</strong> {{ connectionTypeLabel(currentViewItem.connection_type) }}</div>
                     </div>
                 </div>
                 <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0; margin-top: 16px;">
@@ -874,12 +875,7 @@
                             <div style="font-size:.75rem;color:#6b7280;">VLAN Service</div>
                             <div style="font-weight:600;">{{ currentViewItem.vlan_service || 'N/A' }}</div>
                         </div>
-                        <div>
-                            <div style="font-size:.75rem;color:#6b7280;">Type de connexion</div>
-                            <div style="font-weight:600;">
-                                {{ connectionTypeLabel(currentViewItem.connection_type) }}
-                            </div>
-                        </div>
+
 
                         <div>
                             <div style="font-size:.75rem;color:#6b7280;">Utilisateur</div>
