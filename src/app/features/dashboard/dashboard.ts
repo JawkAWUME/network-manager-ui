@@ -2,7 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router as AngularRouter } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { EquipmentModalComponent, ModalType } from '../../shared/components/equipment-modal/equipment-modal';
@@ -262,39 +262,97 @@ closeSshTerminal() {
     this.charts.forEach(c => c?.destroy());
   }
 
-  loadAll(): void {
+   loadAll(): void {
     this.kpis.set(null);
     this.firewalls.set([]);
     this.routers.set([]);
     this.switches.set([]);
     this.sites.set([]);
     this.users.set([]);
-
+ 
+    // Requêtes accessibles par admin ET agent (routes @Roles(ADMIN, AGENT))
+    // Chaque appel est protégé individuellement par catchError pour éviter
+    // qu'une erreur isolée ne propage vers le forkJoin parent.
     forkJoin({
-      dashboard: this.api.getDashboard(),
-      firewalls: this.api.getFirewalls({ limit: 200 }),
-      routers: this.api.getRouters({ limit: 200 }),
-      switches: this.api.getSwitches({ limit: 200 }),
-      sites: this.api.getSites({ limit: 200 }),
-      users: this.api.getUsers()
+      dashboard: this.api.getDashboard().pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement KPIs:', err);
+          return of(null);
+        })
+      ),
+      firewalls: this.api.getFirewalls({ limit: 200 }).pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement firewalls:', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
+      routers: this.api.getRouters({ limit: 200 }).pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement routers:', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
+      switches: this.api.getSwitches({ limit: 200 }).pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement switches:', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
+      sites: this.api.getSites({ limit: 200 }).pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement sites:', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
     }).subscribe({
-      next: ({ dashboard, firewalls, routers, switches, sites, users }) => {
-        this.kpis.set(dashboard.data);
-        this.firewalls.set(firewalls.data);
-        this.routers.set(routers.data);
-        this.switches.set(switches.data);
-        this.sites.set(sites.data);
-        this.users.set(users.data);
+      next: ({ dashboard, firewalls, routers, switches, sites }) => {
+        if (dashboard) this.kpis.set(dashboard.data);
+        this.firewalls.set(firewalls?.data ?? []);
+        this.routers.set(routers?.data ?? []);
+        this.switches.set(switches?.data ?? []);
+        this.sites.set(sites?.data ?? []);
+ 
         if (this.activeTab() === 'dashboard') {
           setTimeout(() => this.buildCharts(), 100);
         }
+ 
+        // Charger les données admin-only séparément, uniquement si admin
+        if (this.auth.isAdmin()) {
+          this.loadAdminData();
+        }
       },
       error: (err) => {
-        console.error('Erreur lors du chargement des données', err);
-        this.kpis.set(null);
+        // Ne devrait plus jamais se produire grâce aux catchError individuels
+        console.error('[Dashboard] Erreur inattendue dans loadAll:', err);
       }
     });
   }
+ 
+  /**
+   * Données réservées aux admins — appelé séparément pour ne pas bloquer
+   * le chargement des données communes (firewalls, sites, etc.)
+   */
+  private loadAdminData(): void {
+    forkJoin({
+      users: this.api.getUsers().pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement users (admin only):', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
+      pending: this.api.getPendingChanges().pipe(
+        catchError(err => {
+          console.warn('[Dashboard] Erreur chargement pending changes:', err);
+          return of({ data: [], total: 0, success: false });
+        })
+      ),
+    }).subscribe(({ users, pending }) => {
+      this.users.set(users?.data ?? []);
+      this.pendingChanges.set(pending?.data ?? []);
+    });
+  }
+ 
+
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
